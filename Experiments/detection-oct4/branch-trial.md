@@ -8,7 +8,7 @@ not the later productization/cleanup milestone.
 Nick chose live judgment over further offline labeling for this trial.
 Football workers now use the evaluated crowd-plus-commentary prompt and
 `program` / `decision_usable` boolean schema on both microphone and system
-capture. Unusable/ambiguous audio cannot establish program or a new break.
+capture. Unusable audio cannot establish program or a new break.
 The AirPlay return leg maps usable negatives to `not_program` so it only supplies
 return evidence. UFC keeps its previous prompts and schemas.
 
@@ -25,7 +25,7 @@ the app. Existing workers keep their loaded code. No stop/start, app relaunch,
 extension reload or playback command was issued during implementation.
 
 At your next convenient session start, select Football and use Automatic as
-usual. Worker-ready log records identify `classifier: crowd-minimal-v1` and the
+usual. Worker-ready log records identify `classifier: crowd-minimal-v2` and the
 exact prompt hash. Mark missed breaks/early returns if convenient; those markers
 do not control playback. Native remains v0.2.41 and extension source v0.2.21.
 
@@ -40,3 +40,15 @@ worker. Avoid switching during a handoff, which could start a worker mid-switch.
   malformed-output rejection.
 - Swift confirmation checks passed. `git diff --check` passed.
 - No new remote audio requests were made. Live quality is for Nick to assess.
+
+## v2: reduce content abstention after live feedback
+
+Nick reported slow commercial detection and too many unclear predictions.
+The prompt now reserves unusable for absent/silent audio or TV audio too masked
+or unintelligible to assess. Faint but intelligible audio remains usable.
+Content uncertainty requires a best-effort program/ad choice, with explicit
+advertising cues and no requirement to know the product or infer a picture
+change. The digital-silence guard, two-result confirmation and sampling cadence
+are unchanged. This may trade fewer abstentions for more wrong decisions; live
+speed and quality improvements are not yet verified. New workers log
+`crowd-minimal-v2`; existing workers retain their loaded prompt.
