@@ -1,4 +1,4 @@
-/** Candidate only: evaluate before enabling it in a live worker. */
+/** Two-boolean classifier; crowd cues are enabled in the football branch trial. */
 export const minimalSchema = {
   type: 'OBJECT',
   properties: { program: { type: 'BOOLEAN' }, decision_usable: { type: 'BOOLEAN' } },
