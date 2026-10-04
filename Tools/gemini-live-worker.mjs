@@ -147,7 +147,7 @@ async function main() {
   process.on('SIGINT', close);
   process.stdout.on('error', close);
   emit({ ready: true, model: MODEL, sport, returnDetection,
-    classifier: crowdDetection ? 'crowd-minimal-v1' : returnDetection ? 'sport-return' : 'sport-standard',
+    classifier: crowdDetection ? 'crowd-minimal-v2' : returnDetection ? 'sport-return' : 'sport-standard',
     promptSHA256: createHash('sha256').update(prompt).digest('hex') });
 }
 
