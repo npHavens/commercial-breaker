@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skybox</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="export.js" defer></script>
+  <script src="relay-target.js" defer></script>
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <h1>Skybox</h1>
+  <p id="build-status" class="note">v0.2.21 · Loading controls…</p>
+  <section>
+    <h2>Paramount TV setup</h2>
+    <p class="note">Run Start Paramount Extension Helper.command, then paste its pairing code here. Capture reads only this Paramount tab for two minutes.</p>
+    <label for="paramount-pairing">Helper pairing code</label>
+    <input id="paramount-pairing" type="password" autocomplete="off" spellcheck="false">
+    <button id="paramount-capture">Capture Paramount &amp; open relay</button>
+    <button id="paramount-capture-status">Check setup status</button>
+    <p id="paramount-setup-status" role="status">Session credentials stay in memory.</p>
+  </section>
+  <button id="test-audio">Test silent audio access (3 seconds)</button>
+  <button id="read-audio">Show last audio result</button>
+  <button id="direct-audio">Show direct Web Audio test on page</button>
+  <p id="audio-status" role="status" aria-live="polite">Not tested. Keep this popup open during the test.</p>
+  <section id="relay-controls" hidden>
+    <h2>Relay player</h2>
+    <p id="relay-status" role="status">Checking the relay…</p>
+    <button id="relay-mute" disabled>Mute / unmute</button>
+    <button id="relay-auto" disabled>Enable automatic mute</button>
+    <button id="relay-refresh">Check again</button>
+    <p class="note">Automatic mode follows playlist commercial markers at your playback position. Manual audio changes turn it off.</p>
+    <p class="note">Use Choose AirPlay on the player page to select your TV.</p>
+  </section>
+  <section id="airplay-controls" hidden>
+    <button id="airplay-export">Export AirPlay playback log</button>
+    <p>Send this video to Apple TV with Safari’s native AirPlay picker.</p>
+    <button id="airplay">Show AirPlay test on page</button>
+    <p id="airplay-status" role="status">Disable Mac Screen Mirroring before testing.</p>
+  </section>
+  <details open>
+    <summary>Last AirPlay attempt</summary>
+    <pre id="airplay-history">No attempt recorded.</pre>
+  </details>
+  <section id="paramount-controls">
+  <p id="status" role="status" aria-live="polite">Checking the player…</p>
+  <button id="toggle" disabled>Mute / unmute</button>
+  <button id="refresh">Check again</button>
+  <hr>
+  <h2>Commercial signals</h2>
+  <h3>DIRECTV player events</h3>
+  <p id="event-status" role="status">Not started. Records event names only; does not mute.</p>
+  <button id="event-start">Start player-event test</button>
+  <button id="event-ad">Mark commercial in event test</button>
+  <button id="event-program">Mark football returned in event test</button>
+  <button id="event-stop">Stop player-event test</button>
+  <button id="event-export">Export player events</button>
+  <button id="screen-test">Open screen capture test</button>
+  <button id="test-frame">Test video frame</button>
+  <p id="frame-status" role="status"></p>
+  <img id="frame-preview" hidden alt="Locally captured video frame" width="280">
+  <button id="inspect-metadata">Inspect metadata now</button>
+  <p id="diagnostic-status" role="status" aria-live="polite">Not checked.</p>
+  <button id="record">Start recording</button>
+  <button id="mark-ad" disabled>Mark commercial started</button>
+  <button id="mark-program" disabled>Mark broadcast returned</button>
+  <button id="export" disabled>Export recording</button>
+  <section id="export-panel" hidden>
+    <label for="recording-json">Recording JSON (select and copy if saving fails)</label>
+    <textarea id="recording-json" readonly rows="5" spellcheck="false"></textarea>
+    <button id="save-recording">Save JSON file</button>
+    <button id="select-recording">Select JSON</button>
+    <p id="export-status" role="status"></p>
+  </section>
+  <p class="note">Records locally for up to 15 minutes. Does not mute automatically. Download before reloading the page.</p>
+  <p class="note">Metadata inspection is a separate snapshot. It does not clear your recording or change playback.</p>
+  <p class="note">Frame test reads one small image locally. Save JSON includes that image for inspection.</p>
+  <p class="note">DIRECTV / Paramount+ · Manual control</p>
+  </section>
+</body>
+</html>

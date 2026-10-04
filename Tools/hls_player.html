@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="skybox-relay" content="1">
+<title>Skybox · HLS relay</title>
+<style>
+  :root { color-scheme: dark; font: 16px/1.5 system-ui; background: #141b26; color: #f2f5fa; }
+  body { max-width: 960px; margin: 32px auto; padding: 0 20px; }
+  video { display: block; width: 100%; background: black; aspect-ratio: 16 / 9; margin: 20px 0; }
+  button, textarea { font: inherit; padding: 10px; }
+  button { margin: 0 8px 8px 0; cursor: pointer; }
+  textarea { width: 100%; box-sizing: border-box; font: 12px/1.5 monospace; }
+</style>
+<h1>Skybox · HLS relay</h1>
+<p>Player diagnostics v3</p>
+<p>Pause the original Paramount tab. With Screen Mirroring off, play here first,
+  confirm video and audio, then choose AirPlay.</p>
+<video id="video" controls playsinline preload="none" x-webkit-airplay="allow"></video>
+<button id="play">Play</button>
+<button id="airplay">Choose AirPlay</button>
+<button id="mute">Mute</button>
+<button id="check">Check playback</button>
+<button id="stop">Stop playback</button>
+<section aria-label="Commercial mute">
+  <button id="skybox-auto-toggle">Enable automatic mute</button>
+  <p id="skybox-auto-status" role="status">Automatic commercial mute is off.</p>
+  <label for="skybox-auto-history">Commercial mute history</label>
+  <textarea id="skybox-auto-history" rows="4" readonly></textarea>
+  <p>Uses broadcast commercial markers. Manual mute or volume changes turn automatic mode off.</p>
+  <script id="skybox-commercial-state" type="application/json">{"enabled":false,"state":"unknown","message":"Controller is loading."}</script>
+</section>
+<p id="status" role="status">Ready.</p>
+<label for="history">Playback history</label>
+<textarea id="history" rows="8" readonly></textarea>
+<label for="relay-history">Relay history</label>
+<textarea id="relay-history" rows="5" readonly></textarea>
+<script>
+  const video = document.querySelector('#video');
+  const history = document.querySelector('#history');
+  const status = document.querySelector('#status');
+  const historyKey = 'skybox.relay.playback-history';
+  let messages = [];
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(historyKey) || '[]');
+    if (Array.isArray(saved)) messages = saved.filter((line) => typeof line === 'string').slice(-40);
+  } catch { /* History must not prevent playback if storage is unavailable. */ }
+  const errors = { 1: 'aborted', 2: 'network failure', 3: 'decode failure', 4: 'source unsupported or inaccessible' };
+  function report(message) {
+    status.textContent = message;
+    messages.push(`${new Date().toLocaleTimeString()} · ${message}`);
+    if (messages.length > 40) messages.shift();
+    history.value = messages.join('\n');
+    history.scrollTop = history.scrollHeight;
+    try { sessionStorage.setItem(historyKey, JSON.stringify(messages)); }
+    catch { /* The visible history still works without session storage. */ }
+  }
+  function state() {
+    const quality = video.getVideoPlaybackQuality?.();
+    const tracks = video.audioTracks;
+    const audio = tracks ? `${tracks.length} (${Array.from(tracks).filter((track) => track.enabled).length} enabled)` : 'unknown';
+    return `wireless=${Boolean(video.webkitCurrentPlaybackTargetIsWireless)}, ` +
+      `paused=${video.paused}, ready=${video.readyState}, ` +
+      `time=${number(video.currentTime)}, buffered=${ranges(video.buffered)}, seekable=${ranges(video.seekable)}, ` +
+      `size=${video.videoWidth ?? 'unknown'}x${video.videoHeight ?? 'unknown'}, ` +
+      `decoded=${video.webkitDecodedFrameCount ?? 'unknown'}, totalFrames=${quality?.totalVideoFrames ?? 'unknown'}, ` +
+      `dropped=${quality?.droppedVideoFrames ?? 'unknown'}, ` +
+      `audioTracks=${audio}, muted=${video.muted}, volume=${number(video.volume)}, ` +
+      `error=${errors[video.error?.code] || video.error?.code || 'none'}`;
+  }
+  function number(value) {
+    return Number.isFinite(value) ? value.toFixed(2) : 'unknown';
+  }
+  function ranges(value) {
+    if (!value) return 'unknown';
+    const result = [];
+    // The last two ranges suffice to see the live edge and a recent gap.
+    for (let i = Math.max(0, value.length - 2); i < value.length; i++) {
+      result.push(`${number(value.start(i))}-${number(value.end(i))}`);
+    }
+    return result.join('|') || 'empty';
+  }
+  for (const name of ['focus', 'blur', 'pageshow', 'pagehide']) {
+    window.addEventListener(name, (event) => {
+      report(`Page ${name}: visibility=${document.visibilityState}, restored=${Boolean(event.persisted)}; ${state()}`);
+    });
+  }
+  document.addEventListener('visibilitychange', () => {
+    report(`Page visibilitychange: visibility=${document.visibilityState}; ${state()}`);
+  });
+  report(`Page initialized (diagnostics v3): visibility=${document.visibilityState}`);
+  document.querySelector('#check').addEventListener('click', () => report(`Snapshot: ${state()}`));
+  setInterval(() => {
+    if (video.getAttribute('src') && !video.paused) report(`Progress: ${state()}`);
+  }, 5000);
+  for (const name of ['loadstart', 'loadedmetadata', 'canplay', 'playing', 'pause', 'waiting',
+    'stalled', 'ended', 'error', 'webkitcurrentplaybacktargetiswirelesschanged',
+    'webkitplaybacktargetavailabilitychanged']) {
+    video.addEventListener(name, (event) => {
+      report(`${name}${event.availability ? ` (${event.availability})` : ''}: ${state()}`);
+    });
+  }
+  document.querySelector('#play').addEventListener('click', async () => {
+    report(`Control: Play; ${state()}`);
+    if (!video.getAttribute('src') || video.error) {
+      video.src = new URL('live.m3u8', location.href).href;
+      video.load();
+    }
+    try { await video.play(); }
+    catch (error) { report(`Play rejected (${error.name}): ${state()}`); }
+  });
+  document.querySelector('#airplay').addEventListener('click', () => {
+    report(`Control: Choose AirPlay; ${state()}`);
+    if (typeof video.webkitShowPlaybackTargetPicker !== 'function') {
+      report('Open this page in Safari to use its native AirPlay picker.');
+    } else if (video.error || video.readyState < 2) {
+      report('Establish local video and audio playback before trying AirPlay.');
+    } else {
+      try {
+        video.webkitShowPlaybackTargetPicker();
+        report(`Picker requested: ${state()}`);
+      } catch (error) { report(`Picker rejected (${error.name}).`); }
+    }
+  });
+  const mute = document.querySelector('#mute');
+  mute.addEventListener('click', () => {
+    report('Control: Mute / Unmute');
+    if (globalThis.skyboxCommercial) globalThis.skyboxCommercial.manualToggle();
+    else video.muted = !video.muted;
+  });
+  video.addEventListener('volumechange', () => {
+    mute.textContent = video.muted ? 'Unmute' : 'Mute';
+    report(`muted=${video.muted}`);
+  });
+  document.querySelector('#stop').addEventListener('click', () => {
+    report('Control: Stop playback');
+    video.pause(); video.removeAttribute('src'); video.load();
+    report('Playback stopped. Ctrl+C in Terminal shuts down the relay.');
+  });
+  async function relayStatus() {
+    try {
+      const response = await fetch('status', { cache: 'no-store' });
+      if (!response.ok) throw new Error();
+      document.querySelector('#relay-history').value = (await response.json()).join('\n');
+    } catch {
+      document.querySelector('#relay-history').value = 'Relay unreachable. Check its Terminal window.';
+    }
+    setTimeout(relayStatus, 3000);
+  }
+  relayStatus();
+</script>
+<script src="commercial-controller.js"></script>
+</html>

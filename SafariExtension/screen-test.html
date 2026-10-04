@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skybox screen capture test</title>
+  <script src="screen-test.js" defer></script>
+</head>
+<body>
+  <h1>Screen capture test</h1>
+  <p>Keep this test in a separate Safari window from DIRECTV. Keep AirPlay connected for the first attempt.</p>
+  <p>Choose the DIRECTV window in Safari’s sharing picker. This test stays local and requests no audio. Sharing stops after a snapshot, when you press Stop, or after 30 seconds.</p>
+  <button id="choose">Choose DIRECTV window</button>
+  <button id="capture" disabled>Capture frame and stop</button>
+  <button id="stop" disabled>Stop sharing</button>
+  <p id="message" role="status">Ready.</p>
+  <video id="preview" muted autoplay playsinline width="640"></video>
+  <p><img id="still" hidden width="640" alt="Captured window snapshot"></p>
+  <p><a id="download" hidden>Download captured PNG</a></p>
+  <p>Check the video area itself: a visible browser border around black video does not mean the game was captured. If an image appears, check whether it matches the current TV scene.</p>
+</body>
+</html>

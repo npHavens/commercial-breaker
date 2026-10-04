@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>NSAudioCaptureUsageDescription</key>
+    <string>Skybox measures system playback audio and saves locally marked sports audio clips to investigate commercial transitions.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Skybox listens to the TV through your microphone and saves marked clips locally to investigate commercial transitions. Nearby conversation may be recorded.</string>
+    <key>NSHighResolutionCapable</key><true/>
+</dict></plist>
