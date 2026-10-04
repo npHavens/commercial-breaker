@@ -1,0 +1,70 @@
+{
+  "status": "Seven approved clips evaluated once via Vertex Gemini; results recorded locally; no continuous remote capture enabled.",
+  "prompt": "prompt.txt",
+  "samples": [
+    {
+      "sample_id": "093936067ef3",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/301064C5-D822-4B1C-A492-B9799F9C5687/clip-1790531473570-1.wav",
+      "session": "301064C5-D822-4B1C-A492-B9799F9C5687",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "1a795116a74c",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/301064C5-D822-4B1C-A492-B9799F9C5687/clip-1790531805987-5.wav",
+      "session": "301064C5-D822-4B1C-A492-B9799F9C5687",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Football returned",
+      "provisional_tail_label": "football",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "3938c2bb8030",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/187D0070-24CE-475F-B1F5-02DDC6C473D6/clip-1790532694522-2.wav",
+      "session": "187D0070-24CE-475F-B1F5-02DDC6C473D6",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "4c27dd08cd01",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/301064C5-D822-4B1C-A492-B9799F9C5687/clip-1790531583501-2.wav",
+      "session": "301064C5-D822-4B1C-A492-B9799F9C5687",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "527493504fd7",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/187D0070-24CE-475F-B1F5-02DDC6C473D6/clip-1790532525949-1.wav",
+      "session": "187D0070-24CE-475F-B1F5-02DDC6C473D6",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "5d3357b47b9d",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/301064C5-D822-4B1C-A492-B9799F9C5687/clip-1790531774115-4.wav",
+      "session": "301064C5-D822-4B1C-A492-B9799F9C5687",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    },
+    {
+      "sample_id": "ed7dc1dfb44f",
+      "local_audio": "/Users/nickhavens/Library/Application Support/SkyboxAudioProbe/recordings/85DAA7A0-6867-4764-872F-FD56B19A9E4C/clip-1790534324161-1.wav",
+      "session": "85DAA7A0-6867-4764-872F-FD56B19A9E4C",
+      "duration_seconds": 29.999979166666666,
+      "user_marker": "Commercial started",
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only"
+    }
+  ],
+  "instructions": "Supply sample_id and audio only to model. Keep marker labels, source filenames, and session metadata out of model input. Labels require review; this small set is heavily biased toward commercial starts."
+}

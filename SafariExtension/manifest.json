@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Skybox",
+  "version": "0.2.21",
+  "description": "Native AirPlay experiments and relay commercial muting, plus Paramount+ manual controls and diagnostics.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "webRequest",
+    "tabs"
+  ],
+  "action": {
+    "default_title": "Skybox",
+    "default_popup": "popup.html"
+  },
+  "host_permissions": [
+    "https://*.paramountplus.com/*",
+    "https://dai.google.com/*",
+    "https://cbsi.live.ott.irdeto.com/*",
+    "http://127.0.0.1/*",
+    "https://stream.directv.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "paramount-capture.js",
+      "relay-target.js",
+      "background.js",
+      "directv-autoload.js"
+    ],
+    "persistent": false
+  }
+}

@@ -1,0 +1,20 @@
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.DS_Store
+
+# Local playback experiments can contain session-specific stream URLs.
+Experiments/airplay-local-test.html
+playlist-url.txt
+m3u8.text
+__pycache__/
+*.pyc
+
+# Local recordings, evaluation output and separately cloned experiments.
+SafariExtension/recording*.json
+Experiments/tvOSBrowser/
+Experiments/**/results/
+.env
+.env.*
+buildServer.json
