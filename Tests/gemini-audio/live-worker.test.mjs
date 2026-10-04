@@ -15,6 +15,32 @@ const line = (id = 'abcdef012345', audio = wav()) => JSON.stringify({ id, audio:
 const result = { state_at_end: 'program', tv_audibility: 'faint', room_speech_overlap: 'uncertain', transition_heard: false, evidence: 'Score commentary.', confidence: 0.7 };
 const response = { candidates: [{ finishReason: 'STOP' }], text: JSON.stringify(result), usageMetadata: { totalTokenCount: 120, secret: 'not forwarded' } };
 
+test('crowd trial uses minimal output and preserves distinct break/return behavior', async () => {
+  for (const returnDetection of [false, true]) {
+    for (const [program, decision_usable, standard, returning] of [
+      [true, true, 'program', 'program'], [false, true, 'commercial', 'not_program'],
+      [false, false, 'unclear', 'unusable'], [true, false, 'unclear', 'unusable'],
+    ]) {
+      const output = [];
+      const worker = createWorker({ crowdDetection: true, returnDetection, prompt: 'test', emit: value => output.push(value),
+        generateContent: async args => {
+          assert.deepEqual(args.config.responseSchema.required, ['program', 'decision_usable']);
+          return { candidates: [{ finishReason: 'STOP' }], text: JSON.stringify({ program, decision_usable }) };
+        } });
+      await worker.accept(line());
+      assert.equal(output[0].result.state_at_end, returnDetection ? returning : standard);
+    }
+  }
+});
+
+test('crowd trial rejects malformed booleans without emitting a prediction', async () => {
+  const output = [];
+  await createWorker({ crowdDetection: true, prompt: '', emit: value => output.push(value),
+    generateContent: async () => ({ candidates: [{ finishReason: 'STOP' }],
+      text: JSON.stringify({ program: 'true', decision_usable: true }) }) }).accept(line());
+  assert.deepEqual(output, [{ id: 'abcdef012345', error: 'invalid-response' }]);
+});
+
 test('validates exact eight-second mono PCM16 WAV and rejects misleading headers', () => {
   assert.equal(parseRequest(line()).audio.length, 256044);
   for (const offset of [0, 4, 8, 16, 20, 22, 24, 28, 32, 34, 36, 40]) {
