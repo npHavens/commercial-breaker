@@ -1,3 +1,20 @@
+# Long AirPlay breaks unmute without stopping — v0.2.43
+
+Nick identified the October 11 stop as halftime and requested unmuting after
+three minutes. At that limit, AirPlay mode now releases the Mac system-tap mute,
+clears classifier context and continues listening with sound on the Mac.
+Automatic and keep-awake remain enabled. Two fresh program predictions trigger
+the usual TV return; continued break predictions do not mute the same break
+again. Once back on TV, the next confirmed break follows the normal cycle.
+The timeout cannot run during an in-flight handoff. Local Mac mode retains its
+existing three-minute unmute/rearm behavior. Stop and terminal detector/capture
+failures still perform normal cleanup and recovery.
+
+Policy regression checks cover audible waiting, duplicate timeout rejection,
+program return, next-break handling and stale completions. Live halftime timing
+still needs verification. The prior incident is recorded in
+`Experiments/oct11-automatic-stop.md`.
+
 # Viewing activity refresh — v0.2.42, October 11
 
 Nick clarified that walking away brought up a screen saver/lock screen rather
