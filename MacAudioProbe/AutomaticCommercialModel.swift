@@ -227,7 +227,7 @@ final class AutomaticCommercialModel: ObservableObject {
             recorder.gemini.resetContext()
             record("Picker retry ready · waiting for fresh program/break confirmation")
         }
-        if let mutedSince, now - mutedSince >= 180 {
+        if task == nil, let mutedSince, now - mutedSince >= 180 {
             if policy.localMuteLimitReached() {
                 phase = policy.phase
                 do {
@@ -237,8 +237,14 @@ final class AutomaticCommercialModel: ObservableObject {
                     policy.localLimitReleased(); phase = policy.phase
                     record("Three-minute mute limit · sound restored; detection continues. Waiting for confirmed program before muting another break")
                 } catch { failed(error, id: generation) }
-            } else {
-                stopAndRecover(reason: "Three-minute muted limit reached")
+            } else if phase == .mutedMac {
+                do {
+                    try recorder.setSystemMuted(false)
+                    self.mutedSince = nil
+                    recorder.gemini.resetContext()
+                    policy.airPlayLimitReleased(); phase = policy.phase
+                    record("Three-minute mute limit · Mac sound restored; detection and keep-awake continue. Waiting for confirmed program before returning to TV")
+                } catch { failed(error, id: generation) }
             }
             return
         }
