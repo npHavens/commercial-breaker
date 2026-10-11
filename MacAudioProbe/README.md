@@ -1,3 +1,39 @@
+# Viewing activity refresh — v0.2.42, October 11
+
+Nick clarified that walking away brought up a screen saver/lock screen rather
+than only display sleep. Automatic already held a ProcessInfo display-sleep
+activity. It now also reports ongoing local viewing with
+`IOPMAssertionDeclareUserActivity` at start and every 30 seconds through the
+existing health timer. The refresh runs across handoffs and picker retries,
+stops on Stop/failure/shutdown, and releases the latest OS assertion ID. It
+does not refresh while the main display is already asleep. Settings are not
+changed, no keys or mouse events are synthesized, and it cannot unlock a Mac.
+Failures are logged once per session; they do not stop audio detection.
+
+The detector remains crowd-minimal-v2 from October 4. Nick reports that Flash
+billing for the week's Skybox usage was only a few dollars; prioritize detection
+responsiveness and accuracy over reducing request volume. Retain one in-flight
+request to prevent a stale backlog.
+
+Verification: lifecycle tests cover refresh cadence, replacement assertion IDs,
+failure throttling, stop/restart and destruction. A live macOS smoke check
+confirmed the assertion appeared and was released. Signed Debug build succeeded.
+This verifies the API lifecycle, not an unattended screen-saver/lock timeout:
+that behavior still needs today's walk-away test. Apple's API documents display
+wake and idle-delay behavior; do not claim it overrides every lock policy.
+Reference: https://developer.apple.com/documentation/iokit/1557127-iopmassertiondeclareuseractivity
+
+Build for this session: `build/mac-audio-oct11/Build/Products/Debug/SkyboxAudioProbe.app`.
+The old `build/mac-audio` app is retained. No Safari reload or route command was
+issued during this change.
+
+```sh
+xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
+  MacAudioProbe/ViewingActivity.swift Tests/viewing-activity/main.swift \
+  -o /tmp/skybox-viewing-tests
+/tmp/skybox-viewing-tests
+```
+
 # System mouse event experiment — v0.2.40
 
 Nick confirmed that v0.2.39's process-directed mouse events did not visibly open

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CoreGraphics
 
 /// Coordinates the tested route and capture components. No raw model output can
 /// request an action; only the two-result confirmer enters this state machine.
@@ -20,6 +21,8 @@ final class AutomaticCommercialModel: ObservableObject {
     private var task: Task<Void, Never>?
     private var timer: Timer?
     private var awakeActivity: NSObjectProtocol?
+    private let viewingActivity = ViewingActivity()
+    private var viewingActivityFailed = false
     private var generation = UUID()
     private var pickerRetryAfter: Double?
     private var mutedSince: Double?
@@ -63,6 +66,9 @@ final class AutomaticCommercialModel: ObservableObject {
             options: [.userInitiated, .idleDisplaySleepDisabled],
             reason: "Skybox automatic commercial detection and AirPlay routing")
         record("Keeping Mac and display awake while automatic mode is active")
+        viewingActivity.start()
+        viewingActivityFailed = false
+        refreshViewingActivity()
         record(playback == .mac ? "Starting local automatic mode · system audio; no session time limit" : "Starting automatic mode · no session time limit; verifying TV playback route")
         recorder.gemini.onConfirmed = { [weak self] state in self?.confirmed(state) }
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
@@ -214,6 +220,7 @@ final class AutomaticCommercialModel: ObservableObject {
 
     private func checkHealth() {
         guard enabled else { return }
+        refreshViewingActivity()
         let now = ProcessInfo.processInfo.systemUptime
         if let pickerRetryAfter, now >= pickerRetryAfter, task == nil {
             self.pickerRetryAfter = nil
@@ -303,9 +310,19 @@ final class AutomaticCommercialModel: ObservableObject {
     }
 
     private func releaseAwakeActivity() {
+        viewingActivity.stop()
         guard let activity = awakeActivity else { return }
         awakeActivity = nil
         ProcessInfo.processInfo.endActivity(activity)
+    }
+
+    private func refreshViewingActivity() {
+        // Do not turn a display back on after it has already been put to sleep.
+        guard CGDisplayIsAsleep(CGMainDisplayID()) == 0 else { return }
+        if let error = viewingActivity.refresh(now: ProcessInfo.processInfo.systemUptime) {
+            if !viewingActivityFailed { record("Viewing keep-awake refresh failed (\(error)); screen saver prevention is unavailable") }
+            viewingActivityFailed = true
+        }
     }
 
     private func record(_ message: String) {
