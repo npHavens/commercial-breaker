@@ -31,18 +31,8 @@ struct AutomaticCommercialView: View {
                 Button(model.playback == .mac ? "Stop & restore sound" : "Stop & return to TV") { model.stopAndRecover() }
                     .disabled(!model.enabled)
             }
-            if !model.busy && recorder.running {
-                Text("Stop the Recorder session first, then start this test.").foregroundStyle(.orange)
-            }
             Text(model.status).font(.callout.bold()).textSelection(.enabled)
             AutomaticPredictionView(observer: recorder.gemini)
-            HStack {
-                Button("Commercial started") { recorder.mark("Commercial started") }
-                Button("Program returned") { recorder.mark("Program returned") }
-                Button("Changed channel") { recorder.mark("Changed channel") }
-            }.disabled(!model.enabled || !recorder.ready)
-            Text("Keep using markers if convenient. They record observations and do not trigger muting.")
-                .font(.caption).foregroundStyle(.secondary)
             ScrollView { Text(model.history).font(.caption.monospaced()).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }
                 .frame(height: 180)
             Text(model.playback == .mac

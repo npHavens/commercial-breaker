@@ -37,8 +37,6 @@ private struct ProbeTabs: View {
         TabView {
             AutomaticCommercialView(model: automatic, recorder: recorder, routing: routing)
                 .tabItem { Label("Automatic", systemImage: "speaker.wave.2") }
-            AudioRecorderView(model: recorder, otherCaptureActive: routing.busy).disabled(automatic.busy)
-                .tabItem { Label("Recorder", systemImage: "record.circle") }
             RoutingView(model: routing).disabled(recorder.running || automatic.busy)
                 .tabItem { Label("AirPlay", systemImage: "airplayvideo") }
         }.padding(8)
