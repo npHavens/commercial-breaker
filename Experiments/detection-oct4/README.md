@@ -1,5 +1,9 @@
 # Detection comparison — October 4
 
+**Latest:** Nick authorized a live branch trial after reviewing these results.
+See [branch trial](branch-trial.md) for activation, verification and rollback.
+The offline-only status below describes the initial comparison checkpoint.
+
 Candidate prompts are offline only. The worker source now rejects digital
 silence locally; existing worker processes are unchanged, and new workers
 (including those started by a later capture handoff) load that fix. No app was

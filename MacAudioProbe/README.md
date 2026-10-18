@@ -1,3 +1,73 @@
+# Automatic startup focus retry — v0.2.44
+
+October 18 logs show first-start failures after opening the AirPlay picker:
+Safari activation succeeds, then focus returns to Skybox. Later attempts work.
+Startup now retries TV route verification once after a 0.5-second pause, only
+when the focus failure identifies this Skybox process and it remains frontmost.
+It still requires the TV already selected; no destination is selected by startup.
+Cancellation, another foreground app, missing page controls, and an unexpected
+route still stop startup. Break/return handoffs retain their existing focus rules.
+Both attempts retain separate routing logs; a successful retry is noted in the
+second log. This is a bounded recovery, not a confirmed fix for the focus bounce.
+
+Live verification pending: first start from Skybox with TV already playing;
+cancel during startup; switch to another app during startup; verify that an
+incorrect initial route and a missing extension panel still fail safely.
+The build is separate from the running app; restart only when playback permits.
+
+# Long AirPlay breaks unmute without stopping — v0.2.43
+
+Nick identified the October 11 stop as halftime and requested unmuting after
+three minutes. At that limit, AirPlay mode now releases the Mac system-tap mute,
+clears classifier context and continues listening with sound on the Mac.
+Automatic and keep-awake remain enabled. Two fresh program predictions trigger
+the usual TV return; continued break predictions do not mute the same break
+again. Once back on TV, the next confirmed break follows the normal cycle.
+The timeout cannot run during an in-flight handoff. Local Mac mode retains its
+existing three-minute unmute/rearm behavior. Stop and terminal detector/capture
+failures still perform normal cleanup and recovery.
+
+Policy regression checks cover audible waiting, duplicate timeout rejection,
+program return, next-break handling and stale completions. Live halftime timing
+still needs verification. The prior incident is recorded in
+`Experiments/oct11-automatic-stop.md`.
+
+# Viewing activity refresh — v0.2.42, October 11
+
+Nick clarified that walking away brought up a screen saver/lock screen rather
+than only display sleep. Automatic already held a ProcessInfo display-sleep
+activity. It now also reports ongoing local viewing with
+`IOPMAssertionDeclareUserActivity` at start and every 30 seconds through the
+existing health timer. The refresh runs across handoffs and picker retries,
+stops on Stop/failure/shutdown, and releases the latest OS assertion ID. It
+does not refresh while the main display is already asleep. Settings are not
+changed, no keys or mouse events are synthesized, and it cannot unlock a Mac.
+Failures are logged once per session; they do not stop audio detection.
+
+The detector remains crowd-minimal-v2 from October 4. Nick reports that Flash
+billing for the week's Skybox usage was only a few dollars; prioritize detection
+responsiveness and accuracy over reducing request volume. Retain one in-flight
+request to prevent a stale backlog.
+
+Verification: lifecycle tests cover refresh cadence, replacement assertion IDs,
+failure throttling, stop/restart and destruction. A live macOS smoke check
+confirmed the assertion appeared and was released. Signed Debug build succeeded.
+This verifies the API lifecycle, not an unattended screen-saver/lock timeout:
+that behavior still needs today's walk-away test. Apple's API documents display
+wake and idle-delay behavior; do not claim it overrides every lock policy.
+Reference: https://developer.apple.com/documentation/iokit/1557127-iopmassertiondeclareuseractivity
+
+Build for this session: `build/mac-audio-oct11/Build/Products/Debug/SkyboxAudioProbe.app`.
+The old `build/mac-audio` app is retained. No Safari reload or route command was
+issued during this change.
+
+```sh
+xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
+  MacAudioProbe/ViewingActivity.swift Tests/viewing-activity/main.swift \
+  -o /tmp/skybox-viewing-tests
+/tmp/skybox-viewing-tests
+```
+
 # System mouse event experiment — v0.2.40
 
 Nick confirmed that v0.2.39's process-directed mouse events did not visibly open

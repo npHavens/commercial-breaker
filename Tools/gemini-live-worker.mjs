@@ -1,5 +1,6 @@
 import { returnPrompt, returnSchema, parseReturnResult } from './return-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
+import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-classifier.mjs';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -48,7 +49,7 @@ export function classifyFailure(error) {
 }
 
 /** No queue or retry: a slow request never creates a backlog of stale predictions. */
-export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000, returnDetection = false }) {
+export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000, returnDetection = false, crowdDetection = false }) {
   let active = null;
   let closed = false;
   return {
@@ -74,7 +75,7 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000
       try {
         const response = await generateContent({ model: MODEL,
           contents: makeContents(request.id, prompt, request.audio), config: {
-            responseMimeType: 'application/json', responseSchema: returnDetection ? returnSchema : responseSchema, maxOutputTokens: 4096,
+            responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: 4096,
             thinkingConfig: { thinkingBudget: 0 }, abortSignal: controller.signal,
           } });
         if (closed) return;
@@ -83,7 +84,13 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000
           emit({ id: request.id, error: 'incomplete-response' }); return;
         }
         let result;
-        try { result = (returnDetection ? parseReturnResult : parseResult)(response.text ?? ''); }
+        try {
+          result = (crowdDetection ? parseMinimalResult : returnDetection ? parseReturnResult : parseResult)(response.text ?? '');
+          // The AirPlay system-audio leg only supplies return evidence, never a new break.
+          if (crowdDetection && returnDetection) {
+            result.state_at_end = !result.decision_usable ? 'unusable' : result.program ? 'program' : 'not_program';
+          }
+        }
         catch { emit({ id: request.id, error: 'invalid-response' }); return; }
         emit({ id: request.id, result, elapsedMs: Math.round(performance.now() - started), usage: safeUsage(response.usageMetadata) });
       } catch (error) {
@@ -127,9 +134,11 @@ async function main() {
   const ai = new GoogleGenAI({ ...config, httpOptions: { retryOptions: { attempts: 1 } } });
   const sport = process.env.SKYBOX_SPORT || 'football';
   const returnDetection = process.env.SKYBOX_RETURN_DETECTION === '1';
-  const prompt = returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('../Experiments/audio-model-eval/prompt-common.txt', import.meta.url), 'utf8'), sport);
+  const crowdDetection = sport === 'football';
+  const prompt = crowdDetection ? minimalPrompt(sport, { crowdCues: true })
+    : returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('../Experiments/audio-model-eval/prompt-common.txt', import.meta.url), 'utf8'), sport);
   const emit = record => process.stdout.write(JSON.stringify(record) + '\n');
-  const worker = createWorker({ generateContent: args => ai.models.generateContent(args), prompt, emit, returnDetection });
+  const worker = createWorker({ generateContent: args => ai.models.generateContent(args), prompt, emit, returnDetection, crowdDetection });
   process.stdin.on('data', createLineReader(line => { void worker.accept(line); }, () => emit({ id: null, error: 'invalid-request' })));
   const close = () => { worker.close(); process.exit(0); };
   process.stdin.on('end', close);
@@ -137,7 +146,9 @@ async function main() {
   process.on('SIGTERM', close);
   process.on('SIGINT', close);
   process.stdout.on('error', close);
-  emit({ ready: true, model: MODEL, sport, returnDetection, promptSHA256: createHash('sha256').update(prompt).digest('hex') });
+  emit({ ready: true, model: MODEL, sport, returnDetection,
+    classifier: crowdDetection ? 'crowd-minimal-v2' : returnDetection ? 'sport-return' : 'sport-standard',
+    promptSHA256: createHash('sha256').update(prompt).digest('hex') });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

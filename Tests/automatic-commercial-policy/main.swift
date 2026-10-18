@@ -115,3 +115,23 @@ assert(pickerRecovery.confirmed(.commercialBreak) == .none)
 pickerRecovery.stop()
 assert(!pickerRecovery.pickerUnavailable())
 print("Picker recovery checks passed: both directions, stale completions, recovery and stop guards")
+
+var longBreak = AutomaticCommercialPolicy()
+assert(!longBreak.airPlayLimitReleased())
+longBreak.begin(); longBreak.startedOnTV()
+assert(longBreak.confirmed(.commercialBreak) == .toMac)
+assert(!longBreak.airPlayLimitReleased()) // Still routing, not yet muted.
+longBreak.reachedMac()
+assert(longBreak.airPlayLimitReleased())
+assert(longBreak.phase == .audibleMacAwaitingTV)
+assert(!longBreak.airPlayLimitReleased())
+for _ in 0..<5 { assert(longBreak.confirmed(.commercialBreak) == .none) }
+assert(longBreak.confirmed(.program) == .toTV)
+assert(!longBreak.airPlayLimitReleased())
+assert(longBreak.reachedTV())
+assert(longBreak.confirmed(.commercialBreak) == .toMac) // Next break still works.
+longBreak.recover()
+assert(!longBreak.airPlayLimitReleased())
+longBreak.stop()
+assert(!longBreak.airPlayLimitReleased())
+print("AirPlay long-break checks passed: audible waiting, no repeated mute, program return, next break, stale completions")

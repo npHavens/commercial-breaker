@@ -45,6 +45,12 @@ struct AutomaticCommercialPolicy {
         complete(from: .releasingLocalLimit, to: .awaitingLocalProgram)
     }
 
+    /// Sound has been restored on the Mac; keep listening for a confirmed TV return.
+    @discardableResult
+    mutating func airPlayLimitReleased() -> Bool {
+        complete(from: .mutedMac, to: .audibleMacAwaitingTV)
+    }
+
     mutating func confirmed(_ state: GeminiConfirmation.State) -> Action {
         switch (phase, state) {
         case (.awaitingLocalProgram, .program):
