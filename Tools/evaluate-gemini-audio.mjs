@@ -1,10 +1,10 @@
 import { readFile, writeFile, mkdir, mkdtemp, rm, realpath, stat, appendFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { join, resolve, sep } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createVertexClient, vertexConfig } from './vertex-client.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const responseSchema = {
@@ -72,24 +72,19 @@ async function main() {
     console.log(JSON.stringify({ mode: 'dry-run', samples: samples.map(s => s.sample_id), tailSeconds, modelOverride: models[0]?.slice(8) ?? null, noThinking, note: 'No credentials resolved or audio transmitted. Use --live for the authorized experiment.' }));
     return;
   }
-  const app = resolve(process.env.SKYBOX_INTERVIEW_APP ?? join(homedir(), 'Projects/interview-assistant/app'));
-  const require = createRequire(join(app, 'package.json'));
-  const { GoogleGenAI } = require('@google/genai');
-  // Node's tsx loader resolves this existing TypeScript integration, including Keychain fallback.
-  const { getGenAIConfig } = await import(pathToFileURL(join(app, 'backend/src/providers/gemini/config.ts')).href);
-  const config = getGenAIConfig();
+  const config = vertexConfig();
   const model = models[0]?.slice(8) ?? process.env.GEMINI_MODEL?.trim();
   if (noThinking && model !== 'gemini-2.5-flash') throw new Error('No-thinking experiment only supports Flash');
   if (!model || !/^[a-zA-Z0-9._-]+$/.test(model)) throw new Error('Configured GEMINI_MODEL is required');
-  const ai = new GoogleGenAI({ ...config, httpOptions: { retryOptions: { attempts: 1 } } });
+  const ai = await createVertexClient(config);
   const prompt = await readFile(join(root, 'Experiments/audio-model-eval/prompt.txt'), 'utf8');
   const run = join(root, 'Experiments/audio-model-eval/results', new Date().toISOString().replaceAll(':', '-'));
   await mkdir(run, { recursive: true });
-  await writeFile(join(run, 'run.json'), JSON.stringify({ model, provider: 'vertexai' in config ? 'vertex' : 'developer-api',
-    location: 'vertexai' in config ? config.location : null, samples: samples.map(s => s.sample_id),
+  await writeFile(join(run, 'run.json'), JSON.stringify({ model, provider: 'vertex',
+    location: config.location, samples: samples.map(s => s.sample_id),
     promptSHA256: createHash('sha256').update(prompt).digest('hex'), maxOutputTokens: 4096, timeoutMs: 180000,
     requestAttempts: 1, tailSeconds, thinkingBudget: noThinking ? 0 : 'default', audioEncoding: 'mono PCM16 WAV at 16kHz; no gain adjustment', startedAt: new Date().toISOString() }, null, 2));
-  console.log(JSON.stringify({ model, provider: 'vertexai' in config ? 'vertex' : 'developer-api', samples: samples.length, output: run }));
+  console.log(JSON.stringify({ model, provider: 'vertex', samples: samples.length, output: run }));
   const allowed = await realpath(join(homedir(), 'Library/Application Support/SkyboxAudioProbe/recordings'));
   for (const sample of samples) {
     const source = await realpath(sample.local_audio);

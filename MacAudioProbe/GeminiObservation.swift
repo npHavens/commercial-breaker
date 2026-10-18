@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-/// Development-only bridge to the existing Interview Assistant Node integration.
+/// Development-only bridge to the Node worker in this checkout's Tools directory.
 /// Observation has no references to routing or mute controls.
 @MainActor
 final class GeminiObservation: ObservableObject {
@@ -86,7 +86,7 @@ final class GeminiObservation: ObservableObject {
                 self.stop(message: "Gemini startup timed out · recording continues")
             }
         } catch {
-            stop(message: "Gemini could not start. Check Node 24 and the Interview Assistant setup. Recording continues.")
+            stop(message: "Gemini could not start · install Node 24 with nvm. Recording continues.")
         }
     }
 
@@ -182,6 +182,9 @@ final class GeminiObservation: ObservableObject {
             received.removeSubrange(...newline)
             guard let value = try? JSONSerialization.jsonObject(with: line) as? [String: Any] else {
                 stop(message: "Gemini returned an invalid response"); return
+            }
+            if value["ready"] as? Bool == false {
+                stop(message: Self.setupMessage(value["error"] as? String)); return
             }
             if value["ready"] as? Bool == true {
                 if let hash = value["promptSHA256"] as? String,
@@ -292,13 +295,19 @@ final class GeminiObservation: ObservableObject {
         }
     }
 
+    static func setupMessage(_ error: String?) -> String {
+        switch error {
+        case "dependencies-missing": "Gemini could not start · run npm ci in the Skybox checkout. Recording continues."
+        case "configuration-missing": "Gemini could not start · set GOOGLE_CLOUD_PROJECT in the Skybox .env. Recording continues."
+        default: "Gemini could not start · see Gemini setup in the README. Recording continues."
+        }
+    }
+
+    /// Settings come from the ignored `.env` beside this checkout's `package.json`.
     static func makeWorker() throws -> Process {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        let app = home.appendingPathComponent("Projects/interview-assistant/app")
         let child = Process()
-        child.executableURL = try nodeURL(home: home)
-        child.arguments = ["--import", app.appendingPathComponent("node_modules/tsx/dist/loader.mjs").path,
-                           "--env-file=" + app.appendingPathComponent(".env").path,
+        child.executableURL = try nodeURL(home: FileManager.default.homeDirectoryForCurrentUser)
+        child.arguments = ["--env-file-if-exists=" + root.appendingPathComponent(".env").path,
                            root.appendingPathComponent("Tools/gemini-live-worker.mjs").path]
         child.currentDirectoryURL = root
         return child

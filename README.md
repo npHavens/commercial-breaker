@@ -18,12 +18,12 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.44 and Safari extension source v0.2.21. AirPlay has been working well
-in personal use; Nick also confirmed Mac playback and the startup fix working
-on October 18. The latest
-native build adds one startup retry when Safari focus returns to Skybox. Its
-build passes, with a successful user-reported live startup. Sports-themed ads can
-cause false returns. Packaged extension attachment still needs reload testing.
+Native v0.2.45 and Safari extension source v0.2.21. AirPlay has been working well
+in personal use; Nick also confirmed Mac playback and the v0.2.44 startup fix
+working on October 18. v0.2.45 changes only Gemini setup: Skybox now declares
+its own Node dependencies and configuration (see below) and needs no other
+checkout. Its live detection start is not yet user-verified. Sports-themed ads
+can cause false returns. Packaged extension attachment still needs reload testing.
 
 ## Development
 
@@ -43,10 +43,22 @@ The build command checks compilation without signing; running with macOS
 permissions requires a signed build. See the [native runbook](MacAudioProbe/README.md)
 and [extension setup](SafariExtension/README.md) for current local operation.
 
-**Setup is not self-contained yet.** The native launcher expects Node 24 under
-nvm and loads the SDK, TypeScript loader, environment and Vertex configuration
-from a sibling Interview Assistant checkout. Removing this coupling is the
-first portability task; a fresh clone alone cannot run detection today.
+### Gemini setup
+
+Detection runs a Node worker from this checkout and sends audio to Google Vertex
+AI. You need Node 24, a Google Cloud project with the Vertex AI API enabled, and
+Application Default Credentials. Skybox does not use Gemini API keys.
+
+```sh
+nvm install                            # Node 24, from .nvmrc
+npm ci
+cp .env.example .env                   # then set GOOGLE_CLOUD_PROJECT
+gcloud auth application-default login
+```
+
+The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
+`node_modules` from the checkout it was built from. If setup is incomplete,
+starting detection reports what is missing; recording continues.
 
 ## Repository map
 
