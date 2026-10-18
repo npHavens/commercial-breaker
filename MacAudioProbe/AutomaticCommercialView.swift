@@ -4,7 +4,6 @@ struct AutomaticCommercialView: View {
     @ObservedObject var model: AutomaticCommercialModel
     @ObservedObject var recorder: AudioRecorderModel
     @ObservedObject var routing: RoutingModel
-    var otherCaptureActive: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -28,7 +27,7 @@ struct AutomaticCommercialView: View {
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button("Start automatic test") { model.start() }
-                    .disabled(model.busy || recorder.running || routing.busy || otherCaptureActive)
+                    .disabled(model.busy || recorder.running || routing.busy)
                 Button(model.playback == .mac ? "Stop & restore sound" : "Stop & return to TV") { model.stopAndRecover() }
                     .disabled(!model.enabled)
             }
