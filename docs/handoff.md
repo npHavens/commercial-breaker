@@ -71,8 +71,8 @@ with a guarded seek; preserve its autoload and safety checks. See
    Node 24 and `@google/genai`, reads Vertex settings from its own ignored `.env`,
    and no longer uses the Interview Assistant checkout. A fresh clone reached
    worker readiness through the real native launch path; no audio was sent.
-   Before pulling it into the running checkout, run `npm ci` there, or the
-   v0.2.44 build's next Gemini start fails safely. A live detection start on
+   After pulling it into the running checkout, run `npm ci` before the next
+   session; until then the v0.2.44 build's Gemini start fails safely. A live detection start on
    v0.2.45 is not yet verified. Never copy secrets into this public repository.
 3. Separate runtime prompts/helpers from evaluation code BEFORE removing old
    experiments. The worker still imports `evaluate-gemini-audio.mjs`, and UFC
