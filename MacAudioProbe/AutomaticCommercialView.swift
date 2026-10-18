@@ -8,7 +8,7 @@ struct AutomaticCommercialView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Automatic commercial test · v0.2.44").font(.title2.bold())
+            Text("Automatic commercial test · v0.2.45").font(.title2.bold())
             Picker("Sport", selection: $model.sport) {
                 ForEach(GeminiObservation.Sport.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.disabled(model.busy || recorder.running)

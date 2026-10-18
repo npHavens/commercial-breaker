@@ -17,4 +17,6 @@ Experiments/tvOSBrowser/
 Experiments/**/results/
 .env
 .env.*
+!.env.example
+node_modules/
 buildServer.json
