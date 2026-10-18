@@ -27,8 +27,7 @@ can cause false returns. Packaged extension attachment still needs reload testin
 
 ## Development
 
-Open `SkyboxProbe.xcodeproj` and select **SkyboxAudioProbe** (the macOS target).
-The separate SkyboxProbe tvOS target is historical and is not the active app.
+Open `SkyboxProbe.xcodeproj` and select **SkyboxAudioProbe**, the only target.
 Use a full Xcode installation and configure your own signing team.
 
 ```sh
@@ -70,11 +69,10 @@ starting detection reports what is missing; recording continues.
 | `Tests/` | Offline behavior and regression tests |
 | `docs/` | Contributor workflow and cleanup plan |
 | `Experiments/` | Findings and historical evidence; not used at runtime |
-| `SkyboxProbe/` | Legacy tvOS feasibility prototype |
 
 See [contributing](CONTRIBUTING.md) and the [cleanup roadmap](docs/roadmap.md).
-Old setup and feasibility notes are preserved in the
-[prototype archive](docs/archive/prototype-overview.md).
+Old setup and feasibility notes, including the removed tvOS prototype, are
+preserved in the [prototype archive](docs/archive/prototype-overview.md).
 
 ## License
 
