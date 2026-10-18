@@ -66,10 +66,10 @@ starting detection reports what is missing; recording continues.
 | --- | --- |
 | `MacAudioProbe/` | Active Swift app, capture, routing and automatic policy |
 | `SafariExtension/` | Safari controls and DIRECTV AirPlay correction |
-| `Tools/` | Runtime classifier/relay helpers and evaluation tools |
+| `Tools/` | Runtime classifiers, prompts and relay helpers; evaluation tools |
 | `Tests/` | Offline behavior and regression tests |
 | `docs/` | Contributor workflow and cleanup plan |
-| `Experiments/` | Findings, prompts and historical evidence; some prompts still used at runtime |
+| `Experiments/` | Findings and historical evidence; not used at runtime |
 | `SkyboxProbe/` | Legacy tvOS feasibility prototype |
 
 See [contributing](CONTRIBUTING.md) and the [cleanup roadmap](docs/roadmap.md).

@@ -7,11 +7,12 @@ readiness claim.
 1. **Baseline PR:** current detection and AirPlay improvements, startup retry,
    accurate README, contributor workflow and MIT license. Keep live-verification
    gaps explicit. Merge after review; use focused branches for subsequent work.
-2. **Standalone configuration:** remove the Interview Assistant dependency;
+2. **Standalone configuration (done October 18, PR #2):** remove the Interview Assistant dependency;
    declare Node/SDK dependencies, document Vertex authentication and local config,
    and verify a fresh clone can build and start detection without another repo.
 3. **Runtime versus experiments:** move active prompts and runtime helpers out of
-   experiment/evaluation modules, updating imports and tests together. Then
+   experiment/evaluation modules, updating imports and tests together (done
+   October 18; a test now keeps the live worker out of evaluation code). Then
    remove the unused tvOS target, PiP asset/generator and obsolete diagnostics
    from the active project in a dedicated PR. Preserve findings in the archive.
    Audit references before deletion: Experiments and Tools are not all unused.
@@ -24,6 +25,9 @@ readiness claim.
 
 ## Outstanding behavior checks
 
+- Nick started a live v0.2.45 session on October 18 with the standalone setup:
+  the worker was ready in about a second and predictions and a confirmed break
+  arrived normally.
 - Nick confirmed v0.2.44 startup and Mac playback working on October 18.
   Deliberate cancellation, other-app focus during routing, wrong initial route
   and missing-panel failure checks remain separately unverified.
