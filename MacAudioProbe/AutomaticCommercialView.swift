@@ -8,7 +8,7 @@ struct AutomaticCommercialView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Automatic commercial test · v0.2.41").font(.title2.bold())
+            Text("Automatic commercial test · v0.2.44").font(.title2.bold())
             Picker("Sport", selection: $model.sport) {
                 ForEach(GeminiObservation.Sport.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.disabled(model.busy || recorder.running)
@@ -48,7 +48,7 @@ struct AutomaticCommercialView: View {
                 .frame(height: 180)
             Text(model.playback == .mac
                  ? "Runs until stopped. After 3 minutes muted, sound returns and detection continues; another break can mute only after program is confirmed. A terminal detector failure stops automation and releases mute. Closing the app releases mute."
-                 : "Runs until stopped. A break lasting 3 minutes or a terminal detector failure stops automation, releases mute and attempts TV recovery. Brief Mac audio may be heard during handoffs. Closing the app releases mute but cannot finish AirPlay recovery.")
+                 : "Runs until stopped. After 3 minutes muted, Mac sound returns and detection continues; confirmed program returns playback to TV. A terminal detector failure stops automation and attempts TV recovery. Brief Mac audio may be heard during handoffs. Closing the app releases mute but cannot finish AirPlay recovery.")
                 .font(.caption).foregroundStyle(.secondary)
         }.padding(24).frame(width: 700)
     }

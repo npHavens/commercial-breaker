@@ -12,6 +12,7 @@ struct RouteControl: Sendable {
 struct RoutingFailure: LocalizedError {
     let message: String
     var retryableBeforeSelection = false
+    var focusReturnedToSkybox = false
     var errorDescription: String? { message }
 }
 
