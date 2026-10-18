@@ -196,7 +196,7 @@ final class AutomaticCommercialModel: ObservableObject {
     private func listen(source: AudioRecorderModel.Source, muted: Bool, id: UUID) async throws {
         try check(id)
         recorder.source = source
-        recorder.start(initiallyMuted: muted, sessionLimitSeconds: nil)
+        recorder.start(initiallyMuted: muted)
         let until = ProcessInfo.processInfo.systemUptime + 15
         while !recorder.ready {
             try check(id)
