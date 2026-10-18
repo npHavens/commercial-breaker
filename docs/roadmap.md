@@ -24,10 +24,11 @@ readiness claim.
 
 ## Outstanding behavior checks
 
-- v0.2.44: start from Skybox once; verify bounded retry, cancel, other-app focus,
-  wrong initial route and missing extension panel.
-- Mac playback: complete a break/return while using another app; stop restores
-  sound; three-minute release does not remute the same break.
+- Nick confirmed v0.2.44 startup and Mac playback working on October 18.
+  Deliberate cancellation, other-app focus during routing, wrong initial route
+  and missing-panel failure checks remain separately unverified.
+- Mac playback works per Nick; explicit stop/sound-restoration and three-minute
+  release/no-remute edge-case tests were not individually reported.
 - AirPlay: preserve the accepted short rewind; test screen saver/lock behavior.
   Viewing activity refresh is implemented, but screen saver prevention is not
   established. Earlier zero system capture remains an unresolved intermittent
@@ -41,4 +42,5 @@ See `Experiments/detection-oct4/results.md`, `Experiments/airplay-return-oct4.md
 and `Experiments/oct11-automatic-stop.md`. The small detection comparison measured
 request latency, not end-to-end accuracy. October 18 AirPlay logs show repeated
 successful cycles and a recovered picker-unavailable event. Nick reports AirPlay
-working well; Mac-only testing has begun but its latest outcome is not confirmed.
+working well; he subsequently confirmed both the startup fix and Mac playback
+working. This is user-reported success, not exhaustive failure-path validation.
