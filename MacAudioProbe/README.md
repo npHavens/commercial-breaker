@@ -1,3 +1,20 @@
+# Automatic startup focus retry — v0.2.44
+
+October 18 logs show first-start failures after opening the AirPlay picker:
+Safari activation succeeds, then focus returns to Skybox. Later attempts work.
+Startup now retries TV route verification once after a 0.5-second pause, only
+when the focus failure identifies this Skybox process and it remains frontmost.
+It still requires the TV already selected; no destination is selected by startup.
+Cancellation, another foreground app, missing page controls, and an unexpected
+route still stop startup. Break/return handoffs retain their existing focus rules.
+Both attempts retain separate routing logs; a successful retry is noted in the
+second log. This is a bounded recovery, not a confirmed fix for the focus bounce.
+
+Live verification pending: first start from Skybox with TV already playing;
+cancel during startup; switch to another app during startup; verify that an
+incorrect initial route and a missing extension panel still fail safely.
+The build is separate from the running app; restart only when playback permits.
+
 # Long AirPlay breaks unmute without stopping — v0.2.43
 
 Nick identified the October 11 stop as halftime and requested unmuting after

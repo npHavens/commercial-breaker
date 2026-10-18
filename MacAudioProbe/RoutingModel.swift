@@ -98,6 +98,22 @@ final class RoutingModel: ObservableObject {
         }
     }
 
+    /// Startup only verifies an existing route. Retry once if opening the picker
+    /// returns focus to our own window; never retry a destination selection.
+    func verifyTVForAutomation(_ tv: String) async throws {
+        do {
+            try await routeForAutomation(from: tv, to: tv)
+        } catch let failure as RoutingFailure where failure.focusReturnedToSkybox {
+            try await wait(0.5)
+            try Task.checkCancellation()
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier else {
+                throw failure
+            }
+            try await routeForAutomation(from: tv, to: tv)
+            record("Startup route verified after one retry for focus returning to Skybox.")
+        }
+    }
+
     /// The caller owns this task and cancellation. Picker selection is verified;
     /// it does not establish that the destination is actually producing sound.
     func routeForAutomation(from expected: String?, to target: String) async throws {
@@ -280,7 +296,9 @@ final class RoutingModel: ObservableObject {
     private func requireSafariFrontmost(_ pid: pid_t) throws {
         try Task.checkCancellation()
         guard NSWorkspace.shared.frontmostApplication?.processIdentifier == pid else {
-            throw RoutingFailure(message: "Focus moved away from Safari (frontmost: \(frontmostIdentity())). Stopped to avoid acting in another app.")
+            throw RoutingFailure(
+                message: "Focus moved away from Safari (frontmost: \(frontmostIdentity())). Stopped to avoid acting in another app.",
+                focusReturnedToSkybox: NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier)
         }
     }
 
