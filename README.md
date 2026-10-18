@@ -19,9 +19,10 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 ## Current state
 
 Native v0.2.44 and Safari extension source v0.2.21. AirPlay has been working well
-in personal use; Mac playback is undergoing renewed live testing. The latest
+in personal use; Nick also confirmed Mac playback and the startup fix working
+on October 18. The latest
 native build adds one startup retry when Safari focus returns to Skybox. Its
-build passes, but the retry still needs live verification. Sports-themed ads can
+build passes, with a successful user-reported live startup. Sports-themed ads can
 cause false returns. Packaged extension attachment still needs reload testing.
 
 ## Development
