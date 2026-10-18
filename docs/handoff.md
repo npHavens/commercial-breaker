@@ -16,21 +16,20 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Native v0.2.44 built, signed and launched. Running build path:
-  `build/mac-audio-oct18-startup/Build/Products/Debug/SkyboxAudioProbe.app`.
-- Nick reports AirPlay working well. He just confirmed BOTH the startup fix and
-  Mac playback working. This supersedes earlier pending-live-check statements.
-  He did not separately confirm every cancellation/timeout/focus edge case.
+- Native v0.2.45 built, signed and running. Build path:
+  `build/mac-audio-oct18-standalone/Build/Products/Debug/SkyboxAudioProbe.app`.
+  Nick started a live session on October 18: worker ready in about a second,
+  unchanged football prompt hash, predictions and a confirmed break normal.
+- Nick reports AirPlay working well and confirmed the v0.2.44 startup fix and
+  Mac playback. He did not separately confirm every cancellation, timeout or
+  focus edge case.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. Short DIRECTV handoff rewind accepted.
-- Codex automatic reviews enabled, following personal preferences (Smart detect).
-  A manual `@codex review` was posted on PR #1; bot acknowledged with eyes.
-  No submitted review/findings existed when this handoff was prepared. Recheck
-  GitHub before merging or changing reviewed code. PR is being marked ready;
-  it is not merged as part of this handoff.
-- Native signed build and automatic-policy tests passed. Latest offline suites:
-  135 JavaScript tests and 37 Python tests passed. Python HTTP tests needed
-  loopback networking outside the sandbox. No new audio was uploaded for these.
+- Codex automatic reviews run on every PR (Smart detect). PRs #1 and #2 merged
+  after reviews with no findings. Recheck GitHub before merging.
+- Latest offline suites: 142 JavaScript tests passed; 37 Python tests passed
+  earlier (they need loopback networking outside the sandbox). No new audio was
+  uploaded for any of these.
 
 ## Behavior and important code
 
@@ -67,21 +66,21 @@ with a guarded seek; preserve its autoload and safety checks. See
 ## Next work
 
 1. Done: PR #1 merged after Codex review.
-2. In review on `chore/standalone-configuration` (native v0.2.45): Skybox declares
-   Node 24 and `@google/genai`, reads Vertex settings from its own ignored `.env`,
-   and no longer uses the Interview Assistant checkout. A fresh clone reached
-   worker readiness through the real native launch path; no audio was sent.
-   After pulling it into the running checkout, run `npm ci` before the next
-   session; until then the v0.2.44 build's Gemini start fails safely. A live detection start on
-   v0.2.45 is not yet verified. Never copy secrets into this public repository.
-3. Separate runtime prompts/helpers from evaluation code BEFORE removing old
-   experiments. The worker still imports `evaluate-gemini-audio.mjs`, and UFC
-   still reads `Experiments/audio-model-eval/prompt-common.txt`.
-4. Remove obsolete tvOS/PiP target and unused probe UI in a separate audited PR;
-   preserve useful regression tests/findings. Then migrate extension logic to
-   TypeScript and popup to React with behavior parity.
+2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Skybox reads
+   Vertex settings from its own ignored `.env`; never copy secrets into this
+   public repository.
+3. Done on `chore/separate-runtime-code`: runtime prompts and helpers moved out
+   of evaluation code and `Experiments/` into `Tools/`, with prompt hashes
+   unchanged and a boundary test.
+4. Next, per the technical cleanup plan in Nick's Notion project notes: remove
+   unused native features (tvOS/PiP, Audio/Video/Recorder tabs, markers, clip
+   store, cue detector; keep the AirPlay tab's TV setting), then trim the
+   Safari extension (keep DIRECTV recovery, the AirPlay button and the
+   Paramount+ relay), then move experiment findings into `docs/archive`.
+   Release work (branded UI, guided setup, packaged extension) is deferred;
+   brand and UI design is happening separately in Figma.
 
-See roadmap for acceptance checks. Do not combine all of this into one rewrite.
+Do not combine all of this into one rewrite.
 
 ## Remaining issues / limits
 

@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { makeContents, parseResult, tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
+import { tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
+import { makeContents } from '../../Tools/gemini-request.mjs';
+import { parseResult } from '../../Tools/standard-classifier.mjs';
 const valid = { state_at_end:'unclear', tv_audibility:'faint', room_speech_overlap:'uncertain', transition_heard:false, evidence:'TV is obscured', confidence:0.2 };
 test('unknown response is allowed; malformed or overconfident output rejected', () => {
  assert.deepEqual(parseResult(JSON.stringify(valid)), valid);
