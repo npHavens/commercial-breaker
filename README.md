@@ -18,11 +18,11 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.45 and Safari extension source v0.2.21. AirPlay has been working well
+Native v0.2.46 and Safari extension source v0.2.21. AirPlay has been working well
 in personal use; Nick also confirmed Mac playback and the v0.2.44 startup fix
-working on October 18. v0.2.45 changes only Gemini setup: Skybox now declares
-its own Node dependencies and configuration (see below) and needs no other
-checkout. Its live detection start is not yet user-verified. Sports-themed ads
+working on October 18, and a live v0.2.45 start with the standalone setup
+(see below). v0.2.46 removes unused features: the app now has Automatic and
+AirPlay tabs only. Its break/return cycles are not yet user-verified. Sports-themed ads
 can cause false returns. Packaged extension attachment still needs reload testing.
 
 ## Development
@@ -36,6 +36,7 @@ xcodebuild -project SkyboxProbe.xcodeproj -scheme SkyboxAudioProbe \
   -derivedDataPath build/mac-audio CODE_SIGNING_ALLOWED=NO build
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
 python3 -m unittest discover -s Tests -p 'test_*.py'
+Tests/run-native-tests.sh
 ```
 
 The build command checks compilation without signing; running with macOS

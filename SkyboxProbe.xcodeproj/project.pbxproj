@@ -109,7 +109,7 @@
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
                 INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.45;
+                MARKETING_VERSION = 0.2.46;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
                 PRODUCT_NAME = "$(TARGET_NAME)";
@@ -132,7 +132,7 @@
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
                 INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.45;
+                MARKETING_VERSION = 0.2.46;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
                 PRODUCT_NAME = "$(TARGET_NAME)";
