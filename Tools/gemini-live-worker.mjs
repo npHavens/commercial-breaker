@@ -5,7 +5,8 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { makeContents, parseResult, responseSchema } from './evaluate-gemini-audio.mjs';
+import { makeContents } from './gemini-request.mjs';
+import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { createVertexClient, setupFailure } from './vertex-client.mjs';
 
 export const MODEL = 'gemini-2.5-flash';
@@ -128,7 +129,7 @@ async function main() {
   const returnDetection = process.env.SKYBOX_RETURN_DETECTION === '1';
   const crowdDetection = sport === 'football';
   const prompt = crowdDetection ? minimalPrompt(sport, { crowdCues: true })
-    : returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('../Experiments/audio-model-eval/prompt-common.txt', import.meta.url), 'utf8'), sport);
+    : returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('./prompt-common.txt', import.meta.url), 'utf8'), sport);
   const emit = record => process.stdout.write(JSON.stringify(record) + '\n');
   const worker = createWorker({ generateContent: args => ai.models.generateContent(args), prompt, emit, returnDetection, crowdDetection });
   process.stdin.on('data', createLineReader(line => { void worker.accept(line); }, () => emit({ id: null, error: 'invalid-request' })));
