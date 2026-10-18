@@ -3,11 +3,10 @@ import { sportPrompt } from './sport-prompt.mjs';
 import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-classifier.mjs';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
-import { resolve, join } from 'node:path';
-import { homedir } from 'node:os';
+import { resolve } from 'node:path';
 import { makeContents, parseResult, responseSchema } from './evaluate-gemini-audio.mjs';
+import { createVertexClient, setupFailure } from './vertex-client.mjs';
 
 export const MODEL = 'gemini-2.5-flash';
 export const MAX_LINE_BYTES = 540_000;
@@ -124,14 +123,7 @@ export function createLineReader(onLine, onInvalid) {
 }
 
 async function main() {
-  const app = resolve(process.env.SKYBOX_INTERVIEW_APP ?? join(homedir(), 'Projects/interview-assistant/app'));
-  const require = createRequire(join(app, 'package.json'));
-  const { GoogleGenAI } = require('@google/genai');
-  const { getGenAIConfig } = await import(pathToFileURL(join(app, 'backend/src/providers/gemini/config.ts')).href);
-  const config = getGenAIConfig();
-  // The native consent text names Vertex; never silently switch destinations.
-  if (config.vertexai !== true) throw new Error('Vertex configuration required');
-  const ai = new GoogleGenAI({ ...config, httpOptions: { retryOptions: { attempts: 1 } } });
+  const ai = await createVertexClient();
   const sport = process.env.SKYBOX_SPORT || 'football';
   const returnDetection = process.env.SKYBOX_RETURN_DETECTION === '1';
   const crowdDetection = sport === 'football';
@@ -152,5 +144,10 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  main().catch(() => { process.stdout.write(JSON.stringify({ ready: false, error: 'setup-failed' }) + '\n'); process.exitCode = 1; });
+  main().catch(error => {
+    process.stdout.write(JSON.stringify({ ready: false, error: setupFailure(error) }) + '\n');
+    process.exitCode = 1;
+    // Exiting now would race the app's termination handler and lose the reason.
+    process.stdin.resume();
+  });
 }

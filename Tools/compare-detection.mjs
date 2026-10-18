@@ -1,5 +1,4 @@
 import { readFile, writeFile, mkdir, mkdtemp, rm, realpath, stat } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { join, resolve, sep } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
@@ -8,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { makeContents, parseResult, responseSchema, tailOffsetFrames } from './evaluate-gemini-audio.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
 import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-classifier.mjs';
+import { createVertexClient } from './vertex-client.mjs';
 
 const root = new URL('../', import.meta.url);
 const model = 'gemini-2.5-flash';
@@ -79,13 +79,7 @@ async function main() {
       if (bytes.length > 300_000 || bytes.length < 256_044) throw new Error('Unexpected converted size');
       audio.push(bytes);
     }
-    const app = resolve(process.env.SKYBOX_INTERVIEW_APP ?? join(homedir(), 'Projects/interview-assistant/app'));
-    const require = createRequire(join(app, 'package.json'));
-    const { GoogleGenAI } = require('@google/genai');
-    const { getGenAIConfig } = await import(pathToFileURL(join(app, 'backend/src/providers/gemini/config.ts')).href);
-    const config = getGenAIConfig();
-    if (config.vertexai !== true) throw new Error('Vertex required');
-    const ai = new GoogleGenAI({ ...config, httpOptions: { retryOptions: { attempts: 1 } } });
+    const ai = await createVertexClient();
     const run = new URL(`Experiments/detection-oct4/results/${new Date().toISOString().replaceAll(':', '-')}/`, root);
     await mkdir(run, { recursive: true });
     const records = [];

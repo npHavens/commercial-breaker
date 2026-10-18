@@ -4,10 +4,9 @@
 
 Repo: https://github.com/npHavens/skybox (public, MIT, No Hands Stack LLC).
 Local checkout: `/Users/nickhavens/Projects/skybox`.
-Branch: `experiment/crowd-detection`; baseline PR: https://github.com/npHavens/skybox/pull/1.
-Main still contains the older baseline until PR #1 is merged. Do not start from
-main assuming the current behavior is there. Read README, CONTRIBUTING and
-`docs/roadmap.md`. Project notes: https://app.notion.com/p/3e04004d3caa810b915fc3f95af2235b.
+Baseline PR #1 merged into main on October 18 (20e5b4e); Codex reviewed the
+final commit with no findings. Start focused branches from updated main. Read
+README, CONTRIBUTING and `docs/roadmap.md`. Project notes: https://app.notion.com/p/3e04004d3caa810b915fc3f95af2235b.
 
 Nick wants a fun open-source community project with sound engineering, branches,
 reviews and understandable structure. Early development, not production. Learning
@@ -67,14 +66,14 @@ with a guarded seek; preserve its autoload and safety checks. See
 
 ## Next work
 
-1. Review PR #1 and Codex feedback, then merge after review. Start subsequent
-   focused branches from updated main; do not silently merge an unreviewed PR.
-2. Remove the sibling Interview Assistant dependency. Native
-   `GeminiObservation.makeWorker` expects Node 24 under nvm and loads its tsx,
-   `.env` and SDK/config from `~/Projects/interview-assistant/app`. The JS worker
-   imports that project's Vertex resolver. Declare Skybox's own dependencies and
-   configuration; verify a fresh clone can run detection without the other repo.
-   Never copy secrets into this public repository.
+1. Done: PR #1 merged after Codex review.
+2. In review on `chore/standalone-configuration` (native v0.2.45): Skybox declares
+   Node 24 and `@google/genai`, reads Vertex settings from its own ignored `.env`,
+   and no longer uses the Interview Assistant checkout. A fresh clone reached
+   worker readiness through the real native launch path; no audio was sent.
+   After pulling it into the running checkout, run `npm ci` before the next
+   session; until then the v0.2.44 build's Gemini start fails safely. A live detection start on
+   v0.2.45 is not yet verified. Never copy secrets into this public repository.
 3. Separate runtime prompts/helpers from evaluation code BEFORE removing old
    experiments. The worker still imports `evaluate-gemini-audio.mjs`, and UFC
    still reads `Experiments/audio-model-eval/prompt-common.txt`.

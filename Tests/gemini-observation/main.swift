@@ -84,6 +84,17 @@ import Foundation
         try await Task.sleep(for: .milliseconds(1800))
         assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failure should restore observation")
         observer.stop()
-        print("Gemini lifecycle and fresh-audio unclassified failure recovery passed · fake worker only, no upload")
+        for (error, hint) in [("configuration-missing", "GOOGLE_CLOUD_PROJECT"), ("dependencies-missing", "npm ci"), ("/private/path", "README")] {
+            try """
+            import json, sys
+            print(json.dumps({'ready':False,'error':'\(error)'}), flush=True)
+            sys.stdin.read()
+            """.write(to: script, atomically: true, encoding: .utf8)
+            observer.start(directory: directory)
+            try await Task.sleep(for: .milliseconds(500))
+            assert(!observer.enabled && observer.status.contains(hint), "Setup failure should name its fix")
+            assert(!observer.status.contains("/private"), "Unrecognized setup errors must not be displayed")
+        }
+        print("Gemini lifecycle, fresh-audio failure recovery and setup failures passed · fake worker only, no upload")
     }
 }

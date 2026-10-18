@@ -1,3 +1,28 @@
+# Standalone Gemini setup — v0.2.45
+
+Gemini no longer depends on the Interview Assistant checkout; this supersedes
+the v0.2.13 bridge described below. Skybox declares `@google/genai` in
+`package.json`, pins Node 24 in `.nvmrc`, and resolves Vertex settings itself
+from `GOOGLE_CLOUD_PROJECT` and optional `GOOGLE_CLOUD_LOCATION` (default
+`global`). The app starts `node --env-file-if-exists=<checkout>/.env
+Tools/gemini-live-worker.mjs`; no TypeScript loader is involved. Vertex remains
+the only destination, matching the consent text, and credentials come from
+Application Default Credentials. See Gemini setup in the top-level README.
+
+Setup failures stop Gemini with a specific message — missing `.env` project,
+missing `npm ci`, or Node 24 not found — while recording continues. The worker
+reports only fixed categories and waits for the app to read the reason.
+
+To migrate an existing checkout, run `npm ci`, copy the `GOOGLE_CLOUD_PROJECT`
+and `GOOGLE_CLOUD_LOCATION` values into `.env`, then rebuild. An older build
+running from an updated checkout keeps working only after `npm ci`, because
+the worker now loads the SDK from this checkout. Evaluation tools use the same
+settings: `node --env-file=.env Tools/compare-detection.mjs --live`.
+
+Offline checks cover configuration, setup failure reporting and worker
+readiness without credentials. A live detection start with this build is not
+yet verified.
+
 # Automatic startup focus retry — v0.2.44
 
 October 18 logs show first-start failures after opening the AirPlay picker:

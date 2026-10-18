@@ -1,0 +1,15 @@
+{
+  "name": "skybox",
+  "private": true,
+  "description": "Automatic commercial detection and AirPlay handoff for live sports",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "test": "node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs"
+  },
+  "dependencies": {
+    "@google/genai": "1.52.0"
+  }
+}
