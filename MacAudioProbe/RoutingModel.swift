@@ -17,11 +17,9 @@ final class RoutingModel: ObservableObject {
     @Published var logError: String?
     private let accessibility = SafariAccessibility()
     private var task: Task<Void, Never>?
-    private let audio: ProbeModel
-    private var ownsAudio = false
     private var logURL: URL?
-
-    init(audio: ProbeModel) { self.audio = audio }
+    private static let logDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("SkyboxAudioProbe", isDirectory: true)
 
     func requestPermission() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
@@ -56,45 +54,6 @@ final class RoutingModel: ObservableObject {
             }
             try await self.accessibility.choose(named: name, pid: pid)
             self.record("TV selection requested. Confirm picture and sound on the TV.")
-        }
-    }
-
-    func roundTrip() {
-        let local = localName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let tv = tvName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !local.isEmpty, !tv.isEmpty, local != tv else {
-            status = "Enter different, exact Mac and TV picker labels."; return
-        }
-        guard !audio.running else { status = "Stop the Audio-tab capture before this test; routing manages its own capture session."; return }
-        run {
-            let pid = try await self.prepareSafari()
-            let initial = try await self.availablePickerControls(pid: pid, requiredNames: [local, tv])
-            guard initial.filter({ $0.name == tv && $0.selected == true }).count == 1 else {
-                throw RoutingFailure(message: "Cannot confirm the TV is selected in the picker. Inspect its controls before running an automatic round trip.")
-            }
-            try await self.accessibility.choose(named: local, pid: pid)
-            self.record("Mac selection requested BEFORE creating the audio tap. Allowing one second of audible local playback.")
-            try await self.wait(1)
-            let after = try await self.availablePickerControls(pid: pid, requiredNames: [local])
-            guard after.filter({ $0.name == local && $0.selected == true }).count == 1 else {
-                throw RoutingFailure(message: "Mac selection was not confirmed. Use Select TV to recover.")
-            }
-            self.audio.source = "System tap started after local handoff"
-            self.audio.start(initialMuteSeconds: 45)
-            guard self.audio.running else { throw RoutingFailure(message: self.audio.status) }
-            self.ownsAudio = true
-            guard self.audio.muted else { throw RoutingFailure(message: "Tap did not enter its requested mute state.") }
-            self.record("Mac selection confirmed. Tap created with mute enabled; measuring for ten seconds.")
-            try await self.wait(10)
-            try self.requireSafariFrontmost(pid)
-            self.record("Muted capture: \(self.audio.nonzeroIntervals) nonzero intervals.")
-            self.audio.stop(reason: "Local capture completed before TV handoff")
-            self.ownsAudio = false
-            self.record("Audio tap removed before requesting TV. Local sound may briefly resume.")
-            _ = try await self.availablePickerControls(pid: pid, requiredNames: [tv])
-            try await self.accessibility.choose(named: tv, pid: pid)
-            self.record("TV selection requested. Confirm the TV resumes; clicks alone do not prove playback transferred.")
-            try await self.wait(1)
         }
     }
 
@@ -212,7 +171,6 @@ final class RoutingModel: ObservableObject {
 
     func cancel() {
         task?.cancel()
-        if ownsAudio { audio.stop(reason: "Routing canceled"); ownsAudio = false }
         record("Canceled. No further routing actions will be requested. Use Select TV if playback remains local.")
     }
 
@@ -222,7 +180,6 @@ final class RoutingModel: ObservableObject {
         beginLog()
         task = Task {
             defer {
-                if ownsAudio { audio.stop(reason: "Routing test ended"); ownsAudio = false }
                 busy = false
                 task = nil
             }
@@ -241,9 +198,8 @@ final class RoutingModel: ObservableObject {
         logError = nil
         logURL = nil
         do {
-            let folder = audio.logDirectory
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            logURL = folder.appendingPathComponent("routing-\(UUID().uuidString).log")
+            try FileManager.default.createDirectory(at: Self.logDirectory, withIntermediateDirectories: true)
+            logURL = Self.logDirectory.appendingPathComponent("routing-\(UUID().uuidString).log")
         } catch { logError = error.localizedDescription }
     }
 
