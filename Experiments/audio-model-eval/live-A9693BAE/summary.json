@@ -1,0 +1,40 @@
+{
+  "session": "A9693BAE-18D2-4D85-8FD4-6BEC07190ADE",
+  "requests": 86,
+  "predictions": 85,
+  "states": {
+    "unclear": 13,
+    "football": 50,
+    "promo": 3,
+    "commercial": 19
+  },
+  "medianResponseMs": 1466,
+  "failures": [
+    {
+      "event": "request-failed",
+      "uptime": 573669.751592375,
+      "error": "timeout",
+      "id": "daefe8db63d0",
+      "date": "2026-09-27T19:11:01Z"
+    }
+  ],
+  "markers": [
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Commercial started; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790536523.271185,
+      "uptime": 573931.8530152917
+    },
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Football returned; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790536662.3519092,
+      "uptime": 574070.9337393751
+    }
+  ],
+  "droppedBlocksTotal": 0
+}

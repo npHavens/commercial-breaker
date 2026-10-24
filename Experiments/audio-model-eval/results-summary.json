@@ -1,0 +1,301 @@
+{
+  "model": "gemini-2.5-pro",
+  "provider": "Vertex AI via interview assistant integration",
+  "clips": 7,
+  "markerAgreements": 7,
+  "labelsAreProvisional": true,
+  "latencySeconds": {
+    "min": 7.677039625,
+    "median": 8.294745042,
+    "mean": 8.497433874857142,
+    "max": 9.888988958
+  },
+  "usage": {
+    "promptTokenCount": 8146,
+    "candidatesTokenCount": 558,
+    "thoughtsTokenCount": 4516,
+    "totalTokenCount": 13220
+  },
+  "results": [
+    {
+      "sample_id": "093936067ef3",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 9120.509415999999,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "faint",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "Following a transition out of game play with music and a commentator's outro, a commercial begins, featuring a spokesperson discussing an insurance company.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1164,
+        "candidatesTokenCount": 92,
+        "totalTokenCount": 2027,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 414
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 92
+          }
+        ],
+        "thoughtsTokenCount": 771
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:48:21.339Z"
+    },
+    {
+      "sample_id": "1a795116a74c",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 8060.7649169999995,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "football",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "Clear TV commentary is heard giving the game score and quarter during the final five seconds.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1165,
+        "candidatesTokenCount": 57,
+        "totalTokenCount": 1850,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 415
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 57
+          }
+        ],
+        "thoughtsTokenCount": 628
+      },
+      "provisional_tail_label": "football",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:48:41.307Z"
+    },
+    {
+      "sample_id": "3938c2bb8030",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 8076.7145,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "The audio ends during a commercial with a narrator saying, \"Get NFL Sunday Ticket.\"",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1164,
+        "candidatesTokenCount": 73,
+        "totalTokenCount": 1871,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 414
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 73
+          }
+        ],
+        "thoughtsTokenCount": 634
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:48:49.520Z"
+    },
+    {
+      "sample_id": "4c27dd08cd01",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 8294.745042,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "The audio transitions from football commentary to a high-energy, scripted ad featuring dialogue that explicitly mentions the brand 'Verizon'.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1163,
+        "candidatesTokenCount": 80,
+        "totalTokenCount": 1873,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 413
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 80
+          }
+        ],
+        "thoughtsTokenCount": 630
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:48:57.956Z"
+    },
+    {
+      "sample_id": "527493504fd7",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 7677.039625,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "Following a transition from football, a female narrator begins discussing medical conditions, which is characteristic of a pharmaceutical commercial.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1164,
+        "candidatesTokenCount": 83,
+        "totalTokenCount": 1832,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 414
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 83
+          }
+        ],
+        "thoughtsTokenCount": 585
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:49:05.776Z"
+    },
+    {
+      "sample_id": "5d3357b47b9d",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 9888.988958,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "An announcer leads into a break by saying \"in 30 seconds after this,\" followed by the start of a commercial with a musical jingle.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1165,
+        "candidatesTokenCount": 93,
+        "totalTokenCount": 1893,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 415
+          },
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 93
+          }
+        ],
+        "thoughtsTokenCount": 635
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:49:15.784Z"
+    },
+    {
+      "sample_id": "ed7dc1dfb44f",
+      "model": "gemini-2.5-pro",
+      "elapsedMs": 8363.274666,
+      "finishReason": "STOP",
+      "result": {
+        "state_at_end": "commercial",
+        "tv_audibility": "clear",
+        "room_speech_overlap": "absent",
+        "transition_heard": true,
+        "evidence": "The audio transitions from a halftime report to a commercial for Verizon and the iPhone, which continues through the end of the clip.",
+        "confidence": 1
+      },
+      "usage": {
+        "promptTokenCount": 1161,
+        "candidatesTokenCount": 80,
+        "totalTokenCount": 1874,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "AUDIO",
+            "tokenCount": 750
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 411
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 80
+          }
+        ],
+        "thoughtsTokenCount": 633
+      },
+      "provisional_tail_label": "commercial",
+      "label_status": "unreviewed; click-based expectation only",
+      "receivedAt": "2026-09-27T18:49:24.265Z"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "session": "7E543240-5E6D-444B-91D2-49C9DADCDC0B",
+  "predictions": 84,
+  "failures": 0,
+  "medianLatencyMs": 1547.5,
+  "maxLatencyMs": 3065,
+  "states": {
+    "football": 68,
+    "commercial": 8,
+    "unclear": 8
+  },
+  "transitions": [
+    {
+      "marker": "Marked Commercial started; collecting ten seconds after marker",
+      "markerUptime": 575286.1563915,
+      "interpretation": "commercial started",
+      "confirmationDelaySeconds": 9.591606333386153
+    },
+    {
+      "marker": "Marked Football returned; collecting ten seconds after marker",
+      "markerUptime": 575315.7960529584,
+      "interpretation": "switched to another game already playing",
+      "confirmationDelaySeconds": 12.51320579170715
+    },
+    {
+      "marker": "Marked Commercial started; collecting ten seconds after marker",
+      "markerUptime": 575641.1782229167,
+      "interpretation": "commercial started",
+      "confirmationDelaySeconds": 9.453301250003278
+    }
+  ],
+  "confirmedStateChanges": [
+    {
+      "uptime": 575202.4731445,
+      "event": "confirmation",
+      "candidate": "Football",
+      "id": "47cc06cbe361",
+      "changed": true,
+      "count": 2,
+      "confirmed": "Football",
+      "endUptime": 575200.6440297499,
+      "date": "2026-09-27T19:36:33Z"
+    },
+    {
+      "endUptime": 575293.6440297499,
+      "confirmed": "Break (commercial / promo)",
+      "id": "32aba469e034",
+      "event": "confirmation",
+      "date": "2026-09-27T19:38:07Z",
+      "candidate": "Break (commercial / promo)",
+      "count": 2,
+      "uptime": 575295.7479978334,
+      "changed": true
+    },
+    {
+      "endUptime": 575326.6440297499,
+      "confirmed": "Football",
+      "id": "0a90c565c8cc",
+      "event": "confirmation",
+      "date": "2026-09-27T19:38:39Z",
+      "candidate": "Football",
+      "count": 2,
+      "uptime": 575328.30925875,
+      "changed": true
+    },
+    {
+      "id": "90e29929e6bf",
+      "candidate": "Break (commercial / promo)",
+      "confirmed": "Break (commercial / promo)",
+      "changed": true,
+      "uptime": 575650.6315241667,
+      "date": "2026-09-27T19:44:02Z",
+      "count": 2,
+      "endUptime": 575648.6440297499,
+      "event": "confirmation"
+    }
+  ],
+  "droppedBlocksTotal": 0,
+  "annotationSource": "Nick clarified in chat: switched games but marked Football returned. Original logs unchanged."
+}

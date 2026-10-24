@@ -1,0 +1,54 @@
+{
+  "session": "0F8940FF-38E0-4463-9A64-F743438A968D",
+  "predictions": 62,
+  "states": {
+    "football": 31,
+    "unclear": 10,
+    "commercial": 18,
+    "promo": 3
+  },
+  "medianLatencyMs": 1547.5,
+  "maxLatencyMs": 11706,
+  "requestFailures": 0,
+  "twoConsecutiveTransitions": [
+    {
+      "state": "football",
+      "date": "2026-09-27T19:21:46Z",
+      "uptime": 574315.1192192084,
+      "fromCommercialMarkerSeconds": -168.0799412917113,
+      "fromReturnMarkerSeconds": -329.9240857916884
+    },
+    {
+      "state": "break",
+      "date": "2026-09-27T19:24:42Z",
+      "uptime": 574491.354452125,
+      "fromCommercialMarkerSeconds": 8.155291624949314,
+      "fromReturnMarkerSeconds": -153.6888528750278
+    },
+    {
+      "state": "football",
+      "date": "2026-09-27T19:27:10Z",
+      "uptime": 574639.0398375833,
+      "fromCommercialMarkerSeconds": 155.8406770832371,
+      "fromReturnMarkerSeconds": -6.003467416740023
+    }
+  ],
+  "markers": [
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Commercial started; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790537074.619698,
+      "uptime": 574483.1991605001
+    },
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Football returned; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790537236.4638424,
+      "uptime": 574645.043305
+    }
+  ]
+}

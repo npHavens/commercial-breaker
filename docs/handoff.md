@@ -100,9 +100,10 @@ Automatic logs are `automatic-*.jsonl`; routing logs `routing-*.log`; capture
 sessions are under `recordings/`. Inspect narrow metadata; avoid exposing audio,
 room voices, tokens or session URLs. Offline tests do not authorize new uploads.
 
-There are intentional untracked `.vscode/`, audio-cue/evaluation results and live
-artifacts under Experiments. They are not part of the public history. Do not
-`git add .`, `git clean`, or delete them blindly. Build output and stream URL files
+The written evaluation findings under `Experiments/audio-model-eval/` and the
+`Experiments/audio-cues/` READMEs are tracked. `.vscode/`, the raw audio-cue JSON
+and the DIRECTV recovery trace stay untracked on purpose. Do not `git add .`,
+`git clean`, or delete them blindly. Build output and stream URL files
 are ignored. Original main baseline is 2b07370; startup fix 4344491; community docs
 ed3600d. This handoff is a subsequent documentation-only commit.
 

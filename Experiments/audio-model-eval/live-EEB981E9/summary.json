@@ -1,0 +1,63 @@
+{
+  "session": "EEB981E9-77AE-4AC4-B0DD-335CDBB7FB86",
+  "predictions": 66,
+  "requestFailures": 0,
+  "fastFollowups": 10,
+  "medianDispatchAfterResultSeconds": 0.03624495828989893,
+  "medianFollowupResultSeconds": 1.6917100000428036,
+  "breakConfirmationDelayFromMarkerSeconds": 27.107807583292015,
+  "footballConfirmationDelayFromMarkerSeconds": -1.6695925417589024,
+  "confirmedChanges": [
+    {
+      "id": "aeaf8e0ed0e3",
+      "event": "confirmation",
+      "uptime": 576090.1138521667,
+      "date": "2026-09-27T19:51:21Z",
+      "confirmed": "Football",
+      "candidate": "Football",
+      "count": 2,
+      "changed": true,
+      "endUptime": 576088.6698225833
+    },
+    {
+      "id": "fe9b7331c6c1",
+      "event": "confirmation",
+      "uptime": 576319.7558792917,
+      "date": "2026-09-27T19:55:11Z",
+      "confirmed": "Break (commercial / promo)",
+      "candidate": "Break (commercial / promo)",
+      "count": 2,
+      "changed": true,
+      "endUptime": 576317.1698225833
+    },
+    {
+      "id": "262126cad92c",
+      "event": "confirmation",
+      "uptime": 576359.425012875,
+      "date": "2026-09-27T19:55:50Z",
+      "confirmed": "Football",
+      "candidate": "Football",
+      "count": 2,
+      "changed": true,
+      "endUptime": 576357.6698225833
+    }
+  ],
+  "markers": [
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Commercial started; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790538884.0796092,
+      "uptime": 576292.6480717084
+    },
+    {
+      "droppedBlocksTotal": 0,
+      "message": "Marked Football returned; collecting ten seconds after marker",
+      "sampleRate": 48000,
+      "source": "Microphone \u00b7 TV / AirPlay",
+      "unixSeconds": 1790538952.5261428,
+      "uptime": 576361.0946054168
+    }
+  ]
+}
