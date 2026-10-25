@@ -553,7 +553,10 @@ shared configuration is not Vertex, matching the destination named in the UI.
    closing the app, or the 15-minute recorder limit stops both. An audio request
    already sent cannot be recalled. Muting and routing remain manual throughout.
 
-The worker uses `gemini-2.5-flash` with thinking disabled. This is an experimental
+The worker uses `gemini-3.8-flash` at its lowest thinking level, `LOW`; Gemini 3
+models no longer support the `thinkingBudget: 0` that disabled thinking on 2.5
+Flash, which new Vertex projects cannot use. The football prompt was tuned on 2.5
+Flash, so its accuracy on 3.8 Flash is unproven. This is an experimental
 latency baseline, not a validated detector or permanent model choice. One request
 is allowed at a time, without retries or queued audio. Non-timeout failures disable Gemini
 while recording continues; timeout recovery follows v0.2.14 above. Capture gaps, nonfinite input, format changes and game

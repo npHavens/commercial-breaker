@@ -12,7 +12,7 @@ import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-clas
 import { createVertexClient } from './vertex-client.mjs';
 
 const root = new URL('../', import.meta.url);
-const model = 'gemini-2.5-flash';
+const model = 'gemini-3.8-flash';
 let phase = 'setup';
 
 export function summarize(records) {
@@ -86,7 +86,7 @@ async function main() {
     await mkdir(run, { recursive: true });
     const records = [];
     await writeFile(new URL('run.json', run), JSON.stringify({ model, provider: 'vertex', tailSeconds: 8,
-      thinkingBudget: 0, maxOutputTokens: 4096, timeoutMs: 20000, attempts: 1,
+      thinkingLevel: 'LOW', maxOutputTokens: 4096, timeoutMs: 20000, attempts: 1,
       note: 'Rotating variant order; provisional markers, not reviewed ground truth. Silence is synthetic.',
       variants: Object.fromEntries(Object.entries(variants).map(([name, value]) => [name, {
         prompt: value.prompt, schema: value.schema, promptSHA256: createHash('sha256').update(value.prompt).digest('hex'),
@@ -101,7 +101,7 @@ async function main() {
         phase = 'request';
         const response = await ai.models.generateContent({ model, contents: makeContents(sample.sample_id, settings.prompt, audio[index]), config: {
           responseMimeType: 'application/json', responseSchema: settings.schema, maxOutputTokens: 4096,
-          thinkingConfig: { thinkingBudget: 0 }, abortSignal: AbortSignal.timeout(20000),
+          thinkingConfig: { thinkingLevel: 'LOW' }, abortSignal: AbortSignal.timeout(20000),
         } });
         const elapsedMs = performance.now() - started;
         phase = 'validation';
