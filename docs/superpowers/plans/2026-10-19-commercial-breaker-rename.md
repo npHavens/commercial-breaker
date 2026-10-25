@@ -131,12 +131,12 @@ The repo rename (`npHavens/skybox` → `npHavens/commercial-breaker`) is an outw
 
 - [ ] **Step 1: Write the failing test**
 
-In `Tests/gemini-audio/vertex-client.test.mjs`, add a test that sets `COMMERCIAL_BREAKER_SPORT=ufc` and `COMMERCIAL_BREAKER_RETURN_DETECTION=1` in `process.env`, invokes the worker's config resolution, and asserts the resolved sport is `ufc` and return detection is `true`. Add a second test that sets the old `SKYBOX_SPORT=ufc`, and another that sets `SKYBOX_RETURN_DETECTION=1`, and asserts each fails as a setup failure naming the new variable. In `Tests/gemini-observation/main.swift`, assert the worker environment the app builds carries the new keys and neither old key.
+In `Tests/gemini-audio/vertex-client.test.mjs`, add a test that sets `COMMERCIAL_BREAKER_SPORT=ufc` and `COMMERCIAL_BREAKER_RETURN_DETECTION=1` in `process.env`, invokes the worker's config resolution, and asserts the resolved sport is `ufc` and return detection is `true`. Add a second test that sets the old `SKYBOX_SPORT=ufc`, and another that sets `SKYBOX_RETURN_DETECTION=1`, and asserts each fails as a setup failure naming the new variable. The worker reads `process.env.SKYBOX_*` inline in `main()` with no exported config function, so extract one: an exported pure function that takes `env` and returns `{ sport, returnDetection }` or throws the setup failure, and test that function. In `Tests/gemini-observation/main.swift`, assert the worker environment the app builds carries the new keys and neither old key.
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `node --test Tests/gemini-audio/vertex-client.test.mjs`
-Expected: FAIL — the first test resolves `football` because the new names are not read yet, and the legacy-name tests do not fail because nothing checks for them.
+Run: `node --test Tests/gemini-audio/vertex-client.test.mjs && Tests/run-native-tests.sh gemini-observation`
+Expected: FAIL — all three new tests fail: the new names aren't read yet and nothing rejects the legacy names.
 
 - [ ] **Step 3: Rename both reads**
 
@@ -144,7 +144,7 @@ Expected: FAIL — the first test resolves `football` because the new names are 
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `node --test Tests/gemini-audio/vertex-client.test.mjs`
+Run: `node --test Tests/gemini-audio/vertex-client.test.mjs && Tests/run-native-tests.sh gemini-observation`
 Expected: PASS
 
 - [ ] **Step 5: Document the new names**
@@ -160,7 +160,7 @@ Leave the `Application Support/SkyboxAudioProbe/recordings` paths in those same 
 - [ ] **Step 7: Run the full offline suite and commit**
 
 ```bash
-npm test && python3 -m unittest discover -s Tests -p 'test_*.py'
+Tests/run-native-tests.sh gemini-observation && npm test && python3 -m unittest discover -s Tests -p 'test_*.py'
 git add Tools MacAudioProbe/GeminiObservation.swift Tests/gemini-audio/vertex-client.test.mjs Tests/gemini-observation .env.example
 git commit -m "Rename worker env vars and tool strings to Commercial Breaker"
 ```
@@ -174,7 +174,7 @@ The highest-risk task. These `globalThis.skybox*` properties are the contract be
 **Files:**
 - Modify: every `SafariExtension/*` file Step 1 finds, including `airplay-session.js`, `relay-controls.js`, `player-events.js`, `player.js`, `diagnostics.js`, `direct-audio.js`, `directv-airplay-recovery.js`, `directv-autoload.js`, `paramount-capture.js`, `airplay-source-trace.js`, `relay-target.js`, `background.js`, `popup.js`, `popup.html`, `manifest.json`, `SafariExtension/README.md`, `Tools/commercial-controller.js`, `Tools/hls_player.html`
 - Also modify, although phase 3 will delete them: `audio-probe.js`, `audio-result.js`, `export.js`, `frame-probe.js`, `save-recording.js`, `save-recording.html`, `screen-test.js`, `screen-test.html`, `select-video.js`. Phase 3 has not started, so a global shared between a surviving file and one of these would be half-renamed if they were skipped. Phase 3 deletes a few already-renamed lines at worst.
-- Test: `Tests/safari/airplay.test.cjs`, `relay-controls.test.cjs`, `popup.test.cjs`, `player-events.test.cjs`, `player.test.cjs`, `diagnostics.test.cjs`, `direct-audio.test.cjs`, `directv-recovery.test.cjs`, `source-trace.test.cjs`, `paramount-capture.test.cjs`, `commercial-controller.test.cjs`
+- Test: `Tests/safari/airplay.test.cjs`, `relay-controls.test.cjs`, `popup.test.cjs`, `player-events.test.cjs`, `player.test.cjs`, `diagnostics.test.cjs`, `direct-audio.test.cjs`, `directv-recovery.test.cjs`, `source-trace.test.cjs`, `paramount-capture.test.cjs`, `commercial-controller.test.cjs`, `export.test.cjs` (it references `skyboxSaveRecording`, so it changes with the rename even though phase 3 will delete the file)
 
 **Interfaces:**
 - Produces: `globalThis.commercialBreakerAirPlayPanel`, `…RelayControl`, `…PlayerEvents`, `…Player`, `…Diagnostics`, `…DirectvRecovery`, `…CreateCommercialController`, `…Commercial`, `…AirPlayRouteResult`, `…AirPlaySourceTrace`, `…IsRelayUrl`, `…ParamountCapture`, and the `commercialBreakerVersion` property on the panel and host objects. Task 6 consumes none of these directly; the Swift side matches on AX button labels, not on these names.
@@ -194,9 +194,9 @@ In each listed test file, for every global that file exercises, assert the new n
 Run: `node --test Tests/safari/*.test.cjs`
 Expected: FAIL on the new-name assertions; the `undefined` assertions on old names also fail, since the old names are still defined.
 
-- [ ] **Step 4: Apply the mapping across the surviving files**
+- [ ] **Step 4: Apply the mapping across every file Step 1 finds**
 
-Rename every occurrence from Step 1's mapping in the files listed under **Modify**, definitions and consumers together. Include the `h.context.*` and `f.context.*` harness references in the test files themselves, and the `api:ctx.skyboxParamountCapture` reference. Do not add backwards-compatible aliases: an alias defeats the negative assertions and leaves the old name live on third-party pages.
+Rename every occurrence from Step 1's mapping in every file Step 1 finds, whether listed under **Modify** or **Also modify**, definitions and consumers together. Include the `h.context.*` and `f.context.*` harness references in the test files themselves, and the `api:ctx.skyboxParamountCapture` reference. Do not add backwards-compatible aliases: an alias defeats the negative assertions and leaves the old name live on third-party pages.
 
 `SafariExtension/README.md` (locate by grep) documents `globalThis.skyboxAirPlayRouteResult` by name and must change with it; that file's other 7 occurrences are product prose and update in the same pass.
 
@@ -279,7 +279,7 @@ Written against the tree after phase 2 (PR #5), which deleted `LiveAudioCues`, `
 - Rename: `MacAudioProbe/SkyboxAudioProbeApp.swift` → `MacAudioProbe/CommercialBreakerApp.swift`; `Tests/skybox-panel` → `Tests/commercial-breaker-panel`, updating its entry in `Tests/run-native-tests.sh`
 - Modify in the same commit as the directory rename: `Tools/evaluate-gemini-audio.mjs` and `Tools/compare-detection.mjs` (the `SkyboxAudioProbe/recordings` allow-list root)
 - Check only: `MacAudioProbe-Info.plist`. PR #5 already rewrote the permission text for the post-phase-2 app; confirm it names no marked clips and rename the product only if it still says Skybox.
-- Do NOT modify: the four Accessibility instruction strings that tell Nick to enable "SkyboxAudioProbe" in Privacy & Security → Accessibility (in `SafariAccessibility.swift` and `RoutingModel.swift`; locate by grep for `Privacy`). That is the name System Settings actually lists until the product is renamed, so they move in Task 7.
+- Do NOT modify: the five Accessibility strings that name "SkyboxAudioProbe" (three in `SafariAccessibility.swift`, two in `RoutingModel.swift`; at phase 2's head `SafariAccessibility.swift:33,42,285` and `RoutingModel.swift:27,208`). They read "Enable Accessibility permission for SkyboxAudioProbe first." or tell Nick to enable it in Privacy & Security → Accessibility, and that is the name System Settings actually lists until the product is renamed, so they move in Task 7. Find them with `grep -n 'SkyboxAudioProbe' MacAudioProbe/*.swift`; they are the hits that sit inside user-facing messages.
 
 **Interfaces:**
 - Produces: `SafariAccessibility.isCommercialBreakerPanel(_:)`, `struct CommercialBreakerApp`, the field `focusReturnedToCommercialBreaker`, the shared Application Support directory-name constant (value `CommercialBreaker`), and the migration entry point.
@@ -295,7 +295,7 @@ Expected: FAIL — no migration entry point exists.
 
 - [ ] **Step 3: Implement the migration**
 
-Add a `migrateApplicationSupportDirectory(from:to:)` entry point that renames the directory with `FileManager.moveItem` when the old path exists and the new one does not, and is a no-op otherwise. Call it once at app launch, before any logging or recording path is resolved. Define the new directory name once, as a shared constant, and use it for the three hardcoded `"SkyboxAudioProbe"` directory literals now in `AutomaticCommercialModel.swift`, `RoutingModel.swift` and `AudioRecorderModel.swift`. Find them with `grep -rn '"SkyboxAudioProbe"' MacAudioProbe`; do not touch the Accessibility instruction strings, which are prose rather than path literals. Update the `~/Library/Application Support/SkyboxAudioProbe/` path in `docs/handoff.md` in the same commit.
+Add a `migrateApplicationSupportDirectory(from:to:)` entry point that renames the directory with `FileManager.moveItem` when the old path exists and the new one does not, and is a no-op otherwise. Call it once at app launch, before any logging or recording path is resolved. Define the new directory name once, as a shared constant, and use it for the three hardcoded `"SkyboxAudioProbe"` directory literals now in `AutomaticCommercialModel.swift`, `RoutingModel.swift` and `AudioRecorderModel.swift`. Find them with `grep -n 'SkyboxAudioProbe' MacAudioProbe/*.swift`. Three hits are directory literals to change: `AutomaticCommercialModel.swift` (`.appendingPathComponent("SkyboxAudioProbe")`), `RoutingModel.swift` (`.appendingPathComponent("SkyboxAudioProbe", isDirectory: true)`) and `AudioRecorderModel.swift`, where the name is embedded in `"SkyboxAudioProbe/recordings/\(id…)"`. The other five hits are the Accessibility messages, which are skipped. Update the `~/Library/Application Support/SkyboxAudioProbe/` path in `docs/handoff.md` in the same commit.
 
 In the same commit, update the two evaluation tools that resolve this directory as an allow-list root. They are JavaScript with no Swift test covering them, and they break the moment the directory moves (Review Focus item 4). Add a Node test asserting the resolved root ends in `CommercialBreaker/recordings`.
 
@@ -348,7 +348,7 @@ Carried into phase 4 as requirements:
 - `PRODUCT_BUNDLE_IDENTIFIER` stays `com.nohandsstack.skybox.audio-probe`.
 - `SkyboxProbe.xcodeproj` → `CommercialBreaker.xcodeproj`, with the `container:SkyboxProbe.xcodeproj` workspace references updated. The `SkyboxProbe` target, its scheme and `SkyboxProbe-Info.plist` are deleted by phase 2, not renamed.
 - `docs/handoff.md`'s build and test commands update in the same PR, including the scheme name and the `/tmp/skybox-*` paths (Review Focus item 5).
-- Rename the product in the Accessibility instructions that tell Nick to enable "SkyboxAudioProbe" in Privacy & Security → Accessibility: three strings in `SafariAccessibility.swift` and two in `RoutingModel.swift` (locate by grep for `Privacy`). Task 6 leaves them because they name the entry System Settings lists today; they change in the same PR that renames the product.
+- Rename the product in the five Accessibility strings that name "SkyboxAudioProbe": three in `SafariAccessibility.swift` and two in `RoutingModel.swift`. Find them with `grep -n 'SkyboxAudioProbe' MacAudioProbe/*.swift`; most read "Enable Accessibility permission for SkyboxAudioProbe first.", so a grep for `Privacy` misses three. Task 6 leaves them because they name the entry System Settings lists today; they change in the same PR that renames the product.
 - The icon and wordmark come from the design work commissioned 2026-10-19.
 
 ---
