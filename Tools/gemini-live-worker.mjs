@@ -9,7 +9,7 @@ import { makeContents } from './gemini-request.mjs';
 import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { createVertexClient, setupFailure } from './vertex-client.mjs';
 
-export const MODEL = 'gemini-2.5-flash';
+export const MODEL = 'gemini-3.8-flash';
 export const MAX_LINE_BYTES = 540_000;
 const WAV_BYTES = 44 + 8 * 16_000 * 2;
 
@@ -76,7 +76,8 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000
         const response = await generateContent({ model: MODEL,
           contents: makeContents(request.id, prompt, request.audio), config: {
             responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: 4096,
-            thinkingConfig: { thinkingBudget: 0 }, abortSignal: controller.signal,
+            // Gemini 3 deprecates thinkingBudget (intermittent 400s); LOW is 3.8 Flash's lowest level.
+            thinkingConfig: { thinkingLevel: 'LOW' }, abortSignal: controller.signal,
           } });
         if (closed) return;
         if (timedOut) { emit({ id: request.id, error: 'timeout' }); return; }
