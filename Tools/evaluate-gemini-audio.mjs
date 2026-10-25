@@ -61,7 +61,7 @@ async function main() {
   for (const sample of samples) {
     const source = await realpath(sample.local_audio);
     if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Audio outside approved scope');
-    const temporary = await mkdtemp(join(tmpdir(), 'skybox-gemini-'));
+    const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-gemini-'));
     let started;
     try {
       const converted = join(temporary, 'sample.wav');
