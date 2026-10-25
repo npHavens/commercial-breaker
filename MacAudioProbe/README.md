@@ -141,7 +141,7 @@ This is a live activation experiment, not a proven Safari user-gesture workaroun
 # Sport selection — v0.2.38
 
 Automatic has a Football/UFC picker, default Football, disabled while running or
-recovering. The selection is passed to every worker through SKYBOX_SPORT, including
+recovering. The selection is passed to every worker through COMMERCIAL_BREAKER_SPORT, including
 all capture handoffs and retries. Each worker combines Tools/sport-prompt.mjs
 sport-specific editorial criteria with prompt-common.txt shared advertising rules.
 Football includes halftime analysis; UFC includes between-fight coverage. Another

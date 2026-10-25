@@ -67,7 +67,7 @@ async function main() {
   }
   // Validate and convert the entire approved corpus before credentials or requests.
   const allowed = await realpath(join(homedir(), 'Library/Application Support/SkyboxAudioProbe/recordings'));
-  const temporary = await mkdtemp(join(tmpdir(), 'skybox-compare-'));
+  const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-compare-'));
   try {
     const audio = [];
     for (const sample of samples) {

@@ -50,10 +50,7 @@ final class GeminiObservation: ObservableObject {
         status = "Starting Gemini · sends audio to Google Vertex AI"
         do {
             let child = try makeWorker()
-            var environment = child.environment ?? ProcessInfo.processInfo.environment
-            environment["SKYBOX_SPORT"] = sport == .football ? "football" : "ufc"
-            environment["SKYBOX_RETURN_DETECTION"] = returnDetection ? "1" : "0"
-            child.environment = environment
+            child.environment = Self.workerEnvironment(child.environment ?? ProcessInfo.processInfo.environment, sport: sport, returnDetection: returnDetection)
             let stdin = Pipe(), stdout = Pipe()
             child.standardInput = stdin
             child.standardOutput = stdout
@@ -295,10 +292,18 @@ final class GeminiObservation: ObservableObject {
         }
     }
 
+    static func workerEnvironment(_ base: [String: String], sport: Sport, returnDetection: Bool) -> [String: String] {
+        var environment = base
+        environment["COMMERCIAL_BREAKER_SPORT"] = sport == .football ? "football" : "ufc"
+        environment["COMMERCIAL_BREAKER_RETURN_DETECTION"] = returnDetection ? "1" : "0"
+        return environment
+    }
+
     static func setupMessage(_ error: String?) -> String {
         switch error {
         case "dependencies-missing": "Gemini could not start · run npm ci in the Skybox checkout. Recording continues."
         case "configuration-missing": "Gemini could not start · set GOOGLE_CLOUD_PROJECT in the Skybox .env. Recording continues."
+        case "app-rebuild-required": "Gemini could not start · rebuild the app from this checkout. Recording continues."
         default: "Gemini could not start · see Gemini setup in the README. Recording continues."
         }
     }

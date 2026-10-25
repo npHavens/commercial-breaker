@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createVertexClient, setupFailure, vertexConfig } from '../../Tools/vertex-client.mjs';
+import { workerSettings } from '../../Tools/gemini-live-worker.mjs';
 
 const tools = fileURLToPath(new URL('../../Tools/', import.meta.url));
 const installed = (() => { try { createRequire(import.meta.url).resolve('@google/genai'); return true; } catch { return false; } })();
@@ -82,4 +83,18 @@ test('configured worker becomes ready without contacting Vertex', { skip: !insta
     child.stdin.end();
     assert.equal(await exited, 0);
   } finally { await rm(home, { recursive: true, force: true }); }
+});
+
+test('worker settings come from the Commercial Breaker variables and default to football without return detection', () => {
+  assert.deepEqual(workerSettings({}), { sport: 'football', returnDetection: false });
+  assert.deepEqual(workerSettings({ COMMERCIAL_BREAKER_SPORT: 'ufc', COMMERCIAL_BREAKER_RETURN_DETECTION: '1' }),
+    { sport: 'ufc', returnDetection: true });
+  assert.deepEqual(workerSettings({ COMMERCIAL_BREAKER_RETURN_DETECTION: '0' }), { sport: 'football', returnDetection: false });
+});
+
+test('legacy worker variables fail startup with a category the app can show', () => {
+  for (const legacy of [{ SKYBOX_SPORT: 'ufc' }, { SKYBOX_RETURN_DETECTION: '1' }]) {
+    assert.throws(() => workerSettings({ COMMERCIAL_BREAKER_SPORT: 'football', ...legacy }), { message: 'app-rebuild-required' });
+  }
+  assert.equal(setupFailure(new Error('app-rebuild-required')), 'app-rebuild-required');
 });
