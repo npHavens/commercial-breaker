@@ -60,6 +60,10 @@ The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
 `node_modules` from the checkout it was built from. If setup is incomplete,
 starting detection reports what is missing; recording continues.
 
+Application Default Credentials are shared by every app on the Mac, including
+their quota project. If another project sets it, add `GOOGLE_CLOUD_QUOTA_PROJECT`
+to `.env` (see `.env.example`) so Skybox is metered against its own project.
+
 ## Repository map
 
 | Directory | Responsibility |
