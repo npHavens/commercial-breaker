@@ -4,11 +4,10 @@ struct AutomaticCommercialView: View {
     @ObservedObject var model: AutomaticCommercialModel
     @ObservedObject var recorder: AudioRecorderModel
     @ObservedObject var routing: RoutingModel
-    var otherCaptureActive: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Automatic commercial test · v0.2.45").font(.title2.bold())
+            Text("Automatic commercial test · v0.2.46").font(.title2.bold())
             Picker("Sport", selection: $model.sport) {
                 ForEach(GeminiObservation.Sport.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.disabled(model.busy || recorder.running)
@@ -28,22 +27,12 @@ struct AutomaticCommercialView: View {
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button("Start automatic test") { model.start() }
-                    .disabled(model.busy || recorder.running || routing.busy || otherCaptureActive)
+                    .disabled(model.busy || recorder.running || routing.busy)
                 Button(model.playback == .mac ? "Stop & restore sound" : "Stop & return to TV") { model.stopAndRecover() }
                     .disabled(!model.enabled)
             }
-            if !model.busy && recorder.running {
-                Text("Stop the Recorder session first, then start this test.").foregroundStyle(.orange)
-            }
             Text(model.status).font(.callout.bold()).textSelection(.enabled)
             AutomaticPredictionView(observer: recorder.gemini)
-            HStack {
-                Button("Commercial started") { recorder.mark("Commercial started") }
-                Button("Program returned") { recorder.mark("Program returned") }
-                Button("Changed channel") { recorder.mark("Changed channel") }
-            }.disabled(!model.enabled || !recorder.ready)
-            Text("Keep using markers if convenient. They record observations and do not trigger muting.")
-                .font(.caption).foregroundStyle(.secondary)
             ScrollView { Text(model.history).font(.caption.monospaced()).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }
                 .frame(height: 180)
             Text(model.playback == .mac

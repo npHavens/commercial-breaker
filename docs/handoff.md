@@ -16,6 +16,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
+- Native v0.2.46 on `chore/remove-unused-native` removes unused features (two
+  tabs remain: Automatic and AirPlay); live break/return cycles pending.
 - Native v0.2.45 built, signed and running. Build path:
   `build/mac-audio-oct18-standalone/Build/Products/Debug/SkyboxAudioProbe.app`.
   Nick started a live session on October 18: worker ready in about a second,
@@ -27,9 +29,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   still lacks explicit live verification. Short DIRECTV handoff rewind accepted.
 - Codex automatic reviews run on every PR (Smart detect). PRs #1 and #2 merged
   after reviews with no findings. Recheck GitHub before merging.
-- Latest offline suites: 142 JavaScript tests passed; 37 Python tests passed
-  earlier (they need loopback networking outside the sandbox). No new audio was
-  uploaded for any of these.
+- Latest offline suites: 142 JavaScript tests, 37 Python tests and all 11
+  native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
 
 ## Behavior and important code
 
@@ -77,9 +78,11 @@ with a guarded seek; preserve its autoload and safety checks. See
 3. Done on `chore/separate-runtime-code`: runtime prompts and helpers moved out
    of evaluation code and `Experiments/` into `Tools/`, with prompt hashes
    unchanged and a boundary test.
-4. Next, per the technical cleanup plan in Nick's Notion project notes: remove
-   unused native features (tvOS/PiP, Audio/Video/Recorder tabs, markers, clip
-   store, cue detector; keep the AirPlay tab's TV setting), then trim the
+4. In review on `chore/remove-unused-native` (v0.2.46): tvOS/PiP, the Audio,
+   Video and Recorder tabs, markers, clip store and cue detector are removed;
+   the AirPlay tab keeps the TV setting and recovery tools. Needs one Mac-mode
+   and one AirPlay cycle from Nick before merging.
+5. Next, per the technical cleanup plan in Nick's Notion project notes: trim the
    Safari extension (keep DIRECTV recovery, the AirPlay button and the
    Paramount+ relay), then move experiment findings into `docs/archive`.
    Release work (branded UI, guided setup, packaged extension) is deferred;
