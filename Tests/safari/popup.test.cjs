@@ -67,7 +67,7 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
   vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension/relay-target.js'), 'utf8'), context);
   vm.runInContext(source, context);
   await new Promise(setImmediate);
-  return { nodes, calls, storage };
+  return { nodes, calls, storage, context };
 }
 
 test('Paramount+ popup exposes AirPlay and wires the click to page injection', async () => {
@@ -208,11 +208,21 @@ test('AirPlay export merges MAIN source trace with isolated playback events', as
 const legacy = (name) => `skybox${name}`;
 
 test('popup injects the commercialBreaker names and never the legacy skybox names', async () => {
+  const injectedBy = (calls) => calls.filter((call) => call.func).map((call) => call.func.toString()).join('\n');
   const { nodes, calls } = await setup();
+  const directv = await setup(undefined, new Map(), 'https://stream.directv.com/watch');
+  await directv.nodes.get('event-start').listeners.click[0]();
+  await nodes.get('read-audio').listeners.click[0]();
+  await nodes.get('airplay').listeners.click[0]();
   await nodes.get('airplay-export').listeners.click[0]();
-  const injected = calls.filter((call) => call.func).map((call) => call.func.toString()).join('\n');
-  for (const name of ['ExportAirPlayPlayback', 'AirPlaySourceTrace']) {
-    assert.ok(injected.includes(`commercialBreaker${name}`));
-    assert.equal(injected.includes(legacy(name)), false);
+  const relayUrl = `http://192.168.1.10:8765/session/${'a'.repeat(43)}/`;
+  const relay = await setup(undefined, new Map(), relayUrl);
+  await relay.nodes.get('relay-auto').listeners.click[0]();
+  const injected = [calls, directv.calls, relay.calls].map(injectedBy).join('\n');
+  for (const name of ['Player', 'Diagnostics', 'PlayerEvents', 'AirPlayPanel', 'Version', 'AudioProbePending',
+    'LastAudioProbeResult', 'ExportAirPlayPlayback', 'AirPlaySourceTrace', 'RelayControl']) {
+    assert.ok(injected.includes(`commercialBreaker${name}`), `popup never injects commercialBreaker${name}`);
+    assert.equal(injected.includes(legacy(name)), false, `popup still injects ${legacy(name)}`);
   }
+  assert.equal(relay.context[legacy('IsRelayUrl')], undefined);
 });
