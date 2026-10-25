@@ -21,7 +21,7 @@ function setup() {
     setTimeout: () => 1, clearTimeout() {} });
   vm.runInContext(source, context);
   return { context, original, HTMLMediaElement, HTMLVideoElement, listeners,
-    read: () => JSON.parse(context.skyboxAirPlaySourceTrace.export()) };
+    read: () => JSON.parse(context.commercialBreakerAirPlaySourceTrace.export()) };
 }
 test('trace preserves receivers, values, return values and thrown errors without exporting sources', () => {
   const h = setup(), video = new h.HTMLVideoElement(); h.context.video = video;
@@ -46,4 +46,12 @@ test('ring is bounded, reinjection does not stack hooks, cleanup preserves later
   assert.equal(h.read().events.length, 600); assert.equal(h.read().dropped, 50);
   const later = () => 'later'; h.HTMLMediaElement.prototype.load = later;
   h.listeners.get('pagehide')(); assert.equal(h.HTMLMediaElement.prototype.load, later);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('source trace is exposed as commercialBreakerAirPlaySourceTrace only', () => {
+  const h = setup();
+  assert.equal(typeof h.context.commercialBreakerAirPlaySourceTrace.export, 'function');
+  assert.equal(h.context[legacy('AirPlaySourceTrace')], undefined);
 });

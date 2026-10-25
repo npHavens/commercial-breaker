@@ -1,5 +1,5 @@
 // Credentials are scoped to one explicitly armed tab and live only in memory.
-const capture = globalThis.skyboxParamountCapture;
+const capture = globalThis.commercialBreakerParamountCapture;
 let session = null;
 let message = 'Start the extension helper, then capture the playing Paramount tab.';
 let expiryTimer;
@@ -31,7 +31,7 @@ async function sendIfReady() {
         'Relay validation failed. Capture again after reloading Paramount.';
       return;
     }
-    if (!globalThis.skyboxIsRelayUrl(data.url)) throw new Error('Invalid relay response');
+    if (!globalThis.commercialBreakerIsRelayUrl(data.url)) throw new Error('Invalid relay response');
     await browser.tabs.create({ url: data.url });
     message = 'Relay opened. Pause the original Paramount player, then Play → Choose AirPlay in the relay. Leave its automatic mute off when using the native app.';
   } catch {

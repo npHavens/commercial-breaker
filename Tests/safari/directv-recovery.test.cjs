@@ -31,7 +31,7 @@ function fixture({ wireless = true, timeout = 10 } = {}) {
   const context = { Date: class extends Date { static now() { return now; } }, location: { origin: 'https://stream.directv.com' }, document: {
     querySelectorAll: () => [video], addEventListener() {}, removeEventListener() {} },
     addEventListener() {}, removeEventListener() {}, setTimeout, clearTimeout,
-    setInterval: fn => { poll = fn; return ++id; }, clearInterval() {}, skyboxAirPlaySourceTrace: trace };
+    setInterval: fn => { poll = fn; return ++id; }, clearInterval() {}, commercialBreakerAirPlaySourceTrace: trace };
   const original = timer.onTimeout_;
   vm.runInNewContext(source, context);
   function advance(ms) { const end = now + ms; for (;;) {
@@ -55,7 +55,7 @@ test('observation preserves native timeout callback and 10s recovery', () => {
 });
 test('disconnect and stop never reschedule or cancel the native timer', () => {
   const f = fixture(); f.timer.scheduleTimer_(0); f.advance(5000);
-  const pending = f.timer.timeout_; f.disconnect(); f.context.skyboxDirectvRecovery.stop();
+  const pending = f.timer.timeout_; f.disconnect(); f.context.commercialBreakerDirectvRecovery.stop();
   assert.equal(f.timer.timeout_, pending); assert.equal(f.subscriptions, 0);
   f.advance(5000); assert.equal(f.errors, 1);
   assert.equal(JSON.parse(f.trace.export()).recoveryExperiment, undefined);
@@ -67,14 +67,14 @@ test('controller replacement detaches observers; reinjection does not stack them
 });
 test('samples and error diagnostics are bounded and exclude arbitrary payloads', () => {
   const f = fixture(); f.emitError({code:1562,rootError:{code:1502,url:'secret'},message:'secret'});
-  let report = f.context.skyboxDirectvRecovery.export(); assert.equal(report.includes('secret'), false);
+  let report = f.context.commercialBreakerDirectvRecovery.export(); assert.equal(report.includes('secret'), false);
   assert.equal(JSON.parse(report).events.at(-1).rootCode, 1502);
   for(let i=0;i<650;i++)f.poll();
-  report = JSON.parse(f.context.skyboxDirectvRecovery.export());
+  report = JSON.parse(f.context.commercialBreakerDirectvRecovery.export());
   assert.equal(report.events.length,600); assert.ok(report.dropped>0);
   assert.equal(report.events.at(-1).event,'handoff sample');
-  f.advance(3600000); assert.equal(f.context.skyboxDirectvRecovery.running,true);
-  f.context.skyboxDirectvRecovery.stop(); assert.equal(f.context.skyboxDirectvRecovery.running,false);
+  f.advance(3600000); assert.equal(f.context.commercialBreakerDirectvRecovery.running,true);
+  f.context.commercialBreakerDirectvRecovery.stop(); assert.equal(f.context.commercialBreakerDirectvRecovery.running,false);
 });
 
 function mismatch(f) {
@@ -99,4 +99,12 @@ test('advancing time and expired handoff windows do not seek', () => {
   const f=fixture();mismatch(f);f.poll();f.video.currentTime=151;f.advance(1000);f.poll();
   assert.equal(f.video.currentTime,151);
   f.advance(61000);f.poll();assert.equal(f.video.currentTime,151);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('recovery controller is exposed as commercialBreakerDirectvRecovery only', () => {
+  const f = fixture();
+  assert.equal(typeof f.context.commercialBreakerDirectvRecovery.export, 'function');
+  assert.equal(f.context[legacy('DirectvRecovery')], undefined);
 });

@@ -1,5 +1,5 @@
 // Return one player, refusing ambiguous pages rather than muting unrelated videos.
-globalThis.skyboxSelectVideo = function selectVideo(candidates) {
+globalThis.commercialBreakerSelectVideo = function selectVideo(candidates) {
   const visible = candidates.filter((candidate) => candidate.visible);
   const playing = visible.filter((candidate) => candidate.playing);
   const eligible = playing.length > 0 ? playing : visible;
