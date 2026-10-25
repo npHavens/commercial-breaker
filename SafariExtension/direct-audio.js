@@ -1,10 +1,10 @@
 // A page click supplies the user gesture required to start Web Audio in Safari.
 (() => {
   if (location.protocol !== 'https:' || location.hostname !== 'stream.directv.com') return;
-  const existing = document.getElementById('skybox-direct-audio');
+  const existing = document.getElementById('commercial-breaker-direct-audio');
   if (existing) { existing.hidden = false; return; }
   const panel = document.createElement('aside');
-  panel.id = 'skybox-direct-audio';
+  panel.id = 'commercial-breaker-direct-audio';
   panel.style.cssText = 'position:fixed;top:16px;right:16px;z-index:2147483647;background:#fff;color:#111;padding:16px;width:300px;border:2px solid #168;border-radius:8px;font:14px system-ui;';
   const text = document.createElement('p');
   text.textContent = 'Commercial Breaker direct audio test. Keep playback local. If audio becomes silent, refresh this tab to restore the original audio route.';

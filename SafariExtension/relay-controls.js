@@ -1,12 +1,12 @@
 globalThis.commercialBreakerRelayControl = function relayControl(command = 'status') {
   try {
     if (!globalThis.commercialBreakerIsRelayUrl(location.href) ||
-        document.querySelector('meta[name="skybox-relay"]')?.content !== '1') {
+        document.querySelector('meta[name="commercial-breaker-relay"]')?.content !== '1') {
       throw new Error('Open the Commercial Breaker relay player in this tab.');
     }
-    const output = document.querySelector('#skybox-commercial-state');
+    const output = document.querySelector('#commercial-breaker-commercial-state');
     if (!output) throw new Error('Restart the updated relay and refresh its player page.');
-    const buttons = { 'toggle-auto': '#skybox-auto-toggle', 'toggle-mute': '#mute' };
+    const buttons = { 'toggle-auto': '#commercial-breaker-auto-toggle', 'toggle-mute': '#mute' };
     if (command !== 'status') {
       if (!buttons[command]) throw new Error('Unknown relay control.');
       const button = document.querySelector(buttons[command]);

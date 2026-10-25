@@ -179,7 +179,7 @@ document.querySelector('#test-frame').addEventListener('click', async () => {
 });
 
 try {
-  const last = localStorage.getItem('skybox.audio-test-status');
+  const last = localStorage.getItem('commercial-breaker.audio-test-status');
   if (last) document.querySelector('#audio-status').textContent = `Previous attempt: ${last}`;
 } catch { /* Storage may be unavailable; the live result still works. */ }
 async function audioTest(readOnly = false) {
@@ -232,7 +232,7 @@ async function audioTest(readOnly = false) {
   finally {
     clearTimeout(responseTimer);
     button.disabled = false;
-    try { localStorage.setItem('skybox.audio-test-status', `${new Date().toLocaleTimeString()} · ${message.textContent}`); }
+    try { localStorage.setItem('commercial-breaker.audio-test-status', `${new Date().toLocaleTimeString()} · ${message.textContent}`); }
     catch { /* Do not hide the live result when persistence is unavailable. */ }
   }
 }
@@ -271,7 +271,7 @@ document.querySelector("#save-recording").addEventListener("click", async () => 
 const airplayButton = document.querySelector("#airplay");
 const airplayMessage = document.querySelector("#airplay-status");
 const airplayHistory = document.querySelector("#airplay-history");
-const historyKey = "skybox.airplay-attempt";
+const historyKey = "commercial-breaker.airplay-attempt";
 let airplaySteps = [];
 try {
   const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");

@@ -10,7 +10,7 @@ globalThis.commercialBreakerValidateExport = function validateExport(json) {
 
 globalThis.commercialBreakerSaveRecording = async function saveRecording(browser, json) {
   globalThis.commercialBreakerValidateExport(json);
-  const filename = `skybox-signals-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+  const filename = `commercial-breaker-signals-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
   if (browser.downloads?.download) {
     try {
       await browser.downloads.download({
@@ -24,7 +24,7 @@ globalThis.commercialBreakerSaveRecording = async function saveRecording(browser
     throw new Error("Safari cannot open the recording save page. The JSON remains in the popup.");
   }
   // One recovery copy, overwritten only by the next export. No page or stream URLs.
-  localStorage.setItem('skybox.recording-export', JSON.stringify({ filename, json }));
+  localStorage.setItem('commercial-breaker.recording-export', JSON.stringify({ filename, json }));
   await browser.tabs.create({ url: browser.runtime.getURL('save-recording.html') });
   return { method: 'page' };
 };
