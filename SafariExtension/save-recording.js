@@ -1,5 +1,5 @@
 (() => {
-  const key = 'skybox.recording-export';
+  const key = 'commercial-breaker.recording-export';
   const message = document.querySelector('#message');
   try {
     const raw = localStorage.getItem(key);

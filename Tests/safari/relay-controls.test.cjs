@@ -21,10 +21,10 @@ test('extension controls the existing page controller without constructing a sec
   let state = { enabled: false, state: 'unknown', message: 'off', muted: false };
   const video = { muted: false, paused: false };
   const nodes = {
-    'meta[name="skybox-relay"]': { content: '1' },
-    '#skybox-commercial-state': { get textContent() { return JSON.stringify(state); } },
+    'meta[name="commercial-breaker-relay"]': { content: '1' },
+    '#commercial-breaker-commercial-state': { get textContent() { return JSON.stringify(state); } },
     '#video': video,
-    '#skybox-auto-toggle': { click() { state.enabled = !state.enabled; } },
+    '#commercial-breaker-auto-toggle': { click() { state.enabled = !state.enabled; } },
     '#mute': { click() { state.enabled = false; video.muted = !video.muted; } }
   };
   const context = vm.createContext({ URL, location: { href: relayUrl },
@@ -37,7 +37,7 @@ test('extension controls the existing page controller without constructing a sec
   const result = context.commercialBreakerRelayControl('toggle-mute');
   assert.equal(result.enabled, false);
   assert.equal(result.muted, true);
-  delete nodes['meta[name="skybox-relay"]'];
+  delete nodes['meta[name="commercial-breaker-relay"]'];
   assert.equal(context.commercialBreakerRelayControl('toggle-auto').ok, false);
 });
 

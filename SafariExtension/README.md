@@ -245,7 +245,7 @@ Reload the temporary extension in Safari's Developer settings (remove and add th
 2. At the next commercial, reopen Commercial Breaker and click Mark commercial started.
 3. When the broadcast returns, click Mark broadcast returned.
 4. Click Stop recording, then Export recording → Save JSON file. Download before refreshing or closing the Paramount+ tab, because recordings live only in that tab's memory.
-5. Supply the downloaded skybox-signals JSON file for analysis. A second complete break will help distinguish reliable signals from coincidental changes.
+5. Supply the downloaded commercial-breaker-signals JSON file for analysis. A second complete break will help distinguish reliable signals from coincidental changes.
 
 The recorder samples once per second while browser scheduling permits. It stops at the first tick after 15 minutes and retains at most 1,200 entries. Starting a new recording clears the previous one. Reopening the popup does not restart the timer. Manual marks refer to when you click, so allow for human reaction time and AirPlay delay.
 

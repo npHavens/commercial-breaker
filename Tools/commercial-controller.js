@@ -150,14 +150,14 @@ globalThis.commercialBreakerCreateCommercialController = function createCommerci
 };
 
 if (typeof document !== 'undefined') {
-  const output = document.querySelector('#skybox-commercial-state');
-  const button = document.querySelector('#skybox-auto-toggle');
-  const history = document.querySelector('#skybox-auto-history');
+  const output = document.querySelector('#commercial-breaker-commercial-state');
+  const button = document.querySelector('#commercial-breaker-auto-toggle');
+  const history = document.querySelector('#commercial-breaker-auto-history');
   const transitions = [];
   let previous = '';
   globalThis.commercialBreakerCommercial = globalThis.commercialBreakerCreateCommercialController(document.querySelector('#video'), (state) => {
     output.textContent = JSON.stringify(state);
-    document.querySelector('#skybox-auto-status').textContent = state.message;
+    document.querySelector('#commercial-breaker-auto-status').textContent = state.message;
     button.textContent = state.enabled ? 'Disable automatic mute' : 'Enable automatic mute';
     const signature = JSON.stringify([state.enabled, state.state, state.message, state.muted]);
     if (signature !== previous) {

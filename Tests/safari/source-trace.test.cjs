@@ -34,7 +34,7 @@ test('trace preserves receivers, values, return values and thrown errors without
   const report = h.read(); assert.equal(report.events.length, 6);
   assert.ok(report.events[0].callers.some(c => c.origin === 'https://stream.directv.com'));
   assert.doesNotMatch(JSON.stringify(report), /secret|private-session|private.example/);
-  h.listeners.get('skybox-airplay-trace-stop')();
+  h.listeners.get('commercial-breaker-airplay-trace-stop')();
   assert.equal(h.HTMLMediaElement.prototype.load, h.original);
   assert.equal(h.read().running, false); assert.equal(h.listeners.size, 0);
 });

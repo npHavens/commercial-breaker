@@ -308,7 +308,7 @@
       }
     }
     captionOriginals.clear();
-    document.dispatchEvent?.(new Event('skybox-airplay-trace-stop'));
+    document.dispatchEvent?.(new Event('commercial-breaker-airplay-trace-stop'));
     host.remove();
     delete globalThis.commercialBreakerAirPlayPanel;
   });

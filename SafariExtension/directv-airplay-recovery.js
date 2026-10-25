@@ -153,13 +153,13 @@
     clearInterval(poll);
     binding?.detach(); binding = undefined;
     if (trace?.export === traceExport) trace.export = originalExport;
-    document.removeEventListener('skybox-airplay-trace-stop', stop);
+    document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
     note('experiment stopped');
   }
   globalThis.commercialBreakerDirectvRecovery = { get running() { return running; }, stop,
     export: () => JSON.stringify(snapshot()) };
-  document.addEventListener('skybox-airplay-trace-stop', stop);
+  document.addEventListener('commercial-breaker-airplay-trace-stop', stop);
   globalThis.addEventListener('pagehide', stop);
   check();
 })();

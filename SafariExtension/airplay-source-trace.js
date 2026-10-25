@@ -49,7 +49,7 @@
     running = false;
     clearTimeout(expiry);
     for (const restore of restores.reverse()) { try { restore(); } catch {} }
-    document.removeEventListener('skybox-airplay-trace-stop', stop);
+    document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
   }
   const expiry = setTimeout(stop, 60 * 60 * 1000);
@@ -66,6 +66,6 @@
   ]) {
     try { wrap(prototype, name, setter, filter); } catch { /* Coverage reports successful hooks only. */ }
   }
-  document.addEventListener('skybox-airplay-trace-stop', stop);
+  document.addEventListener('commercial-breaker-airplay-trace-stop', stop);
   globalThis.addEventListener('pagehide', stop);
 })();

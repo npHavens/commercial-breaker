@@ -8,7 +8,7 @@ test('export round-trips JSON through a persistent data URL with a save dialog',
   await globalThis.commercialBreakerSaveRecording({ downloads: { download: async (value) => { options = value; return 1; } } }, json);
   assert.equal(decodeURIComponent(options.url.split(',')[1]), json);
   assert.equal(options.saveAs, true);
-  assert.match(options.filename, /^skybox-signals-.*\.json$/);
+  assert.match(options.filename, /^commercial-breaker-signals-.*\.json$/);
 });
 
 test('export reports unavailable save mechanisms and empty recordings', async () => {
@@ -30,7 +30,7 @@ test('absent or rejected downloads API opens a persistent tab with an exact reco
       const json = JSON.stringify({ entries: [{ label: 'Ad — 50% & return' }] });
       assert.equal((await globalThis.commercialBreakerSaveRecording(browser, json)).method, 'page');
       assert.equal(tab.url, 'safari-web-extension://test/save-recording.html');
-      assert.equal(JSON.parse(storage.get('skybox.recording-export')).json, json);
+      assert.equal(JSON.parse(storage.get('commercial-breaker.recording-export')).json, json);
     }
   } finally { delete globalThis.localStorage; }
 });
@@ -40,7 +40,7 @@ test('save page creates a downloadable JSON blob and clearing does not erase a n
   const { readFileSync } = require('node:fs');
   const { resolve } = require('node:path');
   const json = JSON.stringify({ schemaVersion: 1, kind: 'airplay-playback', events: [{ event: 'playing' }], sourceTrace: { events: [{ operation: 'load' }] } });
-  const storage = new Map([['skybox.recording-export', JSON.stringify({ filename: 'recording.json', json })]]);
+  const storage = new Map([['commercial-breaker.recording-export', JSON.stringify({ filename: 'recording.json', json })]]);
   const nodes = new Map(['message', 'download', 'open', 'clear'].map((id) => [id, {
     hidden: true, addEventListener(event, handler) { this[event] = handler; }
   }]));
@@ -56,9 +56,9 @@ test('save page creates a downloadable JSON blob and clearing does not erase a n
   assert.equal(nodes.get('download').download, 'recording.json');
   assert.equal(nodes.get('download').hidden, false);
   assert.equal(nodes.get('open').href, 'blob:test');
-  storage.set('skybox.recording-export', 'newer export');
+  storage.set('commercial-breaker.recording-export', 'newer export');
   nodes.get('clear').click();
-  assert.equal(storage.get('skybox.recording-export'), 'newer export');
+  assert.equal(storage.get('commercial-breaker.recording-export'), 'newer export');
 });
 
 
