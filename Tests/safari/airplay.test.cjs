@@ -38,7 +38,7 @@ function setup(hostname = 'stream.directv.com', supported = true) {
     clearTimeout(id) { timers.delete(id); }, MutationObserver, location: { protocol: 'https:', hostname },
     document: { createElement: element, documentElement: element('html'), querySelectorAll: () => [video] },
     innerHeight: 720, innerWidth: 1280, getComputedStyle: () => ({ display: 'block', visibility: 'visible', opacity: '1' }),
-    skyboxSelectVideo: (candidates) => candidates[0].element });
+    commercialBreakerSelectVideo: (candidates) => candidates[0].element });
   const run = () => vm.runInContext(source, context);
   return { run, video, created, context, observers, element, timers, pageListeners, fire(ms) {
     for (const [id, timer] of [...timers]) if (timer.ms === ms) { timers.delete(id); timer.fn(); }
@@ -60,7 +60,7 @@ test(`${hostname}: picker requires a page click; closing restores original attri
   assert.equal(h.video.getAttribute('disableremoteplayback'), '');
   assert.equal(h.video.getAttribute('x-webkit-airplay'), 'deny');
   assert.equal(h.video.hasAttribute('x-webkit-wirelessvideoplaybackdisabled'), false);
-  assert.equal(h.context.skyboxAirPlayPanel, undefined);
+  assert.equal(h.context.commercialBreakerAirPlayPanel, undefined);
 });
 
 }
@@ -149,7 +149,7 @@ test('removed video is reported and observers stop; retry can select its replace
 
 test('old connected panel produces an actionable error instead of silently using stale code', () => {
   const h = setup();
-  h.context.skyboxAirPlayPanel = { isConnected: true };
+  h.context.commercialBreakerAirPlayPanel = { isConnected: true };
   assert.match(h.run().error, /Close the old page panel/);
   assert.equal(h.requests(), 0);
 });
@@ -171,7 +171,7 @@ test('route test does not fight attribute observer and detects local then wirele
   h.video.webkitCurrentPlaybackTargetIsWireless = true;
   h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
   h.fire(10000);
-  const result = JSON.parse(h.context.skyboxAirPlayRouteResult);
+  const result = JSON.parse(h.context.commercialBreakerAirPlayRouteResult);
   assert.equal(result.sawLocal, true);
   assert.equal(result.sawReturn, true);
   assert.match(result.message, /Verify TV/);
@@ -181,14 +181,14 @@ test('route test does not fight attribute observer and detects local then wirele
 
 test('staying wireless is not a successful round trip', () => {
   const h = setup(); routing(h); h.fire(5000); h.fire(10000);
-  assert.match(JSON.parse(h.context.skyboxAirPlayRouteResult).message, /No local playback transition/);
+  assert.match(JSON.parse(h.context.commercialBreakerAirPlayRouteResult).message, /No local playback transition/);
 });
 
 test('local playback without reconnect reports failure without opening a picker', () => {
   const h = setup(); routing(h);
   h.video.webkitCurrentPlaybackTargetIsWireless = false;
   h.fire(5000); h.fire(10000);
-  assert.match(JSON.parse(h.context.skyboxAirPlayRouteResult).message, /no automatic TV return/);
+  assert.match(JSON.parse(h.context.commercialBreakerAirPlayRouteResult).message, /no automatic TV return/);
   assert.equal(h.requests(), 1);
 });
 
@@ -205,7 +205,7 @@ test('replacement player makes route test inconclusive and clears timers', () =>
   h.video.isConnected = false;
   h.observers[1].deliver([{ type: 'childList' }]);
   assert.equal(h.timers.size, 0);
-  assert.match(JSON.parse(h.context.skyboxAirPlayRouteResult).message, /Inconclusive/);
+  assert.match(JSON.parse(h.context.commercialBreakerAirPlayRouteResult).message, /Inconclusive/);
 });
 
 test('page exit cancels the routing timers and restores enabled remote playback', () => {
@@ -213,7 +213,7 @@ test('page exit cancels the routing timers and restores enabled remote playback'
   h.pageListeners.pagehide();
   assert.equal(h.timers.size, 0);
   assert.equal(h.video.hasAttribute('disableremoteplayback'), false);
-  assert.match(JSON.parse(h.context.skyboxAirPlayRouteResult).message, /Page left/);
+  assert.match(JSON.parse(h.context.commercialBreakerAirPlayRouteResult).message, /Page left/);
 });
 
 test('DIRECTV resets presentation tracks before picker and on every TV return, then restores on close', () => {
@@ -265,7 +265,7 @@ test('playback export correlates stalls and wireless changes without URLs, cues 
   h.video.webkitCurrentPlaybackTargetIsWireless = true;
   h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
   h.video.listeners.timeupdate({});
-  const json = h.context.skyboxExportAirPlayPlayback();
+  const json = h.context.commercialBreakerExportAirPlayPlayback();
   const report = JSON.parse(json);
   assert.ok(report.events.some(e => e.event.startsWith('waiting')));
   assert.ok(report.events.some(e => e.video?.wireless));
@@ -273,8 +273,28 @@ test('playback export correlates stalls and wireless changes without URLs, cues 
   assert.equal(report.events.at(-1).video.time, null);
   assert.doesNotMatch(json, /private|secret|Infinity/);
   for (let i = 0; i < 1300; i++) h.video.listeners.stalled({});
-  assert.equal(JSON.parse(h.context.skyboxExportAirPlayPlayback()).events.length, 1200);
+  assert.equal(JSON.parse(h.context.commercialBreakerExportAirPlayPlayback()).events.length, 1200);
   h.created.find(e => e.textContent === 'Restore settings and close').listeners.click();
   assert.deepEqual(Object.keys(h.video.listeners), []);
-  assert.equal(typeof h.context.skyboxExportAirPlayPlayback(), 'string');
+  assert.equal(typeof h.context.commercialBreakerExportAirPlayPlayback(), 'string');
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('page bridge globals use the commercialBreaker names and leave no legacy skybox names', () => {
+  const h = setup(); routing(h);
+  assert.equal(typeof h.context.commercialBreakerAirPlayPanel, 'object');
+  assert.equal(h.context.commercialBreakerAirPlayPanel.commercialBreakerVersion, '0.1.11');
+  assert.equal(h.context.commercialBreakerAirPlayPanel[legacy('Version')], undefined);
+  assert.equal(typeof h.context.commercialBreakerExportAirPlayPlayback, 'function');
+  h.video.webkitCurrentPlaybackTargetIsWireless = false;
+  h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
+  h.fire(5000);
+  h.video.webkitCurrentPlaybackTargetIsWireless = true;
+  h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
+  h.fire(10000);
+  assert.equal(typeof h.context.commercialBreakerAirPlayRouteResult, 'string');
+  for (const name of ['AirPlayPanel', 'ExportAirPlayPlayback', 'AirPlayRouteResult']) {
+    assert.equal(h.context[legacy(name)], undefined);
+  }
 });

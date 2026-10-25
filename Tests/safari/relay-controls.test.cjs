@@ -9,11 +9,11 @@ const relayUrl = `http://192.168.1.10:8765/session/${'a'.repeat(43)}/`;
 test('relay URL recognition excludes public hosts, arbitrary LAN pages and credentials', () => {
   const context = vm.createContext({ URL });
   vm.runInContext(read('relay-target.js'), context);
-  assert.equal(context.skyboxIsRelayUrl(relayUrl), true);
+  assert.equal(context.commercialBreakerIsRelayUrl(relayUrl), true);
   for (const url of [relayUrl.replace('192.168.1.10', 'example.com'),
     relayUrl.replace('192.168.1.10', '127.0.0.1'), relayUrl.replace('/session/', '/other/'),
     relayUrl.replace('http://', 'http://user:password@'), relayUrl + '?url=elsewhere']) {
-    assert.equal(context.skyboxIsRelayUrl(url), false);
+    assert.equal(context.commercialBreakerIsRelayUrl(url), false);
   }
 });
 
@@ -31,12 +31,23 @@ test('extension controls the existing page controller without constructing a sec
     document: { querySelector: (selector) => nodes[selector] } });
   vm.runInContext(read('relay-target.js'), context);
   vm.runInContext(read('relay-controls.js'), context);
-  assert.equal(context.skyboxRelayControl('toggle-auto').enabled, true);
+  assert.equal(context.commercialBreakerRelayControl('toggle-auto').enabled, true);
   vm.runInContext(read('relay-controls.js'), context);
-  assert.equal(context.skyboxRelayControl('status').enabled, true);
-  const result = context.skyboxRelayControl('toggle-mute');
+  assert.equal(context.commercialBreakerRelayControl('status').enabled, true);
+  const result = context.commercialBreakerRelayControl('toggle-mute');
   assert.equal(result.enabled, false);
   assert.equal(result.muted, true);
   delete nodes['meta[name="skybox-relay"]'];
-  assert.equal(context.skyboxRelayControl('toggle-auto').ok, false);
+  assert.equal(context.commercialBreakerRelayControl('toggle-auto').ok, false);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('relay globals use the commercialBreaker names only', () => {
+  const context = vm.createContext({ URL, location: { href: relayUrl }, document: { querySelector: () => null } });
+  vm.runInContext(read('relay-target.js'), context);
+  vm.runInContext(read('relay-controls.js'), context);
+  assert.equal(typeof context.commercialBreakerIsRelayUrl, 'function');
+  assert.equal(typeof context.commercialBreakerRelayControl, 'function');
+  for (const name of ['IsRelayUrl', 'RelayControl']) assert.equal(context[legacy(name)], undefined);
 });

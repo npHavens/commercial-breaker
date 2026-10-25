@@ -21,7 +21,7 @@ function player(videos, hostname = 'www.paramountplus.com') {
   for (const file of ['select-video.js', 'player.js']) {
     vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
   }
-  return context.skyboxPlayer;
+  return context.commercialBreakerPlayer;
 }
 
 test('inspection does not mute; toggling preserves volume, position, and playback', () => {
@@ -88,4 +88,15 @@ test('DIRECTV manual mute preserves playback and volume', () => {
   assert.equal(stream.volume, 0.6);
   assert.equal(stream.currentTime, 123);
   assert.equal(stream.paused, false);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('player control is exposed as commercialBreakerPlayer only', () => {
+  const context = vm.createContext({ document: { querySelectorAll: () => [] }, location: { protocol: 'https:', hostname: 'www.paramountplus.com' } });
+  for (const file of ['select-video.js', 'player.js']) {
+    vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
+  }
+  assert.equal(typeof context.commercialBreakerPlayer, 'function');
+  assert.equal(context[legacy('Player')], undefined);
 });

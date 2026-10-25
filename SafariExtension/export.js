@@ -1,5 +1,5 @@
 // Keep fallback Blob URLs in a persistent extension tab, never in the popup.
-globalThis.skyboxValidateExport = function validateExport(json) {
+globalThis.commercialBreakerValidateExport = function validateExport(json) {
   const report = JSON.parse(json);
   const hasRecords = report && !Array.isArray(report) &&
     ((Array.isArray(report.entries) && report.entries.length > 0) ||
@@ -8,8 +8,8 @@ globalThis.skyboxValidateExport = function validateExport(json) {
   if (!hasRecords) throw new Error("There is no recording to save");
 };
 
-globalThis.skyboxSaveRecording = async function saveRecording(browser, json) {
-  globalThis.skyboxValidateExport(json);
+globalThis.commercialBreakerSaveRecording = async function saveRecording(browser, json) {
+  globalThis.commercialBreakerValidateExport(json);
   const filename = `skybox-signals-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
   if (browser.downloads?.download) {
     try {

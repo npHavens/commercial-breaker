@@ -34,7 +34,7 @@ function setup({ value = 0.2, blocked = false, suspend = false } = {}) {
   return { context, elements, click: () => elements.find(e => e.textContent === 'Start direct audio test').handlers.click(),
     deadline: () => [...timers.values()].at(-1)(), exit: () => events.get('pagehide')(),
     stats: () => ({ creates, closes, disconnects, timers: timers.size }),
-    result: () => JSON.parse(context.skyboxLastAudioProbeResult), reinject: () => vm.runInContext(read('direct-audio.js'), context) };
+    result: () => JSON.parse(context.commercialBreakerLastAudioProbeResult), reinject: () => vm.runInContext(read('direct-audio.js'), context) };
 }
 test('requires a page click and preserves the audible graph after measurement', async () => {
   const h = setup(); assert.equal(h.stats().creates, 0); await h.click(); h.deadline();
@@ -50,4 +50,13 @@ test('silence is inconclusive and a rejected binding closes unused context', asy
 test('suspended resume times out without binding or leaking a context', () => {
   const h = setup({ suspend: true }); h.click(); h.deadline();
   assert.equal(h.result().outcome, 'context-not-running'); assert.equal(h.stats().creates, 0); assert.equal(h.stats().closes, 1);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('direct audio result and video selector use the commercialBreaker names only', async () => {
+  const h = setup(); await h.click(); h.deadline();
+  assert.equal(typeof h.context.commercialBreakerSelectVideo, 'function');
+  assert.equal(typeof h.context.commercialBreakerLastAudioProbeResult, 'string');
+  for (const name of ['SelectVideo', 'LastAudioProbeResult']) assert.equal(h.context[legacy(name)], undefined);
 });

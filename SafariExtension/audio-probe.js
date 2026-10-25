@@ -1,6 +1,6 @@
 // Capture a separate stream; never reroute the original media element through Web Audio.
 (async () => {
-  if (globalThis.skyboxAudioProbePending) return globalThis.skyboxAudioProbePending;
+  if (globalThis.commercialBreakerAudioProbePending) return globalThis.commercialBreakerAudioProbePending;
   const run = async () => {
     let stream, context, source, analyser, sink, interval, deadline, onExit;
     let samples = 0, peak = 0, sumSquares = 0, blocks = 0;
@@ -17,7 +17,7 @@
             rect.top < innerHeight && rect.left < innerWidth && style.display !== 'none' &&
             style.visibility === 'visible' && Number(style.opacity) > 0 };
       });
-      const video = globalThis.skyboxSelectVideo(candidates);
+      const video = globalThis.commercialBreakerSelectVideo(candidates);
       Object.assign(state, { muted: video.muted, paused: video.paused,
         wireless: typeof video.webkitCurrentPlaybackTargetIsWireless === 'boolean'
           ? video.webkitCurrentPlaybackTargetIsWireless : null });
@@ -78,10 +78,10 @@
       if (context) { try { context.close().catch(() => {}); } catch {} }
     }
   };
-  globalThis.skyboxAudioProbePending = run().then(result => {
-    globalThis.skyboxLastAudioProbeResult = JSON.stringify({ ...JSON.parse(result), measuredAt: new Date().toISOString() });
-    return globalThis.skyboxLastAudioProbeResult;
+  globalThis.commercialBreakerAudioProbePending = run().then(result => {
+    globalThis.commercialBreakerLastAudioProbeResult = JSON.stringify({ ...JSON.parse(result), measuredAt: new Date().toISOString() });
+    return globalThis.commercialBreakerLastAudioProbeResult;
   });
-  try { return await globalThis.skyboxAudioProbePending; }
-  finally { delete globalThis.skyboxAudioProbePending; }
+  try { return await globalThis.commercialBreakerAudioProbePending; }
+  finally { delete globalThis.commercialBreakerAudioProbePending; }
 })();

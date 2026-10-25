@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
 <meta name="skybox-relay" content="1">
-<title>Skybox · HLS relay</title>
+<title>Commercial Breaker · HLS relay</title>
 <style>
   :root { color-scheme: dark; font: 16px/1.5 system-ui; background: #141b26; color: #f2f5fa; }
   body { max-width: 960px; margin: 32px auto; padding: 0 20px; }
@@ -13,7 +13,7 @@
   button { margin: 0 8px 8px 0; cursor: pointer; }
   textarea { width: 100%; box-sizing: border-box; font: 12px/1.5 monospace; }
 </style>
-<h1>Skybox · HLS relay</h1>
+<h1>Commercial Breaker · HLS relay</h1>
 <p>Player diagnostics v3</p>
 <p>Pause the original Paramount tab. With Screen Mirroring off, play here first,
   confirm video and audio, then choose AirPlay.</p>
@@ -126,7 +126,7 @@
   const mute = document.querySelector('#mute');
   mute.addEventListener('click', () => {
     report('Control: Mute / Unmute');
-    if (globalThis.skyboxCommercial) globalThis.skyboxCommercial.manualToggle();
+    if (globalThis.commercialBreakerCommercial) globalThis.commercialBreakerCommercial.manualToggle();
     else video.muted = !video.muted;
   });
   video.addEventListener('volumechange', () => {

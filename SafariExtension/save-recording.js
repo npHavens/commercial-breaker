@@ -3,12 +3,12 @@
   const message = document.querySelector('#message');
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) throw new Error('No recording is stored. Export a recording from Skybox first.');
+    if (!raw) throw new Error('No recording is stored. Export a recording from Commercial Breaker first.');
     const saved = JSON.parse(raw);
     if (typeof saved.json !== 'string') {
       throw new Error('The stored recording is invalid.');
     }
-    globalThis.skyboxValidateExport(saved.json);
+    globalThis.commercialBreakerValidateExport(saved.json);
     const blob = new Blob([saved.json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const download = document.querySelector('#download');

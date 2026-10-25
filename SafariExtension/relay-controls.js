@@ -1,8 +1,8 @@
-globalThis.skyboxRelayControl = function relayControl(command = 'status') {
+globalThis.commercialBreakerRelayControl = function relayControl(command = 'status') {
   try {
-    if (!globalThis.skyboxIsRelayUrl(location.href) ||
+    if (!globalThis.commercialBreakerIsRelayUrl(location.href) ||
         document.querySelector('meta[name="skybox-relay"]')?.content !== '1') {
-      throw new Error('Open the Skybox relay player in this tab.');
+      throw new Error('Open the Commercial Breaker relay player in this tab.');
     }
     const output = document.querySelector('#skybox-commercial-state');
     if (!output) throw new Error('Restart the updated relay and refresh its player page.');

@@ -7,14 +7,14 @@
   panel.id = 'skybox-direct-audio';
   panel.style.cssText = 'position:fixed;top:16px;right:16px;z-index:2147483647;background:#fff;color:#111;padding:16px;width:300px;border:2px solid #168;border-radius:8px;font:14px system-ui;';
   const text = document.createElement('p');
-  text.textContent = 'Skybox direct audio test. Keep playback local. If audio becomes silent, refresh this tab to restore the original audio route.';
+  text.textContent = 'Commercial Breaker direct audio test. Keep playback local. If audio becomes silent, refresh this tab to restore the original audio route.';
   const button = document.createElement('button'); button.textContent = 'Start direct audio test';
   const hide = document.createElement('button'); hide.textContent = 'Hide panel';
   panel.append(text, button, hide); document.documentElement.append(panel);
   let route, timer, interval, finish, exited = false;
   const save = (outcome, fields = {}) => {
     const report = { outcome, method: 'media-element-source', measuredAt: new Date().toISOString(), ...fields };
-    globalThis.skyboxLastAudioProbeResult = JSON.stringify(report);
+    globalThis.commercialBreakerLastAudioProbeResult = JSON.stringify(report);
     const labels = {
       'nonzero-samples': 'Nonzero audio samples measured.',
       'silent-or-inaccessible': 'Only silence measured. Audio may be blocked; this is not a commercial classification.',
@@ -38,7 +38,7 @@
             rect.top < innerHeight && rect.left < innerWidth && style.display !== 'none' &&
             style.visibility === 'visible' && Number(style.opacity) > 0 };
       });
-      const video = globalThis.skyboxSelectVideo(candidates);
+      const video = globalThis.commercialBreakerSelectVideo(candidates);
       if (video.webkitCurrentPlaybackTargetIsWireless) throw new Error('Disconnect AirPlay before this test.');
       const Context = globalThis.AudioContext || globalThis.webkitAudioContext;
       if (!Context) { save('unsupported-analysis'); return; }
