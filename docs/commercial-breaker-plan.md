@@ -13,17 +13,20 @@ commercial muting while watching DIRECTV football, and occasionally Paramount+
 UFC. The goal is an app someone can set up once and then use every game day
 without knowing how it works inside.
 
+The name was settled as Commercial Breaker on 2026-10-19, superseding the earlier
+split of Skybox as the app and Commercial Breaker as its feature.
+
 ## What it becomes
 
-**Skybox** is the app. **Commercial Breaker** is its feature: it listens to the
-game, mutes confirmed commercials, and brings the sound, or the TV, back when
-the game returns.
+**Commercial Breaker** is the app: it listens to the game, mutes confirmed
+commercials, and brings the sound, or the TV, back when the game returns. It has
+no separate feature-level brand.
 
 - **Main window, status first.** One large Start/Stop button, the current state
   in plain words, where playback is (this Mac or the TV's name) and the sport.
   No raw predictions, histories, version numbers or test buttons.
 - **Settings:** where you watch (This Mac or TV via AirPlay), which TV (picked
-  from the AirPlay devices Skybox finds, not typed), and sport (Football or UFC).
+  from the AirPlay devices Commercial Breaker finds, not typed), and sport (Football or UFC).
 - **Setup checklist:** shown on first run and whenever something is missing.
   Each item has a status and one fix action. Start stays disabled, with the
   reason shown, until the items needed for the chosen mode are ready.
@@ -32,8 +35,8 @@ the game returns.
   Select TV / recover, open the logs folder, and opt-in diagnostic audio samples.
 
 ```
-┌ Skybox ─────────────────────────────────────────┐
-│  Commercial Breaker                       ⚙︎     │
+┌ Commercial Breaker ─────────────────────────────┐
+│                                           ⚙︎     │
 │                                                  │
 │  ● Watching the game                             │
 │    Living Room TV · Football                     │
@@ -70,7 +73,8 @@ findings are already recorded. Findings move to `docs/archive`, not the bin.
   TV, reset classifier context).
 - Bundle identifier stays `com.nohandsstack.skybox.audio-probe`, so macOS keeps
   the microphone, system-audio and Accessibility permissions already granted.
-  The app, target, scheme and window names become Skybox.
+  The identifier retains the `skybox` segment by design, while every name a
+  person sees becomes Commercial Breaker: the app, target, scheme and window.
 - Audio goes only to Vertex. Consent is a one-time acknowledgement before the
   first start, then a single always-visible line. TV mode states that nearby
   voices can be included.
@@ -118,7 +122,7 @@ cycle with the trimmed extension, including the short handoff rewind.
 ### 4. Commercial Breaker app shell and branding
 
 Build the main window, Settings and Diagnostics described above. Rename the app,
-target and scheme to Skybox, add an app icon, and set the category to
+target and scheme to Commercial Breaker, add an app icon, and set the category to
 Entertainment. Rewrite every user-facing string, including the microphone and
 system-audio permission text, which still mention saving marked clips. Map
 `AutomaticCommercialModel` state onto the user-visible states above.
@@ -140,17 +144,17 @@ a second macOS user account reaches Ready by following only the checklist.
 
 ### 6. Packaged Safari extension
 
-Package the extension as a Safari Web Extension target inside Skybox, so it is
+Package the extension as a Safari Web Extension target inside Commercial Breaker, so it is
 turned on once in Safari Settings and survives Safari restarts. Temporary
-extensions do not. Rename it Skybox.
+extensions do not. Rename it Commercial Breaker.
 **Done when:** after quitting and reopening Safari, a DIRECTV page attaches
 automatically and the handoff correction works. This closes the outstanding
 packaged autoload/reload check.
 
 ### 7. Paramount+ relay without Terminal
 
-Skybox starts and stops the relay helper itself and shows the pairing code, which
-replaces both `.command` launchers. Capture, validation and memory-only
+Commercial Breaker starts and stops the relay helper itself and shows the pairing
+code, which replaces both `.command` launchers. Capture, validation and memory-only
 credential handling stay as they are.
 **Done when:** the relay tests pass and Nick completes one Paramount+ UFC
 break/return cycle without opening Terminal.
@@ -167,6 +171,8 @@ TypeScript/React extension migration; Node from Homebrew; app-specific muting
   around only what survives.
 - Diagnostics stays in the app, as a separate window, rather than being
   deleted, because routing recovery tools still help on bad nights.
-- The bundle identifier is not renamed, to keep the permissions already granted.
+- Decided 2026-10-19: the product is renamed to Commercial Breaker across the
+  board, the bundle identifier excepted, which is not renamed so the permissions
+  already granted are kept.
 - The app icon starts as a simple placeholder I make, replaceable with real art.
 - Sport stays a setting rather than being detected automatically.
