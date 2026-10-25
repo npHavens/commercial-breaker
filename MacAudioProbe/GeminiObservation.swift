@@ -76,7 +76,7 @@ final class GeminiObservation: ObservableObject {
             input = stdin.fileHandleForWriting
             output = stdout.fileHandleForReading
             try child.run()
-            log(["event": "enabled", "sport": sport.rawValue, "model": "gemini-2.5-flash", "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
+            log(["event": "enabled", "sport": sport.rawValue, "model": "gemini-3.8-flash", "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
             timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
                 Task { @MainActor in await self?.tick() }
             }
