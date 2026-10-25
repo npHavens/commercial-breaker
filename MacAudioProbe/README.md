@@ -1,3 +1,26 @@
+# Unused features removed — v0.2.46
+
+The app now has two tabs: Automatic and AirPlay. Removed: the Recorder tab,
+marker buttons and marked-clip saving; the local cue detector, which ran
+during every automatic session for observation only; the Audio and Video
+capture probes; the AirPlay tab's TV → Mac → TV test; and the tvOS prototype
+target with its PiP generator. Their findings remain in this runbook's history
+and `docs/archive`.
+
+Automatic's detection, mute and handoffs are unchanged. Capture feeds Gemini's
+buffer directly, as before. Routing logs keep their folder. Without the Changed
+channel marker there is no manual context reset; the eight-second buffer
+refreshes on its own and confirmation still needs two fresh predictions. A
+session folder holds the Gemini log and, in system-audio legs, the existing
+six return-audio diagnostic samples. Permission prompts now describe detection
+and Vertex upload instead of marked clips.
+
+Run every native test with `Tests/run-native-tests.sh`. `gemini-observation`
+uses real timers and can fail under heavy machine load; rerun before treating
+it as a regression.
+
+Live verification pending: one Mac-mode and one AirPlay break/return cycle.
+
 # Standalone Gemini setup — v0.2.45
 
 Gemini no longer depends on the Interview Assistant checkout; this supersedes
