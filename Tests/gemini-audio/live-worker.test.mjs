@@ -52,11 +52,11 @@ test('validates exact eight-second mono PCM16 WAV and rejects misleading headers
   assert.throws(() => parseRequest(line('abcdef012345', wav().subarray(0, 200))));
 });
 
-test('request uses Flash without thinking and forwards only validated output', async () => {
+test('request uses Flash at its lowest thinking level and forwards only validated output', async () => {
   const output = [];
   const worker = createWorker({ prompt: 'classify', emit: r => output.push(r), generateContent: async args => {
-    assert.equal(args.model, 'gemini-2.5-flash');
-    assert.equal(args.config.thinkingConfig.thinkingBudget, 0);
+    assert.equal(args.model, 'gemini-3.8-flash');
+    assert.deepEqual(args.config.thinkingConfig, { thinkingLevel: 'LOW' });
     assert.equal(args.contents[0].parts[1].inlineData.mimeType, 'audio/wav');
     return response;
   } });

@@ -52,7 +52,11 @@ handoffs still stop on focus loss. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 
-`Tools/gemini-live-worker.mjs` uses Gemini 2.5 Flash. Football prompt:
+`Tools/gemini-live-worker.mjs` uses Gemini 3.8 Flash at thinking level `LOW`
+(October 25: Skybox moved to Vertex project `nhs-commercial-breaker`, where 2.5
+Flash is unavailable). Football-prompt accuracy on 3.8 Flash is unproven until a
+live game confirms breaks and returns. `Tools/evaluate-gemini-audio.mjs` remains
+the 2.5-only saved-clip experiment and needs a project with 2.5 access. Football prompt:
 `Tools/minimal-classifier.mjs` (crowd-minimal-v2); uncertain intelligible content
 is classified best-effort rather than routinely unclear. Exact digital silence
 is rejected locally, not treated as program or commercial. Eight-second samples,
