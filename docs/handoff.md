@@ -1,4 +1,4 @@
-# Skybox handoff to Claude — October 18, 2026
+# Commercial Breaker handoff to Claude — October 18, 2026
 
 ## Start here
 
@@ -47,14 +47,14 @@ three minutes and continue detection. AirPlay waits for confirmed program before
 returning TV; local mode waits for program before rearming for another break.
 
 `RoutingModel.verifyTVForAutomation` retries once only when a startup focus failure
-returns to this Skybox process and it remains foreground after a short wait.
+returns to this Commercial Breaker process and it remains foreground after a short wait.
 Startup verifies an already-selected TV and does not choose a destination. Normal
 handoffs still stop on focus loss. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 
 `Tools/gemini-live-worker.mjs` uses Gemini 3.8 Flash at thinking level `LOW`
-(October 25: Skybox moved to Vertex project `nhs-commercial-breaker`, where 2.5
+(October 25: Commercial Breaker moved to Vertex project `nhs-commercial-breaker`, where 2.5
 Flash is unavailable). In the first live session that day Nick found it working
 well enough: 1.68 s median, no thinking tokens, one 20 s timeout in nine requests.
 Break and return accuracy has not been measured. `Tools/evaluate-gemini-audio.mjs` remains
@@ -72,7 +72,7 @@ with a guarded seek; preserve its autoload and safety checks. See
 ## Next work
 
 1. Done: PR #1 merged after Codex review.
-2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Skybox reads
+2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Commercial Breaker reads
    Vertex settings from its own ignored `.env`; never copy secrets into this
    public repository.
 3. Done on `chore/separate-runtime-code`: runtime prompts and helpers moved out
@@ -115,6 +115,11 @@ are ignored. Original main baseline is 2b07370; startup fix 4344491; community d
 ed3600d. This handoff is a subsequent documentation-only commit.
 
 ## Commands
+
+The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
+`SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target and scheme, the
+`~/Library/Application Support/SkyboxAudioProbe/` directory, the `/tmp/skybox-*` test
+paths, the GitHub repo URL and the local checkout directory.
 
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
