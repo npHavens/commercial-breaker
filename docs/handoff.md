@@ -2,7 +2,8 @@
 
 ## Start here
 
-Repo: https://github.com/npHavens/skybox (public, MIT, No Hands Stack LLC).
+Repo: https://github.com/npHavens/commercial-breaker (public, MIT, No Hands Stack LLC;
+renamed from `skybox` on October 26, and the old URLs redirect).
 Local checkout: `/Users/nickhavens/Projects/skybox`.
 Baseline PR #1 merged into main on October 18 (20e5b4e); Codex reviewed the
 final commit with no findings. Start focused branches from updated main. Read
@@ -133,7 +134,8 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 
 The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
 `SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target, scheme and `SkyboxAudioProbe.app`
-product, the `/tmp/skybox-*` test paths, the GitHub repo URL and the local checkout directory.
+product, the `/tmp/skybox-*` test paths and the local checkout directory. Move the checkout
+with phase 4's rebuild, because a built app runs `Tools/` from the path it was built in.
 
 The `com.nohandsstack.skybox.*` bundle IDs and the `com.nohandsstack.skybox.audio-meter`
 queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audio and
