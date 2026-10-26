@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
+import { recordingsRoot, tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
 import { makeContents } from '../../Tools/gemini-request.mjs';
 import { parseResult } from '../../Tools/standard-classifier.mjs';
 const valid = { state_at_end:'unclear', tv_audibility:'faint', room_speech_overlap:'uncertain', transition_heard:false, evidence:'TV is obscured', confidence:0.2 };
@@ -32,4 +32,9 @@ test('shared sports program is accepted; obsolete live football state is rejecte
   assert.equal(parseResult(JSON.stringify({...valid,state_at_end:state})).state_at_end,state);
  }
  assert.throws(() => parseResult(JSON.stringify({...valid,state_at_end:'football'})));
+});
+
+test('saved clips are read only from the CommercialBreaker recordings directory', () => {
+  assert.equal(recordingsRoot('/Users/tester'), '/Users/tester/Library/Application Support/CommercialBreaker/recordings');
+  assert.match(recordingsRoot(), /\/CommercialBreaker\/recordings$/);
 });

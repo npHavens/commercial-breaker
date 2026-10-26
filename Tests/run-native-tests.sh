@@ -7,6 +7,7 @@ cd -- "${0:A:h}/.." || exit 1
 typeset -A sources
 sources=(
   airplay-routing             "AirPlayRouteChoice"
+  application-support         "SupportDirectory"
   audio-sample-clock          "AudioSampleClock"
   automatic-commercial-policy "GeminiConfirmation AutomaticCommercialPolicy"
   gemini-buffer               "GeminiAudioBuffer"
@@ -14,7 +15,7 @@ sources=(
   gemini-observation          "GeminiAudioBuffer GeminiRecovery GeminiConfirmation GeminiObservation"
   gemini-recovery             "GeminiRecovery"
   mac-audio                   "AudioLevels"
-  skybox-panel                "AirPlayRouteChoice SafariAccessibility"
+  commercial-breaker-panel    "AirPlayRouteChoice SafariAccessibility"
   tap-conversion              "AudioLevels AudioSampleClock AudioTap"
   viewing-activity            "ViewingActivity"
 )

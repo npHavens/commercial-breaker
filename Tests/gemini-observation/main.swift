@@ -2,7 +2,7 @@ import Foundation
 
 @main struct ObservationTests {
     @MainActor static func main() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("skybox-observation-\(UUID())")
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("commercial-breaker-observation-\(UUID())")
         let directory = root.appendingPathComponent("recordings/session")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }

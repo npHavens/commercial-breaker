@@ -12,7 +12,7 @@ final class ViewingActivity {
     private(set) var enabled = false
 
     init(declare: @escaping Declare = { id in
-        IOPMAssertionDeclareUserActivity("Skybox automatic viewing" as CFString,
+        IOPMAssertionDeclareUserActivity("Commercial Breaker automatic viewing" as CFString,
                                         kIOPMUserActiveLocal, &id)
     }, release: @escaping (IOPMAssertionID) -> Void = { _ = IOPMAssertionRelease($0) }) {
         self.declare = declare
