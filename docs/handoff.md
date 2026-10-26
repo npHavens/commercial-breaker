@@ -67,7 +67,8 @@ Program return confirmation requires two positives spanning fresh audio.
 
 `SafariExtension/directv-airplay-recovery.js` corrects a handoff timeline mismatch
 with a guarded seek; preserve its autoload and safety checks. See
-`Experiments/airplay-return-oct4.md` for investigation and evidence.
+`Experiments/airplay-return-oct4.md` for investigation and evidence (historical: its stop
+command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.stop()`).
 
 ## Next work
 
@@ -119,8 +120,32 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 ## Commands
 
 The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
-`SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target and scheme, the
-`/tmp/skybox-*` test paths, the GitHub repo URL and the local checkout directory.
+`SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target, scheme and `SkyboxAudioProbe.app`
+product, the `/tmp/skybox-*` test paths, the GitHub repo URL and the local checkout directory.
+
+The `com.nohandsstack.skybox.*` bundle IDs and the `com.nohandsstack.skybox.audio-meter`
+queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audio and
+Accessibility grants to the bundle ID, so they must never be renamed. Six System Settings
+instructions still name the old app until the target and product rename in phase 4, because
+that is the name System Settings lists: `SafariAccessibility.swift` x3, `RoutingModel.swift` x2,
+`MicrophoneInput.swift` x1.
+
+### After pulling the rename
+
+Nick runs the app from this checkout. Pulling changes `Tools/` immediately but Swift only
+after a rebuild; an old binary's worker start fails with `app-rebuild-required` (old builds
+show it as "see Gemini setup in the README").
+
+1. Pull only when no detection session is running.
+2. Rebuild to a NEW derived-data path (the build command is in the README).
+3. Quit the old app, launch the new one, and confirm the history now lives in
+   `~/Library/Application Support/CommercialBreaker/`.
+4. Reload the temporary Safari extension, re-grant site access if Safari asks, and refresh
+   any open DIRECTV, Paramount+ and relay tabs. An old DIRECTV recovery instance keeps
+   running beside the new one until the page is refreshed.
+5. Pending live checks: one DIRECTV AirPlay break/return cycle including the short handoff
+   rewind, and confirming the rebuilt app does not re-prompt for microphone, system audio
+   or Accessibility.
 
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
@@ -133,5 +158,4 @@ xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
 
 Local Xcode is `/Users/nickhavens/Downloads/Xcode.app`. Use scheme
 `SkyboxAudioProbe` and a NEW derivedDataPath to avoid altering the running bundle.
-The `SkyboxProbe` scheme is the historical tvOS app. A build can be done separately;
-launch/restart only when Nick's playback permits.
+A build can be done separately; launch/restart only when Nick's playback permits.
