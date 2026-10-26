@@ -3,8 +3,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta name="skybox-relay" content="1">
-<title>Skybox · HLS relay</title>
+<meta name="commercial-breaker-relay" content="1">
+<title>Commercial Breaker · HLS relay</title>
 <style>
   :root { color-scheme: dark; font: 16px/1.5 system-ui; background: #141b26; color: #f2f5fa; }
   body { max-width: 960px; margin: 32px auto; padding: 0 20px; }
@@ -13,7 +13,7 @@
   button { margin: 0 8px 8px 0; cursor: pointer; }
   textarea { width: 100%; box-sizing: border-box; font: 12px/1.5 monospace; }
 </style>
-<h1>Skybox · HLS relay</h1>
+<h1>Commercial Breaker · HLS relay</h1>
 <p>Player diagnostics v3</p>
 <p>Pause the original Paramount tab. With Screen Mirroring off, play here first,
   confirm video and audio, then choose AirPlay.</p>
@@ -24,12 +24,12 @@
 <button id="check">Check playback</button>
 <button id="stop">Stop playback</button>
 <section aria-label="Commercial mute">
-  <button id="skybox-auto-toggle">Enable automatic mute</button>
-  <p id="skybox-auto-status" role="status">Automatic commercial mute is off.</p>
-  <label for="skybox-auto-history">Commercial mute history</label>
-  <textarea id="skybox-auto-history" rows="4" readonly></textarea>
+  <button id="commercial-breaker-auto-toggle">Enable automatic mute</button>
+  <p id="commercial-breaker-auto-status" role="status">Automatic commercial mute is off.</p>
+  <label for="commercial-breaker-auto-history">Commercial mute history</label>
+  <textarea id="commercial-breaker-auto-history" rows="4" readonly></textarea>
   <p>Uses broadcast commercial markers. Manual mute or volume changes turn automatic mode off.</p>
-  <script id="skybox-commercial-state" type="application/json">{"enabled":false,"state":"unknown","message":"Controller is loading."}</script>
+  <script id="commercial-breaker-commercial-state" type="application/json">{"enabled":false,"state":"unknown","message":"Controller is loading."}</script>
 </section>
 <p id="status" role="status">Ready.</p>
 <label for="history">Playback history</label>
@@ -40,7 +40,7 @@
   const video = document.querySelector('#video');
   const history = document.querySelector('#history');
   const status = document.querySelector('#status');
-  const historyKey = 'skybox.relay.playback-history';
+  const historyKey = 'commercial-breaker.relay.playback-history';
   let messages = [];
   try {
     const saved = JSON.parse(sessionStorage.getItem(historyKey) || '[]');
@@ -126,7 +126,7 @@
   const mute = document.querySelector('#mute');
   mute.addEventListener('click', () => {
     report('Control: Mute / Unmute');
-    if (globalThis.skyboxCommercial) globalThis.skyboxCommercial.manualToggle();
+    if (globalThis.commercialBreakerCommercial) globalThis.commercialBreakerCommercial.manualToggle();
     else video.muted = !video.muted;
   });
   video.addEventListener('volumechange', () => {

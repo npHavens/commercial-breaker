@@ -1,5 +1,5 @@
 /**
- * Skybox sends audio only to Vertex AI, the destination its consent text names.
+ * Commercial Breaker sends audio only to Vertex AI, the destination its consent text names.
  * Authentication uses Application Default Credentials; there is no API-key mode.
  */
 export function vertexConfig(env = process.env) {
@@ -22,5 +22,5 @@ export async function createVertexClient(config = vertexConfig()) {
 
 /** Only fixed setup categories leave a worker; messages can contain local paths. */
 export function setupFailure(error) {
-  return ['configuration-missing', 'dependencies-missing'].includes(error?.message) ? error.message : 'setup-failed';
+  return ['configuration-missing', 'dependencies-missing', 'app-rebuild-required'].includes(error?.message) ? error.message : 'setup-failed';
 }

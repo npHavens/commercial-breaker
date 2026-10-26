@@ -27,7 +27,7 @@ function setup(exposed = true) {
   });
   vm.runInContext(source, context);
   return { video, player, document, window, context,
-    command: (action) => JSON.parse(context.skyboxPlayerEvents(action)),
+    command: (action) => JSON.parse(context.commercialBreakerPlayerEvents(action)),
     reinject: () => vm.runInContext(source, context), expire: () => expire(), poll: () => poll() };
 }
 
@@ -128,9 +128,17 @@ test('failed descriptor inspection is reported as incomplete discovery', () => {
 test('replacing an older recorder disposes its subscriptions', () => {
   const h = setup();
   h.command('start');
-  delete h.context.skyboxPlayerEvents.probeVersion;
+  delete h.context.commercialBreakerPlayerEvents.probeVersion;
   h.reinject();
   assert.equal(h.player.count() + h.video.count() + h.document.count() + h.window.count(), 0);
   h.command('start'); h.player.emit('adstart');
   assert.equal(h.command('export').report.entries.filter(e => e.name === 'adstart').length, 1);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('player event recorder is exposed as commercialBreakerPlayerEvents only', () => {
+  const h = setup();
+  assert.equal(typeof h.context.commercialBreakerPlayerEvents, 'function');
+  assert.equal(h.context[legacy('PlayerEvents')], undefined);
 });

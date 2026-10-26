@@ -1,5 +1,5 @@
 // Pure request validation shared by the background listener and tests.
-globalThis.skyboxParamountCapture = {
+globalThis.commercialBreakerParamountCapture = {
   paramount(value) {
     try {
       const u = new URL(value);

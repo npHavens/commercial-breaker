@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paired loopback setup endpoint for the Skybox Safari extension."""
+"""Paired loopback setup endpoint for the Commercial Breaker Safari extension."""
 import json
 import secrets
 import threading
@@ -105,8 +105,8 @@ def main():
     code = secrets.token_urlsafe(24)
     try:
         with Bridge(('127.0.0.1', 8766), code) as server:
-            print('Skybox extension helper is ready. Pairing code:\n' + code, flush=True)
-            print('Paste this code in Skybox’s Paramount setup. Keep this window open. Ctrl+C stops its relay.', flush=True)
+            print('Commercial Breaker extension helper is ready. Pairing code:\n' + code, flush=True)
+            print('Paste this code in Commercial Breaker’s Paramount setup. Keep this window open. Ctrl+C stops its relay.', flush=True)
             server.serve_forever()
     except KeyboardInterrupt:
         print('\nHelper stopped.')

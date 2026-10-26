@@ -124,10 +124,16 @@ export function createLineReader(onLine, onInvalid) {
   };
 }
 
+/** An app built before this rename still sets SKYBOX_*; this worker reaches it on the next pull, but its Swift side changes only on rebuild.
+ *  Fail loudly until then rather than silently drop UFC or return detection; delete in phase 4. */
+export function workerSettings(env) {
+  if ('SKYBOX_SPORT' in env || 'SKYBOX_RETURN_DETECTION' in env) throw new Error('app-rebuild-required');
+  return { sport: env.COMMERCIAL_BREAKER_SPORT || 'football', returnDetection: env.COMMERCIAL_BREAKER_RETURN_DETECTION === '1' };
+}
+
 async function main() {
+  const { sport, returnDetection } = workerSettings(process.env);
   const ai = await createVertexClient();
-  const sport = process.env.SKYBOX_SPORT || 'football';
-  const returnDetection = process.env.SKYBOX_RETURN_DETECTION === '1';
   const crowdDetection = sport === 'football';
   const prompt = crowdDetection ? minimalPrompt(sport, { crowdCues: true })
     : returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('./prompt-common.txt', import.meta.url), 'utf8'), sport);

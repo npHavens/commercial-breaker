@@ -1,6 +1,6 @@
-# Skybox
+# Commercial Breaker
 
-A community project for watching sports with fewer audible commercials. Skybox
+A community project for watching sports with fewer audible commercials. Commercial Breaker
 uses a native macOS companion, a Safari extension, and Gemini audio detection.
 It is an early development project, not a production release.
 
@@ -47,7 +47,7 @@ and [extension setup](SafariExtension/README.md) for current local operation.
 
 Detection runs a Node worker from this checkout and sends audio to Google Vertex
 AI. You need Node 24, a Google Cloud project with the Vertex AI API enabled, and
-Application Default Credentials. Skybox does not use Gemini API keys.
+Application Default Credentials. Commercial Breaker does not use Gemini API keys.
 
 ```sh
 nvm install                            # Node 24, from .nvmrc
@@ -56,13 +56,15 @@ cp .env.example .env                   # then set GOOGLE_CLOUD_PROJECT
 gcloud auth application-default login
 ```
 
+If starting detection reports a setup failure right after a pull, rebuild the app from this checkout.
+
 The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
 `node_modules` from the checkout it was built from. If setup is incomplete,
 starting detection reports what is missing; recording continues.
 
 Application Default Credentials are shared by every app on the Mac, including
 their quota project. If another project sets it, add `GOOGLE_CLOUD_QUOTA_PROJECT`
-to `.env` (see `.env.example`) so Skybox is metered against its own project.
+to `.env` (see `.env.example`) so Commercial Breaker is metered against its own project.
 
 ## Repository map
 

@@ -2,7 +2,7 @@ import Foundation
 
 @main struct ObservationTests {
     @MainActor static func main() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("skybox-observation-\(UUID())")
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("commercial-breaker-observation-\(UUID())")
         let directory = root.appendingPathComponent("recordings/session")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -84,7 +84,7 @@ import Foundation
         try await Task.sleep(for: .milliseconds(1800))
         assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failure should restore observation")
         observer.stop()
-        for (error, hint) in [("configuration-missing", "GOOGLE_CLOUD_PROJECT"), ("dependencies-missing", "npm ci"), ("/private/path", "README")] {
+        for (error, hint) in [("configuration-missing", "GOOGLE_CLOUD_PROJECT"), ("dependencies-missing", "npm ci"), ("app-rebuild-required", "rebuild the app"), ("/private/path", "README")] {
             try """
             import json, sys
             print(json.dumps({'ready':False,'error':'\(error)'}), flush=True)
@@ -94,6 +94,12 @@ import Foundation
             try await Task.sleep(for: .milliseconds(500))
             assert(!observer.enabled && observer.status.contains(hint), "Setup failure should name its fix")
             assert(!observer.status.contains("/private"), "Unrecognized setup errors must not be displayed")
+        }
+        for (sport, returnDetection, name, flag) in [(GeminiObservation.Sport.football, false, "football", "0"), (.ufc, true, "ufc", "1")] {
+            let environment = GeminiObservation.workerEnvironment(["PATH": "/usr/bin"], sport: sport, returnDetection: returnDetection)
+            assert(environment["COMMERCIAL_BREAKER_SPORT"] == name && environment["COMMERCIAL_BREAKER_RETURN_DETECTION"] == flag, "Worker environment must carry the sport and return detection")
+            assert(environment["SKYBOX_SPORT"] == nil && environment["SKYBOX_RETURN_DETECTION"] == nil, "Worker environment must not carry the legacy names")
+            assert(environment["PATH"] == "/usr/bin", "Worker environment must keep the inherited settings")
         }
         print("Gemini lifecycle, fresh-audio failure recovery and setup failures passed · fake worker only, no upload")
     }

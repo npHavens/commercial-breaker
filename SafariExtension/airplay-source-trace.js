@@ -2,7 +2,7 @@
 (() => {
   if (location.protocol !== 'https:' || !['directv.com', 'paramountplus.com'].some(
     domain => location.hostname === domain || location.hostname.endsWith(`.${domain}`))) return;
-  if (globalThis.skyboxAirPlaySourceTrace?.running) return;
+  if (globalThis.commercialBreakerAirPlaySourceTrace?.running) return;
   const events = [], restores = [], coverage = [];
   const videos = new WeakMap(), scripts = new Map();
   let nextVideo = 0, dropped = 0, running = true;
@@ -49,11 +49,11 @@
     running = false;
     clearTimeout(expiry);
     for (const restore of restores.reverse()) { try { restore(); } catch {} }
-    document.removeEventListener('skybox-airplay-trace-stop', stop);
+    document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
   }
   const expiry = setTimeout(stop, 60 * 60 * 1000);
-  globalThis.skyboxAirPlaySourceTrace = {
+  globalThis.commercialBreakerAirPlaySourceTrace = {
     get running() { return running; },
     export: () => JSON.stringify({ running, coverage, dropped, events,
       limitation: 'MAIN-world JavaScript calls only; cached native methods, other frames/worlds and browser-internal reloads may bypass tracing. Script IDs identify callers without exporting source URLs.' })
@@ -66,6 +66,6 @@
   ]) {
     try { wrap(prototype, name, setter, filter); } catch { /* Coverage reports successful hooks only. */ }
   }
-  document.addEventListener('skybox-airplay-trace-stop', stop);
+  document.addEventListener('commercial-breaker-airplay-trace-stop', stop);
   globalThis.addEventListener('pagehide', stop);
 })();

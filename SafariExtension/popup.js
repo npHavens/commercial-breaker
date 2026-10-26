@@ -4,7 +4,7 @@ async function activeTarget(domains = ["paramountplus.com", "directv.com"]) {
   const url = new URL(tab?.url || "about:blank");
   if (url.protocol !== "https:" ||
       !domains.some((domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`))) {
-    throw new Error(`Open a video on ${domains.join(" or ")}, then open Skybox again.`);
+    throw new Error(`Open a video on ${domains.join(" or ")}, then open Commercial Breaker again.`);
   }
   return { tabId: tab.id };
 }
@@ -21,7 +21,7 @@ async function update(shouldToggle = false) {
     await browser.scripting.executeScript({ target, files: ["select-video.js", "player.js"] });
     const results = await browser.scripting.executeScript({
       target,
-      func: (command) => globalThis.skyboxPlayer(command),
+      func: (command) => globalThis.commercialBreakerPlayer(command),
       args: [shouldToggle]
     });
     const state = results[0]?.result;
@@ -32,7 +32,7 @@ async function update(shouldToggle = false) {
     if (state.paused) status.textContent += " Video is paused.";
     toggle.disabled = false;
   } catch (error) {
-    status.textContent = error.message || "Allow Skybox access to this page, then try again.";
+    status.textContent = error.message || "Allow Commercial Breaker access to this page, then try again.";
   } finally {
     refresh.disabled = false;
   }
@@ -58,11 +58,11 @@ async function diagnostics(command = "status") {
       target,
       // Serialize before Safari's native injection-result bridge sees nested numbers.
       // This also protects exports from an older recorder still running in the tab.
-      func: (action) => JSON.stringify(globalThis.skyboxDiagnostics(action)),
+      func: (action) => JSON.stringify(globalThis.commercialBreakerDiagnostics(action)),
       args: [command]
     });
     const payload = results[0]?.result;
-    if (typeof payload !== "string") throw new Error("Diagnostics returned an invalid response. Reload the Skybox extension.");
+    if (typeof payload !== "string") throw new Error("Diagnostics returned an invalid response. Reload the Commercial Breaker extension.");
     const result = JSON.parse(payload);
     if (!result?.ok) throw new Error(result?.error || "Diagnostics did not respond.");
     recording = result.running;
@@ -112,7 +112,7 @@ async function playerEvents(command) {
     const target = await activeTarget('directv.com');
     await browser.scripting.executeScript({ target, world: 'MAIN', files: ['player-events.js'] });
     const results = await browser.scripting.executeScript({ target, world: 'MAIN',
-      func: (action) => globalThis.skyboxPlayerEvents(action), args: [command] });
+      func: (action) => globalThis.commercialBreakerPlayerEvents(action), args: [command] });
     const payload = results[0]?.result;
     if (typeof payload !== 'string') throw new Error('The page event recorder did not respond.');
     const result = JSON.parse(payload);
@@ -179,7 +179,7 @@ document.querySelector('#test-frame').addEventListener('click', async () => {
 });
 
 try {
-  const last = localStorage.getItem('skybox.audio-test-status');
+  const last = localStorage.getItem('commercial-breaker.audio-test-status');
   if (last) document.querySelector('#audio-status').textContent = `Previous attempt: ${last}`;
 } catch { /* Storage may be unavailable; the live result still works. */ }
 async function audioTest(readOnly = false) {
@@ -197,9 +197,9 @@ async function audioTest(readOnly = false) {
         await browser.scripting.executeScript({ target, files: ['audio-probe.js'] });
       }
       return browser.scripting.executeScript({ target, func: () => {
-        if (globalThis.skyboxAudioProbePending) return JSON.stringify({ outcome: 'pending' });
-        return typeof globalThis.skyboxLastAudioProbeResult === 'string'
-          ? globalThis.skyboxLastAudioProbeResult : JSON.stringify({ outcome: 'not-tested' });
+        if (globalThis.commercialBreakerAudioProbePending) return JSON.stringify({ outcome: 'pending' });
+        return typeof globalThis.commercialBreakerLastAudioProbeResult === 'string'
+          ? globalThis.commercialBreakerLastAudioProbeResult : JSON.stringify({ outcome: 'not-tested' });
       } });
     };
     const results = await Promise.race([request(), new Promise((_, reject) => {
@@ -232,7 +232,7 @@ async function audioTest(readOnly = false) {
   finally {
     clearTimeout(responseTimer);
     button.disabled = false;
-    try { localStorage.setItem('skybox.audio-test-status', `${new Date().toLocaleTimeString()} · ${message.textContent}`); }
+    try { localStorage.setItem('commercial-breaker.audio-test-status', `${new Date().toLocaleTimeString()} · ${message.textContent}`); }
     catch { /* Do not hide the live result when persistence is unavailable. */ }
   }
 }
@@ -257,7 +257,7 @@ document.querySelector("#save-recording").addEventListener("click", async () => 
   const message = document.querySelector("#export-status");
   button.disabled = true;
   try {
-    const result = await globalThis.skyboxSaveRecording(browser, document.querySelector("#recording-json").value);
+    const result = await globalThis.commercialBreakerSaveRecording(browser, document.querySelector("#recording-json").value);
     message.textContent = result.method === 'page' ?
       "Opened a recording save tab. Click Download JSON there and keep it open until saved." :
       "Download requested. Check Safari’s Downloads list for completion.";
@@ -271,7 +271,7 @@ document.querySelector("#save-recording").addEventListener("click", async () => 
 const airplayButton = document.querySelector("#airplay");
 const airplayMessage = document.querySelector("#airplay-status");
 const airplayHistory = document.querySelector("#airplay-history");
-const historyKey = "skybox.airplay-attempt";
+const historyKey = "commercial-breaker.airplay-attempt";
 let airplaySteps = [];
 try {
   const saved = JSON.parse(localStorage.getItem(historyKey) || "[]");
@@ -300,13 +300,13 @@ airplayButton.addEventListener("click", async () => {
     recordAirplayStep("Player selection loaded; adding page panel.");
     await browser.scripting.executeScript({ target, files: ["airplay-session.js"] });
     const results = await browser.scripting.executeScript({ target, func: () => ({
-      ok: globalThis.skyboxAirPlayPanel?.isConnected && globalThis.skyboxAirPlayPanel.skyboxVersion === '0.1.11',
+      ok: globalThis.commercialBreakerAirPlayPanel?.isConnected && globalThis.commercialBreakerAirPlayPanel.commercialBreakerVersion === '0.1.11',
       error: 'Refresh the player page or close the old AirPlay panel, then retry.'
     }) });
     if (!results[0]?.result?.ok) throw new Error(results[0]?.result?.error || "The page did not respond.");
     await browser.scripting.executeScript({ target, world: 'MAIN', files: ['airplay-source-trace.js', 'directv-airplay-recovery.js'] });
     recordAirplayStep("Page panel added. Close the popup and look at the top-right of the webpage.");
-    airplayMessage.textContent = "Close this popup, exit video fullscreen if necessary, and click Try AirPlay in the Skybox panel on the page.";
+    airplayMessage.textContent = "Close this popup, exit video fullscreen if necessary, and click Try AirPlay in the Commercial Breaker panel on the page.";
   } catch (error) {
     airplayMessage.textContent = error.message || "Could not add the AirPlay test.";
     recordAirplayStep(`Error: ${airplayMessage.textContent}`);
@@ -318,7 +318,7 @@ airplayButton.addEventListener("click", async () => {
 async function initialize() {
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (globalThis.skyboxIsRelayUrl(tab?.url || '')) {
+    if (globalThis.commercialBreakerIsRelayUrl(tab?.url || '')) {
       document.querySelector('#relay-controls').hidden = false;
       document.querySelector('#paramount-controls').hidden = true;
       document.querySelector('#airplay-controls').hidden = true;
@@ -344,11 +344,11 @@ async function updateRelay(command = 'status') {
   mute.disabled = auto.disabled = true;
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (!globalThis.skyboxIsRelayUrl(tab?.url || '')) throw new Error('Open the Skybox relay player first.');
+    if (!globalThis.commercialBreakerIsRelayUrl(tab?.url || '')) throw new Error('Open the Commercial Breaker relay player first.');
     const target = { tabId: tab.id };
     await browser.scripting.executeScript({ target, files: ['relay-target.js', 'relay-controls.js'] });
     const results = await browser.scripting.executeScript({
-      target, func: (action) => globalThis.skyboxRelayControl(action), args: [command]
+      target, func: (action) => globalThis.commercialBreakerRelayControl(action), args: [command]
     });
     const result = results[0]?.result;
     if (!result?.ok) throw new Error(result?.error || 'Relay controls did not respond.');
@@ -358,7 +358,7 @@ async function updateRelay(command = 'status') {
     auto.textContent = result.enabled ? 'Disable automatic mute' : 'Enable automatic mute';
     mute.disabled = auto.disabled = false;
   } catch (error) {
-    message.textContent = error.message || 'Allow Skybox access to the relay page.';
+    message.textContent = error.message || 'Allow Commercial Breaker access to the relay page.';
   }
 }
 document.querySelector('#relay-mute').addEventListener('click', () => updateRelay('toggle-mute'));
@@ -389,11 +389,11 @@ document.querySelector('#airplay-export').addEventListener('click', async () => 
   try {
     const target = await activeTarget(['directv.com', 'paramountplus.com']);
     const results = await browser.scripting.executeScript({ target, func: () =>
-      globalThis.skyboxExportAirPlayPlayback?.() || '' });
+      globalThis.commercialBreakerExportAirPlayPlayback?.() || '' });
     const json = results[0]?.result;
     if (typeof json !== 'string' || !json) throw new Error('Open the updated AirPlay page panel first.');
     const trace = await browser.scripting.executeScript({ target, world: 'MAIN', func: () =>
-      globalThis.skyboxAirPlaySourceTrace?.export() || '' });
+      globalThis.commercialBreakerAirPlaySourceTrace?.export() || '' });
     const report = JSON.parse(json);
     report.sourceTrace = trace[0]?.result ? JSON.parse(trace[0].result) : { unavailable: true };
     document.querySelector('#recording-json').value = JSON.stringify(report);

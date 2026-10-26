@@ -24,7 +24,7 @@ function harness() {
   });
   vm.runInContext(source, context);
   return {
-    context, timers, command: context.skyboxDiagnostics,
+    context, timers, command: context.commercialBreakerDiagnostics,
     advance(ms) { now += ms; for (const callback of [...timers]) callback(); },
     reinject() { vm.runInContext(source, context); }
   };
@@ -102,4 +102,12 @@ test('DIRECTV recordings include service identity and reject lookalike domains',
   h.context.location.hostname = 'directv.com.example.com';
   assert.equal(h.command('start').ok, false);
   assert.equal(h.timers.size, 0);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('diagnostics command is exposed as commercialBreakerDiagnostics only', () => {
+  const h = harness();
+  assert.equal(typeof h.context.commercialBreakerDiagnostics, 'function');
+  assert.equal(h.context[legacy('Diagnostics')], undefined);
 });

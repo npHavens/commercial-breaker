@@ -1,10 +1,10 @@
 import { readFile, writeFile, mkdir, mkdtemp, rm, realpath, stat } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { join, resolve, sep } from 'node:path';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { tailOffsetFrames } from './evaluate-gemini-audio.mjs';
+import { currentRecordingPath, recordingsRoot, tailOffsetFrames } from './evaluate-gemini-audio.mjs';
 import { makeContents } from './gemini-request.mjs';
 import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
@@ -66,13 +66,13 @@ async function main() {
     return;
   }
   // Validate and convert the entire approved corpus before credentials or requests.
-  const allowed = await realpath(join(homedir(), 'Library/Application Support/SkyboxAudioProbe/recordings'));
-  const temporary = await mkdtemp(join(tmpdir(), 'skybox-compare-'));
+  const allowed = await realpath(recordingsRoot());
+  const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-compare-'));
   try {
     const audio = [];
     for (const sample of samples) {
       if (sample.synthetic) { audio.push(silence()); continue; }
-      const source = await realpath(sample.local_audio);
+      const source = await realpath(currentRecordingPath(sample.local_audio));
       if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Invalid source');
       const metadata = JSON.parse(await readFile(source.replace(/\.wav$/, '.json'), 'utf8'));
       const output = join(temporary, sample.sample_id + '.wav');

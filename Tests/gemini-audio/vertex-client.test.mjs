@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createVertexClient, setupFailure, vertexConfig } from '../../Tools/vertex-client.mjs';
+import { workerSettings } from '../../Tools/gemini-live-worker.mjs';
 
 const tools = fileURLToPath(new URL('../../Tools/', import.meta.url));
 const installed = (() => { try { createRequire(import.meta.url).resolve('@google/genai'); return true; } catch { return false; } })();
@@ -27,8 +28,8 @@ function startWorker(script, env) {
 }
 
 test('Vertex is the only destination; project is required and location defaults to global', () => {
-  assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: ' skybox-test ' }),
-    { vertexai: true, project: 'skybox-test', location: 'global' });
+  assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: ' commercial-breaker-test ' }),
+    { vertexai: true, project: 'commercial-breaker-test', location: 'global' });
   assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: 'p', GOOGLE_CLOUD_LOCATION: 'us-central1' }).location, 'us-central1');
   assert.equal(vertexConfig({ GOOGLE_CLOUD_PROJECT: 'p', GOOGLE_CLOUD_LOCATION: '  ' }).location, 'global');
   // An API key never selects a different destination than the consent text names.
@@ -45,7 +46,7 @@ test('setup failures cross stdout only as fixed categories', () => {
 });
 
 test('client is configured for Vertex with a single attempt', { skip: !installed && 'run npm ci' }, async () => {
-  const ai = await createVertexClient({ vertexai: true, project: 'skybox-test', location: 'global' });
+  const ai = await createVertexClient({ vertexai: true, project: 'commercial-breaker-test', location: 'global' });
   assert.equal(ai.vertexai, true);
   assert.equal(typeof ai.models.generateContent, 'function');
 });
@@ -61,10 +62,10 @@ test('worker reports missing configuration, then waits for the app to close inpu
 
 test('worker outside an installed checkout reports missing dependencies', async () => {
   // The worker's entry check compares resolved paths; macOS tmpdir is a symlink.
-  const copy = await realpath(await mkdtemp(join(tmpdir(), 'skybox-worker-')));
+  const copy = await realpath(await mkdtemp(join(tmpdir(), 'commercial-breaker-worker-')));
   try {
     await cp(tools, join(copy, 'Tools'), { recursive: true });
-    const { child, first, exited } = startWorker(join(copy, 'Tools/gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'skybox-test' });
+    const { child, first, exited } = startWorker(join(copy, 'Tools/gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test' });
     assert.deepEqual(await first, { ready: false, error: 'dependencies-missing' });
     child.stdin.end();
     assert.equal(await exited, 1);
@@ -73,13 +74,27 @@ test('worker outside an installed checkout reports missing dependencies', async 
 
 test('configured worker becomes ready without contacting Vertex', { skip: !installed && 'run npm ci' }, async () => {
   // An empty HOME has no Application Default Credentials; readiness must not need them.
-  const home = await mkdtemp(join(tmpdir(), 'skybox-home-'));
+  const home = await mkdtemp(join(tmpdir(), 'commercial-breaker-home-'));
   try {
-    const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'skybox-test', HOME: home });
+    const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test', HOME: home });
     const ready = await first;
     assert.equal(ready.ready, true);
     assert.equal(ready.classifier, 'crowd-minimal-v2');
     child.stdin.end();
     assert.equal(await exited, 0);
   } finally { await rm(home, { recursive: true, force: true }); }
+});
+
+test('worker settings come from the Commercial Breaker variables and default to football without return detection', () => {
+  assert.deepEqual(workerSettings({}), { sport: 'football', returnDetection: false });
+  assert.deepEqual(workerSettings({ COMMERCIAL_BREAKER_SPORT: 'ufc', COMMERCIAL_BREAKER_RETURN_DETECTION: '1' }),
+    { sport: 'ufc', returnDetection: true });
+  assert.deepEqual(workerSettings({ COMMERCIAL_BREAKER_RETURN_DETECTION: '0' }), { sport: 'football', returnDetection: false });
+});
+
+test('legacy worker variables fail startup with a category the app can show', () => {
+  for (const legacy of [{ SKYBOX_SPORT: 'ufc' }, { SKYBOX_RETURN_DETECTION: '1' }]) {
+    assert.throws(() => workerSettings({ COMMERCIAL_BREAKER_SPORT: 'football', ...legacy }), { message: 'app-rebuild-required' });
+  }
+  assert.equal(setupFailure(new Error('app-rebuild-required')), 'app-rebuild-required');
 });

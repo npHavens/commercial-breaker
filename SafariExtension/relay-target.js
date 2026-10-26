@@ -1,4 +1,4 @@
-globalThis.skyboxIsRelayUrl = function isRelayUrl(value) {
+globalThis.commercialBreakerIsRelayUrl = function isRelayUrl(value) {
   try {
     const url = new URL(value);
     const octets = url.hostname.split('.').map(Number);

@@ -20,7 +20,7 @@ enum TapAudioConversion {
     static func mono(_ list: UnsafePointer<AudioBufferList>,
                      format: AudioStreamBasicDescription) throws -> [Float] {
         func invalid(_ detail: String) -> NSError {
-            NSError(domain: "SkyboxAudio", code: 2,
+            NSError(domain: "CommercialBreakerAudio", code: 2,
                     userInfo: [NSLocalizedDescriptionKey: "Audio block rejected: \(detail)"])
         }
         let channels = Int(format.mChannelsPerFrame)
@@ -140,7 +140,7 @@ final class AudioTap {
         precondition(tapID == kAudioObjectUnknown && deviceID == kAudioObjectUnknown)
         do {
             let tap = CATapDescription(stereoGlobalTapButExcludeProcesses: [])
-            tap.name = "Skybox system audio probe"
+            tap.name = "Commercial Breaker system audio probe"
             tap.uuid = UUID()
             tap.isPrivate = true
             tap.muteBehavior = initiallyMuted ? .mutedWhenTapped : .unmuted
@@ -161,7 +161,7 @@ final class AudioTap {
             }
 
             let aggregate: [String: Any] = [
-                kAudioAggregateDeviceNameKey: "Skybox private audio meter",
+                kAudioAggregateDeviceNameKey: "Commercial Breaker private audio meter",
                 kAudioAggregateDeviceUIDKey: UUID().uuidString,
                 kAudioAggregateDeviceIsPrivateKey: true,
                 // Do not block starting when the source is silent.
@@ -186,7 +186,7 @@ final class AudioTap {
         } catch {
             let cleanup = stop()
             if !cleanup.isEmpty {
-                throw NSError(domain: "SkyboxAudio", code: 1, userInfo: [
+                throw NSError(domain: "CommercialBreakerAudio", code: 1, userInfo: [
                     NSLocalizedDescriptionKey: "\(error.localizedDescription) Cleanup: \(cleanup.joined(separator: "; "))"
                 ])
             }

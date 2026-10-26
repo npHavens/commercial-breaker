@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
     <key>NSAudioCaptureUsageDescription</key>
-    <string>Skybox listens to Mac playback audio to detect commercials and mutes it during confirmed breaks. While detection runs, audio samples are sent to Google Vertex AI.</string>
+    <string>Commercial Breaker listens to Mac playback audio to detect commercials and mutes it during confirmed breaks. While detection runs, audio samples are sent to Google Vertex AI.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Skybox listens to the TV through your microphone to detect commercials. While detection runs, audio samples, including nearby conversation, are sent to Google Vertex AI.</string>
+    <string>Commercial Breaker listens to the TV through your microphone to detect commercials. While detection runs, audio samples, including nearby conversation, are sent to Google Vertex AI.</string>
     <key>NSHighResolutionCapable</key><true/>
 </dict></plist>

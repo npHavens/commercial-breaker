@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Skybox",
+  "name": "Commercial Breaker",
   "version": "0.2.21",
   "description": "Native AirPlay experiments and relay commercial muting, plus Paramount+ manual controls and diagnostics.",
   "permissions": [
@@ -11,7 +11,7 @@
     "tabs"
   ],
   "action": {
-    "default_title": "Skybox",
+    "default_title": "Commercial Breaker",
     "default_popup": "popup.html"
   },
   "host_permissions": [

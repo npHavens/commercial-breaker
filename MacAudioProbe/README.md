@@ -24,7 +24,7 @@ Live verification pending: one Mac-mode and one AirPlay break/return cycle.
 # Standalone Gemini setup — v0.2.45
 
 Gemini no longer depends on the Interview Assistant checkout; this supersedes
-the v0.2.13 bridge described below. Skybox declares `@google/genai` in
+the v0.2.13 bridge described below. Commercial Breaker declares `@google/genai` in
 `package.json`, pins Node 24 in `.nvmrc`, and resolves Vertex settings itself
 from `GOOGLE_CLOUD_PROJECT` and optional `GOOGLE_CLOUD_LOCATION` (default
 `global`). The app starts `node --env-file-if-exists=<checkout>/.env
@@ -49,16 +49,16 @@ yet verified.
 # Automatic startup focus retry — v0.2.44
 
 October 18 logs show first-start failures after opening the AirPlay picker:
-Safari activation succeeds, then focus returns to Skybox. Later attempts work.
+Safari activation succeeds, then focus returns to Commercial Breaker. Later attempts work.
 Startup now retries TV route verification once after a 0.5-second pause, only
-when the focus failure identifies this Skybox process and it remains frontmost.
+when the focus failure identifies this Commercial Breaker process and it remains frontmost.
 It still requires the TV already selected; no destination is selected by startup.
 Cancellation, another foreground app, missing page controls, and an unexpected
 route still stop startup. Break/return handoffs retain their existing focus rules.
 Both attempts retain separate routing logs; a successful retry is noted in the
 second log. This is a bounded recovery, not a confirmed fix for the focus bounce.
 
-Live verification pending: first start from Skybox with TV already playing;
+Live verification pending: first start from Commercial Breaker with TV already playing;
 cancel during startup; switch to another app during startup; verify that an
 incorrect initial route and a missing extension panel still fail safely.
 The build is separate from the running app; restart only when playback permits.
@@ -93,7 +93,7 @@ changed, no keys or mouse events are synthesized, and it cannot unlock a Mac.
 Failures are logged once per session; they do not stop audio detection.
 
 The detector remains crowd-minimal-v2 from October 4. Nick reports that Flash
-billing for the week's Skybox usage was only a few dollars; prioritize detection
+billing for the week's Commercial Breaker usage was only a few dollars; prioritize detection
 responsiveness and accuracy over reducing request volume. Retain one in-flight
 request to prevent a stale backlog.
 
@@ -141,7 +141,7 @@ This is a live activation experiment, not a proven Safari user-gesture workaroun
 # Sport selection — v0.2.38
 
 Automatic has a Football/UFC picker, default Football, disabled while running or
-recovering. The selection is passed to every worker through SKYBOX_SPORT, including
+recovering. The selection is passed to every worker through COMMERCIAL_BREAKER_SPORT, including
 all capture handoffs and retries. Each worker combines Tools/sport-prompt.mjs
 sport-specific editorial criteria with prompt-common.txt shared advertising rules.
 Football includes halftime analysis; UFC includes between-fight coverage. Another
@@ -159,7 +159,7 @@ Automatic system capture now retains the exact eight-second WAV request for a
 fresh program prediction, with request ID, capture session, window times and
 result metadata. Microphone and standalone observation requests are not retained
 by this diagnostic. Six rotating slots (48 seconds total, about 1.5 MB of WAV)
-are overwritten across capture legs in Application Support/SkyboxAudioProbe/
+are overwritten across capture legs in Application Support/CommercialBreaker/
 return-audio-diagnostics. Files remain after stopping for local inspection;
 no additional cloud requests are made. Failed saves are logged without stopping
 automation. Classification rules are unchanged. This supplies evidence for the
@@ -248,7 +248,7 @@ Live relay sessions confirmed breaks but stopped before selecting the Mac route:
 the single AppKit activation request did not establish Safari foreground within
 the old fixed half-second wait. This does not establish which app held focus.
 
-Routing now yields Skybox activation to Safari, requests cooperative activation,
+Routing now yields Commercial Breaker activation to Safari, requests cooperative activation,
 and polls for one second. If unconfirmed, it requests AXFrontmost on that Safari
 process and polls for two more seconds. Cancellation remains effective during
 polling; a failed foreground request never authorizes a click. Existing focus
@@ -475,7 +475,7 @@ and microphone gain are unchanged.
 
 The new Automatic tab connects two-result Gemini confirmations to native AirPlay
 routing and the existing muted system-audio tap. Start with DIRECTV already playing
-on the TV, the Skybox extension page panel visible in Safari, and exact Mac/TV names
+on the TV, the Commercial Breaker extension page panel visible in Safari, and exact Mac/TV names
 saved in the AirPlay tab. Stop other capture/recording tests first.
 
 Click **Start automatic test**. This enables audio uploads to Vertex AI for the
@@ -556,7 +556,7 @@ and actual fake-worker recovery path are covered by tests.
 
 The Recorder now offers an explicitly enabled Gemini observation mode. It uses
 Interview Assistant's installed Node 24/tsx/Google SDK and Vertex credentials,
-without modifying that project. This development bridge requires the Skybox and
+without modifying that project. This development bridge requires the Commercial Breaker and
 Interview Assistant source directories to remain in their current locations.
 It discovers Node 24 under `~/.nvm/versions/node`. Worker startup fails if the
 shared configuration is not Vertex, matching the destination named in the UI.
@@ -740,7 +740,7 @@ verification; the earlier routing results below do not verify this new recorder.
    saves the available partial clip. **Show saved clips** opens the session folder.
 
 Files stay on this Mac in
-`~/Library/Application Support/SkyboxAudioProbe/recordings/<session UUID>/`:
+`~/Library/Application Support/CommercialBreaker/recordings/<session UUID>/`:
 marked WAV clips, their JSON metadata, and `events.jsonl`. Metadata records
 available coverage and missing-audio information; a marker with no audio may
 produce metadata without a WAV. Unmarked audio is held only in a bounded memory
@@ -912,7 +912,7 @@ selection, and a bounded TV → Mac → TV test. Build and exact-name selection
 checks pass. Live Safari Accessibility behavior remains unverified.
 
 1. Quit the old probe and open the newly built app. Confirm **v0.2.0** in AirPlay.
-2. In Safari, play DIRECTV and show Skybox's page panel with **Try AirPlay**.
+2. In Safari, play DIRECTV and show Commercial Breaker's page panel with **Try AirPlay**.
    Keep that tab in the front Safari window, exit fullscreen, and connect to TV.
 3. In the native app, click **Enable Accessibility**. Enable **SkyboxAudioProbe**
    under System Settings → Privacy & Security → Accessibility. This permission
@@ -1053,7 +1053,7 @@ protected video.
 Files save automatically in:
 
 ```text
-~/Library/Application Support/SkyboxAudioProbe/
+~/Library/Application Support/CommercialBreaker/
 ```
 
 - `probe-<timestamp>-<UUID>.jsonl`: timestamped startup, level measurements,
