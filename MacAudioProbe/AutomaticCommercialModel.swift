@@ -54,7 +54,7 @@ final class AutomaticCommercialModel: ObservableObject {
         do {
             let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                                                    appropriateFor: nil, create: true)
-                .appendingPathComponent("SkyboxAudioProbe")
+                .appendingPathComponent(applicationSupportDirectoryName)
             try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
             logURL = base.appendingPathComponent("automatic-\(id.uuidString).jsonl")
         } catch {
@@ -64,7 +64,7 @@ final class AutomaticCommercialModel: ObservableObject {
         }
         awakeActivity = ProcessInfo.processInfo.beginActivity(
             options: [.userInitiated, .idleDisplaySleepDisabled],
-            reason: "Skybox automatic commercial detection and AirPlay routing")
+            reason: "Commercial Breaker automatic commercial detection and AirPlay routing")
         record("Keeping Mac and display awake while automatic mode is active")
         viewingActivity.start()
         viewingActivityFailed = false

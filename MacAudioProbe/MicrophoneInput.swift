@@ -89,7 +89,7 @@ final class MicrophoneInput {
     }
 
     private func failure(_ message: String) -> NSError {
-        NSError(domain: "SkyboxMicrophone", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+        NSError(domain: "CommercialBreakerMicrophone", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
     }
 }
 

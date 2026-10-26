@@ -28,8 +28,8 @@ function startWorker(script, env) {
 }
 
 test('Vertex is the only destination; project is required and location defaults to global', () => {
-  assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: ' skybox-test ' }),
-    { vertexai: true, project: 'skybox-test', location: 'global' });
+  assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: ' commercial-breaker-test ' }),
+    { vertexai: true, project: 'commercial-breaker-test', location: 'global' });
   assert.deepEqual(vertexConfig({ GOOGLE_CLOUD_PROJECT: 'p', GOOGLE_CLOUD_LOCATION: 'us-central1' }).location, 'us-central1');
   assert.equal(vertexConfig({ GOOGLE_CLOUD_PROJECT: 'p', GOOGLE_CLOUD_LOCATION: '  ' }).location, 'global');
   // An API key never selects a different destination than the consent text names.
@@ -46,7 +46,7 @@ test('setup failures cross stdout only as fixed categories', () => {
 });
 
 test('client is configured for Vertex with a single attempt', { skip: !installed && 'run npm ci' }, async () => {
-  const ai = await createVertexClient({ vertexai: true, project: 'skybox-test', location: 'global' });
+  const ai = await createVertexClient({ vertexai: true, project: 'commercial-breaker-test', location: 'global' });
   assert.equal(ai.vertexai, true);
   assert.equal(typeof ai.models.generateContent, 'function');
 });
@@ -62,10 +62,10 @@ test('worker reports missing configuration, then waits for the app to close inpu
 
 test('worker outside an installed checkout reports missing dependencies', async () => {
   // The worker's entry check compares resolved paths; macOS tmpdir is a symlink.
-  const copy = await realpath(await mkdtemp(join(tmpdir(), 'skybox-worker-')));
+  const copy = await realpath(await mkdtemp(join(tmpdir(), 'commercial-breaker-worker-')));
   try {
     await cp(tools, join(copy, 'Tools'), { recursive: true });
-    const { child, first, exited } = startWorker(join(copy, 'Tools/gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'skybox-test' });
+    const { child, first, exited } = startWorker(join(copy, 'Tools/gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test' });
     assert.deepEqual(await first, { ready: false, error: 'dependencies-missing' });
     child.stdin.end();
     assert.equal(await exited, 1);
@@ -74,9 +74,9 @@ test('worker outside an installed checkout reports missing dependencies', async 
 
 test('configured worker becomes ready without contacting Vertex', { skip: !installed && 'run npm ci' }, async () => {
   // An empty HOME has no Application Default Credentials; readiness must not need them.
-  const home = await mkdtemp(join(tmpdir(), 'skybox-home-'));
+  const home = await mkdtemp(join(tmpdir(), 'commercial-breaker-home-'));
   try {
-    const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'skybox-test', HOME: home });
+    const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test', HOME: home });
     const ready = await first;
     assert.equal(ready.ready, true);
     assert.equal(ready.classifier, 'crowd-minimal-v2');

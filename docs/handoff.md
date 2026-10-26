@@ -103,7 +103,9 @@ Do not combine all of this into one rewrite.
 
 ## Local evidence and repository hygiene
 
-Logs/recordings: `~/Library/Application Support/SkyboxAudioProbe/`.
+Logs/recordings: `~/Library/Application Support/CommercialBreaker/`. The app moves the old
+`SkyboxAudioProbe/` folder there on first launch if the new one does not exist; quit the old
+app before the first launch of the rebuilt one, since a running old binary recreates the old folder.
 Automatic logs are `automatic-*.jsonl`; routing logs `routing-*.log`; capture
 sessions are under `recordings/`. Inspect narrow metadata; avoid exposing audio,
 room voices, tokens or session URLs. Offline tests do not authorize new uploads.
@@ -118,8 +120,7 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 
 The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
 `SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target and scheme, the
-`~/Library/Application Support/SkyboxAudioProbe/` directory, the `/tmp/skybox-*` test
-paths, the GitHub repo URL and the local checkout directory.
+`/tmp/skybox-*` test paths, the GitHub repo URL and the local checkout directory.
 
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs

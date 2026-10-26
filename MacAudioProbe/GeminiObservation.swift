@@ -301,8 +301,8 @@ final class GeminiObservation: ObservableObject {
 
     static func setupMessage(_ error: String?) -> String {
         switch error {
-        case "dependencies-missing": "Gemini could not start · run npm ci in the Skybox checkout. Recording continues."
-        case "configuration-missing": "Gemini could not start · set GOOGLE_CLOUD_PROJECT in the Skybox .env. Recording continues."
+        case "dependencies-missing": "Gemini could not start · run npm ci in the Commercial Breaker checkout. Recording continues."
+        case "configuration-missing": "Gemini could not start · set GOOGLE_CLOUD_PROJECT in the Commercial Breaker .env. Recording continues."
         case "app-rebuild-required": "Gemini could not start · rebuild the app from this checkout. Recording continues."
         default: "Gemini could not start · see Gemini setup in the README. Recording continues."
         }

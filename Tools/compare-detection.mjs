@@ -1,10 +1,10 @@
 import { readFile, writeFile, mkdir, mkdtemp, rm, realpath, stat } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { join, resolve, sep } from 'node:path';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { tailOffsetFrames } from './evaluate-gemini-audio.mjs';
+import { recordingsRoot, tailOffsetFrames } from './evaluate-gemini-audio.mjs';
 import { makeContents } from './gemini-request.mjs';
 import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
@@ -66,7 +66,7 @@ async function main() {
     return;
   }
   // Validate and convert the entire approved corpus before credentials or requests.
-  const allowed = await realpath(join(homedir(), 'Library/Application Support/SkyboxAudioProbe/recordings'));
+  const allowed = await realpath(recordingsRoot());
   const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-compare-'));
   try {
     const audio = [];

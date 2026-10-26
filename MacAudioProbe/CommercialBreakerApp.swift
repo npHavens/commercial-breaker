@@ -2,11 +2,11 @@ import SwiftUI
 import AppKit
 
 @main
-struct SkyboxAudioProbeApp: App {
+struct CommercialBreakerApp: App {
     @NSApplicationDelegateAdaptor(ProbeAppDelegate.self) private var delegate
 
     var body: some Scene {
-        WindowGroup("Skybox Audio Probe") {
+        WindowGroup("Commercial Breaker") {
             ProbeTabs(routing: delegate.routing, recorder: delegate.recorder, automatic: delegate.automatic)
         }
         .windowResizability(.contentSize)
@@ -15,8 +15,15 @@ struct SkyboxAudioProbeApp: App {
 
 @MainActor
 final class ProbeAppDelegate: NSObject, NSApplicationDelegate {
-    let recorder = AudioRecorderModel()
-    let routing = RoutingModel()
+    let recorder: AudioRecorderModel
+    let routing: RoutingModel
+
+    override init() {
+        migrateUserApplicationSupportDirectory()
+        recorder = AudioRecorderModel()
+        routing = RoutingModel()
+        super.init()
+    }
 
     lazy var automatic = AutomaticCommercialModel(recorder: recorder, routing: routing)
 
