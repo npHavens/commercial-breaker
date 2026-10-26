@@ -4,7 +4,7 @@ import { join, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { recordingsRoot, tailOffsetFrames } from './evaluate-gemini-audio.mjs';
+import { currentRecordingPath, recordingsRoot, tailOffsetFrames } from './evaluate-gemini-audio.mjs';
 import { makeContents } from './gemini-request.mjs';
 import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
@@ -72,7 +72,7 @@ async function main() {
     const audio = [];
     for (const sample of samples) {
       if (sample.synthetic) { audio.push(silence()); continue; }
-      const source = await realpath(sample.local_audio);
+      const source = await realpath(currentRecordingPath(sample.local_audio));
       if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Invalid source');
       const metadata = JSON.parse(await readFile(source.replace(/\.wav$/, '.json'), 'utf8'));
       const output = join(temporary, sample.sample_id + '.wav');

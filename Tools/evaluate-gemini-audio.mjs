@@ -15,6 +15,12 @@ export function recordingsRoot(home = homedir()) {
   return join(home, 'Library/Application Support/CommercialBreaker/recordings');
 }
 
+/** Manifests predate the rename; the app moved their SkyboxAudioProbe folder at launch. */
+export function currentRecordingPath(path, home = homedir()) {
+  const legacy = join(home, 'Library/Application Support/SkyboxAudioProbe/recordings') + sep;
+  return path.startsWith(legacy) ? join(recordingsRoot(home), path.slice(legacy.length)) : path;
+}
+
 /** Computes an exact input-frame offset for a bounded tail sample. */
 export function tailOffsetFrames(metadata, seconds) {
   if (!Number.isInteger(seconds) || seconds < 5 || seconds > 30
@@ -64,7 +70,7 @@ async function main() {
   console.log(JSON.stringify({ model, provider: 'vertex', samples: samples.length, output: run }));
   const allowed = await realpath(recordingsRoot());
   for (const sample of samples) {
-    const source = await realpath(sample.local_audio);
+    const source = await realpath(currentRecordingPath(sample.local_audio));
     if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Audio outside approved scope');
     const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-gemini-'));
     let started;
