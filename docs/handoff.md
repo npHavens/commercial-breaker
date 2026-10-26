@@ -1,4 +1,4 @@
-# Commercial Breaker handoff to Claude — October 18, 2026
+# Commercial Breaker handoff to Claude — October 26, 2026
 
 ## Start here
 
@@ -16,21 +16,24 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Native v0.2.46 on `chore/remove-unused-native` removes unused features (two
-  tabs remain: Automatic and AirPlay); live break/return cycles pending.
-- Native v0.2.45 built, signed and running. Build path:
-  `build/mac-audio-oct18-standalone/Build/Products/Debug/SkyboxAudioProbe.app`.
-  Nick started a live session on October 18: worker ready in about a second,
-  unchanged football prompt hash, predictions and a confirmed break normal.
-- Nick reports AirPlay working well and confirmed the v0.2.44 startup fix and
-  Mac playback. He did not separately confirm every cancellation, timeout or
-  focus edge case.
+- Main is at d079dec with PRs #1–#7 merged. The Skybox → Commercial Breaker
+  rename (plan PR #6, code PR #7) is in, apart from the Xcode target and product
+  name, which wait for phase 4 (see Commands).
+- Native v0.2.46 (two tabs: Automatic and AirPlay) built from d079dec, signed and
+  running. Build path:
+  `build/mac-audio-oct26-rename/Build/Products/Debug/SkyboxAudioProbe.app`.
+  On October 26 Nick ran it on a recorded DIRECTV game. The support folder
+  migrated, macOS did not re-prompt for microphone, system audio or
+  Accessibility, and an AirPlay break moved to the Mac and returned to TV.
+- The return to TV fails when another app, usually VS Code, is frontmost: see
+  Remaining issues. Keep Safari in front during AirPlay tests.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
-  still lacks explicit live verification. Short DIRECTV handoff rewind accepted.
-- Codex automatic reviews run on every PR (Smart detect). PRs #1 and #2 merged
-  after reviews with no findings. Recheck GitHub before merging.
-- Latest offline suites: 142 JavaScript tests, 37 Python tests and all 11
-  native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
+  still lacks explicit live verification. The short DIRECTV handoff rewind was
+  accepted earlier; it was not separately confirmed in the October 26 test.
+- Codex automatic reviews run on every PR (Smart detect). Recheck GitHub before
+  merging.
+- Offline suites on d079dec (October 26): 172 JavaScript tests, 37 Python tests and
+  all 12 native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
 
 ## Behavior and important code
 
@@ -76,18 +79,18 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
 2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Commercial Breaker reads
    Vertex settings from its own ignored `.env`; never copy secrets into this
    public repository.
-3. Done on `chore/separate-runtime-code`: runtime prompts and helpers moved out
-   of evaluation code and `Experiments/` into `Tools/`, with prompt hashes
-   unchanged and a boundary test.
-4. In review on `chore/remove-unused-native` (v0.2.46): tvOS/PiP, the Audio,
-   Video and Recorder tabs, markers, clip store and cue detector are removed;
-   the AirPlay tab keeps the TV setting and recovery tools. Needs one Mac-mode
-   and one AirPlay cycle from Nick before merging.
-5. Next, per the technical cleanup plan in Nick's Notion project notes: trim the
-   Safari extension (keep DIRECTV recovery, the AirPlay button and the
-   Paramount+ relay), then move experiment findings into `docs/archive`.
-   Release work (branded UI, guided setup, packaged extension) is deferred;
-   brand and UI design is happening separately in Figma.
+3. Done: PR #3 moved runtime prompts and helpers out of evaluation code and
+   `Experiments/` into `Tools/`, with prompt hashes unchanged and a boundary test.
+4. Done: PR #4 moved detection to Gemini 3.8 Flash; PR #5 (phase 2, v0.2.46)
+   removed tvOS/PiP, the Audio, Video and Recorder tabs, markers, clip store and
+   cue detector.
+5. Done: PRs #6 and #7 renamed Skybox to Commercial Breaker, live-verified
+   October 26.
+6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
+   (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
+   renames the Xcode target and product, and adds the icon set from the
+   Scoreboard CB design in Figma. Moving experiment findings into `docs/archive`
+   is its own PR.
 
 Do not combine all of this into one rewrite.
 
@@ -101,6 +104,15 @@ Do not combine all of this into one rewrite.
 - Cost is not the current constraint: Nick reports Gemini usage costs only a few
   dollars. Prioritize accuracy/speed; retain one in-flight request for freshness.
 - Paramount/UFC relay workflow is preserved but not newly validated this session.
+- AirPlay handoffs need Safari frontmost. When another app is in front, macOS
+  refuses cooperative activation, the Accessibility fallback takes keyboard focus,
+  and the focus guard stops once that app regains focus, leaving playback on the
+  Mac. With VS Code frontmost, 7 of 9 logged handoffs failed (October 4, 11 and
+  26); all 5 with Chrome or Notion frontmost succeeded. When the Accessibility
+  press does not open the picker, the fallback mouse click also moves the pointer.
+  Low-priority fix in the backlog: keep automatic mode running, offer a one-click
+  "Back to TV" from a notification or the menu bar item (activating Commercial
+  Breaker makes cooperative activation succeed), then refocus the previous app.
 
 ## Local evidence and repository hygiene
 
@@ -143,9 +155,8 @@ show it as "see Gemini setup in the README").
 4. Reload the temporary Safari extension, re-grant site access if Safari asks, and refresh
    any open DIRECTV, Paramount+ and relay tabs. An old DIRECTV recovery instance keeps
    running beside the new one until the page is refreshed.
-5. Pending live checks: one DIRECTV AirPlay break/return cycle including the short handoff
-   rewind, and confirming the rebuilt app does not re-prompt for microphone, system audio
-   or Accessibility.
+5. Verified October 26: a DIRECTV AirPlay break/return with Safari in front, and no
+   re-prompt for microphone, system audio or Accessibility.
 
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
