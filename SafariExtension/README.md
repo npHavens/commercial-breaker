@@ -37,7 +37,7 @@ repeated returns, metadata preservation, restoration and unsupported controls;
 Nick reported on October 4 that the AirPlay subtitle issue appears resolved in
 the live DIRECTV session. Longer-run and other-service behavior remain unverified.
 
-# Skybox Safari extension
+# Commercial Breaker Safari extension
 
 ## Paramount session capture (v0.2.16)
 
@@ -46,7 +46,7 @@ the live DIRECTV session. Longer-run and other-service behavior remain unverifie
    starting it does not stop existing TV playback.
 2. Reload the temporary Safari extension from this folder. Confirm v0.2.16 and
    grant its requested Paramount, Google DAI, Irdeto and loopback access.
-3. On the original Paramount tab, open Skybox, paste the helper's pairing code
+3. On the original Paramount tab, open Commercial Breaker, paste the helper's pairing code
    under Paramount TV setup, and click **Capture Paramount & open relay**.
 4. Reload that Paramount tab and resume playback. Capture survives the popup
    closing. It waits up to two minutes for this tab's successful variant playlist
@@ -97,7 +97,7 @@ Closing the panel, player replacement, or page exit cancels pending test timers
 and restores the changed attribute. Browser background throttling can delay the
 nominal timeouts. Reinjection will not duplicate an existing current panel.
 The most recent result is retained as a JSON string in
-`globalThis.skyboxAirPlayRouteResult` until page refresh, with no stream URLs.
+`globalThis.commercialBreakerAirPlayRouteResult` until page refresh, with no stream URLs.
 
 Apple documents a [picker-based selection API](https://developer.apple.com/documentation/webkitjs/adding_an_airplay_button_to_your_safari_media_controls).
 WebKit's [JavaScript interface](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/html/HTMLMediaElement.idl)
@@ -194,13 +194,13 @@ Verification: 47 JavaScript behavior tests passed, including DIRECTV popup routi
 
 ## Relay integration (v0.2.0)
 
-The extension now controls the local HLS relay player: manual mute/unmute and an opt-in automatic commercial-mute toggle. On the relay tab, Skybox checks its private-LAN session URL and page marker, then operates the existing page controller. No additional host permissions or credential capture are used. DIRECTV/Paramount page controls remain separate; automatic commercial mute is currently supported only on the relay player.
+The extension now controls the local HLS relay player: manual mute/unmute and an opt-in automatic commercial-mute toggle. On the relay tab, Commercial Breaker checks its private-LAN session URL and page marker, then operates the existing page controller. No additional host permissions or credential capture are used. DIRECTV/Paramount page controls remain separate; automatic commercial mute is currently supported only on the relay player.
 
 Restart the updated relay, open its new session URL in Safari, reload this temporary extension, and confirm **v0.2.0** in the popup. Enable automatic mode after confirming manual mute reaches the TV. See [the relay guide](../Experiments/hls-relay.md#extension-and-automatic-commercial-mute-v020) for the full real-break test. Automated behavior is implemented; its alignment and TV audio effects still need live verification.
 
 Automatic mode follows HLS cue markers at the video's playback timestamp. It restores only mutes it applied. Unknown/stale timing releases its mute; manual audio changes turn automatic mode off. Monitoring remains in the player when the popup closes, and is off after a page refresh. Safari background suspension can delay transitions.
 
-Part of the existing Skybox project. A dependency-free Manifest V3 prototype for manually muting Paramount+ during Safari extended-desktop AirPlay playback.
+Part of the existing Commercial Breaker project. A dependency-free Manifest V3 prototype for manually muting Paramount+ during Safari extended-desktop AirPlay playback.
 
 ## Status
 
@@ -224,7 +224,7 @@ Tests execute the actual selection and player scripts against a simulated DOM. T
 
 1. In Safari Settings, enable developer features under Advanced.
 2. In the Developer settings tab, use the temporary-extension loading control and choose this `SafariExtension` directory (the directory containing manifest.json).
-3. Open Paramount+, play the live stream, and open Skybox from Safari's toolbar. Grant page access if Safari asks.
+3. Open Paramount+, play the live stream, and open Commercial Breaker from Safari's toolbar. Grant page access if Safari asks.
 4. With extended-desktop AirPlay still active, click Mute player. Verify that TV audio stops and video continues. Click Unmute player and verify audio returns.
 5. Also check a Paramount+ page without a video and a different website. They should display an error rather than act on another tab.
 6. Reload the Paramount+ tab and verify controls still work. Change mute using Paramount+'s own control, then use Check again to refresh the popup state.
@@ -242,10 +242,10 @@ The extension changes only `video.muted`, retaining volume, playback position, a
 Reload the temporary extension in Safari's Developer settings (remove and add the same folder again if no reload control is available). Close and reopen its popup. The updated popup includes Commercial signals. If updating removes page access, grant it again on Paramount+.
 
 1. Start recording while the broadcast is playing normally. Close the popup; sampling continues in the page.
-2. At the next commercial, reopen Skybox and click Mark commercial started.
+2. At the next commercial, reopen Commercial Breaker and click Mark commercial started.
 3. When the broadcast returns, click Mark broadcast returned.
 4. Click Stop recording, then Export recording → Save JSON file. Download before refreshing or closing the Paramount+ tab, because recordings live only in that tab's memory.
-5. Supply the downloaded skybox-signals JSON file for analysis. A second complete break will help distinguish reliable signals from coincidental changes.
+5. Supply the downloaded commercial-breaker-signals JSON file for analysis. A second complete break will help distinguish reliable signals from coincidental changes.
 
 The recorder samples once per second while browser scheduling permits. It stops at the first tick after 15 minutes and retains at most 1,200 entries. Starting a new recording clears the previous one. Reopening the popup does not restart the timer. Manual marks refer to when you click, so allow for human reaction time and AirPlay delay.
 

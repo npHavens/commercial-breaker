@@ -1,4 +1,4 @@
-# Skybox handoff to Claude — October 18, 2026
+# Commercial Breaker handoff to Claude — October 18, 2026
 
 ## Start here
 
@@ -47,14 +47,14 @@ three minutes and continue detection. AirPlay waits for confirmed program before
 returning TV; local mode waits for program before rearming for another break.
 
 `RoutingModel.verifyTVForAutomation` retries once only when a startup focus failure
-returns to this Skybox process and it remains foreground after a short wait.
+returns to this Commercial Breaker process and it remains foreground after a short wait.
 Startup verifies an already-selected TV and does not choose a destination. Normal
 handoffs still stop on focus loss. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 
 `Tools/gemini-live-worker.mjs` uses Gemini 3.8 Flash at thinking level `LOW`
-(October 25: Skybox moved to Vertex project `nhs-commercial-breaker`, where 2.5
+(October 25: Commercial Breaker moved to Vertex project `nhs-commercial-breaker`, where 2.5
 Flash is unavailable). In the first live session that day Nick found it working
 well enough: 1.68 s median, no thinking tokens, one 20 s timeout in nine requests.
 Break and return accuracy has not been measured. `Tools/evaluate-gemini-audio.mjs` remains
@@ -67,12 +67,13 @@ Program return confirmation requires two positives spanning fresh audio.
 
 `SafariExtension/directv-airplay-recovery.js` corrects a handoff timeline mismatch
 with a guarded seek; preserve its autoload and safety checks. See
-`Experiments/airplay-return-oct4.md` for investigation and evidence.
+`Experiments/airplay-return-oct4.md` for investigation and evidence (historical: its stop
+command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.stop()`).
 
 ## Next work
 
 1. Done: PR #1 merged after Codex review.
-2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Skybox reads
+2. Done: PR #2 made setup standalone (v0.2.45, live-verified). Commercial Breaker reads
    Vertex settings from its own ignored `.env`; never copy secrets into this
    public repository.
 3. Done on `chore/separate-runtime-code`: runtime prompts and helpers moved out
@@ -103,7 +104,9 @@ Do not combine all of this into one rewrite.
 
 ## Local evidence and repository hygiene
 
-Logs/recordings: `~/Library/Application Support/SkyboxAudioProbe/`.
+Logs/recordings: `~/Library/Application Support/CommercialBreaker/`. The app moves the old
+`SkyboxAudioProbe/` folder there on first launch if the new one does not exist; quit the old
+app before the first launch of the rebuilt one, since a running old binary recreates the old folder.
 Automatic logs are `automatic-*.jsonl`; routing logs `routing-*.log`; capture
 sessions are under `recordings/`. Inspect narrow metadata; avoid exposing audio,
 room voices, tokens or session URLs. Offline tests do not authorize new uploads.
@@ -116,6 +119,34 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 
 ## Commands
 
+The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
+`SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target, scheme and `SkyboxAudioProbe.app`
+product, the `/tmp/skybox-*` test paths, the GitHub repo URL and the local checkout directory.
+
+The `com.nohandsstack.skybox.*` bundle IDs and the `com.nohandsstack.skybox.audio-meter`
+queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audio and
+Accessibility grants to the bundle ID, so they must never be renamed. Six System Settings
+instructions still name the old app until the target and product rename in phase 4, because
+that is the name System Settings lists: `SafariAccessibility.swift` x3, `RoutingModel.swift` x2,
+`MicrophoneInput.swift` x1.
+
+### After pulling the rename
+
+Nick runs the app from this checkout. Pulling changes `Tools/` immediately but Swift only
+after a rebuild; an old binary's worker start fails with `app-rebuild-required` (old builds
+show it as "see Gemini setup in the README").
+
+1. Pull only when no detection session is running.
+2. Rebuild to a NEW derived-data path (the build command is in the README).
+3. Quit the old app, launch the new one, and confirm the history now lives in
+   `~/Library/Application Support/CommercialBreaker/`.
+4. Reload the temporary Safari extension, re-grant site access if Safari asks, and refresh
+   any open DIRECTV, Paramount+ and relay tabs. An old DIRECTV recovery instance keeps
+   running beside the new one until the page is refreshed.
+5. Pending live checks: one DIRECTV AirPlay break/return cycle including the short handoff
+   rewind, and confirming the rebuilt app does not re-prompt for microphone, system audio
+   or Accessibility.
+
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
 python3 -m unittest discover -s Tests -p 'test_*.py'
@@ -127,5 +158,4 @@ xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
 
 Local Xcode is `/Users/nickhavens/Downloads/Xcode.app`. Use scheme
 `SkyboxAudioProbe` and a NEW derivedDataPath to avoid altering the running bundle.
-The `SkyboxProbe` scheme is the historical tvOS app. A build can be done separately;
-launch/restart only when Nick's playback permits.
+A build can be done separately; launch/restart only when Nick's playback permits.

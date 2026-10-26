@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
+import { currentRecordingPath, recordingsRoot, tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
 import { makeContents } from '../../Tools/gemini-request.mjs';
 import { parseResult } from '../../Tools/standard-classifier.mjs';
 const valid = { state_at_end:'unclear', tv_audibility:'faint', room_speech_overlap:'uncertain', transition_heard:false, evidence:'TV is obscured', confidence:0.2 };
@@ -32,4 +32,19 @@ test('shared sports program is accepted; obsolete live football state is rejecte
   assert.equal(parseResult(JSON.stringify({...valid,state_at_end:state})).state_at_end,state);
  }
  assert.throws(() => parseResult(JSON.stringify({...valid,state_at_end:'football'})));
+});
+
+test('recordings root is the CommercialBreaker recordings directory', () => {
+  assert.equal(recordingsRoot('/Users/tester'), '/Users/tester/Library/Application Support/CommercialBreaker/recordings');
+  assert.match(recordingsRoot(), /\/CommercialBreaker\/recordings$/);
+});
+
+test('manifest clips saved before the rename resolve under the migrated recordings root', () => {
+  const support = '/Users/tester/Library/Application Support';
+  assert.equal(currentRecordingPath(`${support}/SkyboxAudioProbe/recordings/A1/clip.wav`, '/Users/tester'),
+    `${support}/CommercialBreaker/recordings/A1/clip.wav`);
+  for (const unchanged of [`${support}/CommercialBreaker/recordings/A1/clip.wav`, '/tmp/clip.wav',
+    `${support}/SkyboxAudioProbe/recordings-old/clip.wav`]) {
+    assert.equal(currentRecordingPath(unchanged, '/Users/tester'), unchanged);
+  }
 });

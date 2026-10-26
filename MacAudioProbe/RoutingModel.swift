@@ -11,7 +11,7 @@ final class RoutingModel: ObservableObject {
         didSet { UserDefaults.standard.set(tvName, forKey: "route.tvName") }
     }
     @Published var busy = false
-    @Published var status = "Open the Skybox extension panel or HLS relay player in Safari, then inspect the picker."
+    @Published var status = "Open the Commercial Breaker extension panel or HLS relay player in Safari, then inspect the picker."
     @Published var controls: [RouteControl] = []
     @Published var history = ""
     @Published var logError: String?
@@ -19,7 +19,7 @@ final class RoutingModel: ObservableObject {
     private var task: Task<Void, Never>?
     private var logURL: URL?
     private static let logDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("SkyboxAudioProbe", isDirectory: true)
+        .appendingPathComponent(applicationSupportDirectoryName, isDirectory: true)
 
     func requestPermission() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
@@ -62,14 +62,14 @@ final class RoutingModel: ObservableObject {
     func verifyTVForAutomation(_ tv: String) async throws {
         do {
             try await routeForAutomation(from: tv, to: tv)
-        } catch let failure as RoutingFailure where failure.focusReturnedToSkybox {
+        } catch let failure as RoutingFailure where failure.focusReturnedToCommercialBreaker {
             try await wait(0.5)
             try Task.checkCancellation()
             guard NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier else {
                 throw failure
             }
             try await routeForAutomation(from: tv, to: tv)
-            record("Startup route verified after one retry for focus returning to Skybox.")
+            record("Startup route verified after one retry for focus returning to Commercial Breaker.")
         }
     }
 
@@ -254,7 +254,7 @@ final class RoutingModel: ObservableObject {
         guard NSWorkspace.shared.frontmostApplication?.processIdentifier == pid else {
             throw RoutingFailure(
                 message: "Focus moved away from Safari (frontmost: \(frontmostIdentity())). Stopped to avoid acting in another app.",
-                focusReturnedToSkybox: NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier)
+                focusReturnedToCommercialBreaker: NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier)
         }
     }
 

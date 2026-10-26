@@ -14,7 +14,7 @@
           rect.top < innerHeight && rect.left < innerWidth && style.display !== 'none' &&
           style.visibility === 'visible' && Number(style.opacity) > 0 };
     });
-    const video = globalThis.skyboxSelectVideo(candidates);
+    const video = globalThis.commercialBreakerSelectVideo(candidates);
     state = { wireless: typeof video.webkitCurrentPlaybackTargetIsWireless === 'boolean' ?
       video.webkitCurrentPlaybackTargetIsWireless : null,
       paused: video.paused, readyState: video.readyState,

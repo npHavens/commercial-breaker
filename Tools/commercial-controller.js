@@ -1,5 +1,5 @@
 // Runs on the relay page so closing the extension popup does not stop monitoring.
-globalThis.skyboxCreateCommercialController = function createCommercialController(video, publish) {
+globalThis.commercialBreakerCreateCommercialController = function createCommercialController(video, publish) {
   let enabled = false;
   let ownsMute = false;
   let state = 'unknown';
@@ -150,14 +150,14 @@ globalThis.skyboxCreateCommercialController = function createCommercialControlle
 };
 
 if (typeof document !== 'undefined') {
-  const output = document.querySelector('#skybox-commercial-state');
-  const button = document.querySelector('#skybox-auto-toggle');
-  const history = document.querySelector('#skybox-auto-history');
+  const output = document.querySelector('#commercial-breaker-commercial-state');
+  const button = document.querySelector('#commercial-breaker-auto-toggle');
+  const history = document.querySelector('#commercial-breaker-auto-history');
   const transitions = [];
   let previous = '';
-  globalThis.skyboxCommercial = globalThis.skyboxCreateCommercialController(document.querySelector('#video'), (state) => {
+  globalThis.commercialBreakerCommercial = globalThis.commercialBreakerCreateCommercialController(document.querySelector('#video'), (state) => {
     output.textContent = JSON.stringify(state);
-    document.querySelector('#skybox-auto-status').textContent = state.message;
+    document.querySelector('#commercial-breaker-auto-status').textContent = state.message;
     button.textContent = state.enabled ? 'Disable automatic mute' : 'Enable automatic mute';
     const signature = JSON.stringify([state.enabled, state.state, state.message, state.muted]);
     if (signature !== previous) {
@@ -168,5 +168,5 @@ if (typeof document !== 'undefined') {
       history.scrollTop = history.scrollHeight;
     }
   });
-  button.addEventListener('click', () => globalThis.skyboxCommercial.toggle());
+  button.addEventListener('click', () => globalThis.commercialBreakerCommercial.toggle());
 }

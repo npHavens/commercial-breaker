@@ -10,6 +10,17 @@ import { parseResult, responseSchema } from './standard-classifier.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
+/** The only directory saved clips may be read from. */
+export function recordingsRoot(home = homedir()) {
+  return join(home, 'Library/Application Support/CommercialBreaker/recordings');
+}
+
+/** Manifests predate the rename; the app moved their SkyboxAudioProbe folder at launch. */
+export function currentRecordingPath(path, home = homedir()) {
+  const legacy = join(home, 'Library/Application Support/SkyboxAudioProbe/recordings') + sep;
+  return path.startsWith(legacy) ? join(recordingsRoot(home), path.slice(legacy.length)) : path;
+}
+
 /** Computes an exact input-frame offset for a bounded tail sample. */
 export function tailOffsetFrames(metadata, seconds) {
   if (!Number.isInteger(seconds) || seconds < 5 || seconds > 30
@@ -57,11 +68,11 @@ async function main() {
     promptSHA256: createHash('sha256').update(prompt).digest('hex'), maxOutputTokens: 4096, timeoutMs: 180000,
     requestAttempts: 1, tailSeconds, thinkingBudget: noThinking ? 0 : 'default', audioEncoding: 'mono PCM16 WAV at 16kHz; no gain adjustment', startedAt: new Date().toISOString() }, null, 2));
   console.log(JSON.stringify({ model, provider: 'vertex', samples: samples.length, output: run }));
-  const allowed = await realpath(join(homedir(), 'Library/Application Support/SkyboxAudioProbe/recordings'));
+  const allowed = await realpath(recordingsRoot());
   for (const sample of samples) {
-    const source = await realpath(sample.local_audio);
+    const source = await realpath(currentRecordingPath(sample.local_audio));
     if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Audio outside approved scope');
-    const temporary = await mkdtemp(join(tmpdir(), 'skybox-gemini-'));
+    const temporary = await mkdtemp(join(tmpdir(), 'commercial-breaker-gemini-'));
     let started;
     try {
       const converted = join(temporary, 'sample.wav');

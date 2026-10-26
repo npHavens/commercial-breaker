@@ -2,22 +2,22 @@ import Foundation
 let panel = [(role: "AXButton", name: "Try AirPlay"),
              (role: "AXButton", name: "Restore settings and close"),
              (role: "AXTextArea", name: "AirPlay connection history")]
-assert(SafariAccessibility.isSkyboxPanel(panel))
-assert(!SafariAccessibility.isSkyboxPanel(Array(panel.prefix(1))))
-assert(SafariAccessibility.isSkyboxPanel(Array(panel.prefix(2))))
-assert(!SafariAccessibility.isSkyboxPanel(panel + [panel[0]]))
-assert(!SafariAccessibility.isSkyboxPanel([(role: "AXStaticText", name: "Try AirPlay")] + panel.dropFirst()))
-print("Skybox panel checks passed: exact roles, companion controls, duplicate rejection")
+assert(SafariAccessibility.isCommercialBreakerPanel(panel))
+assert(!SafariAccessibility.isCommercialBreakerPanel(Array(panel.prefix(1))))
+assert(SafariAccessibility.isCommercialBreakerPanel(Array(panel.prefix(2))))
+assert(!SafariAccessibility.isCommercialBreakerPanel(panel + [panel[0]]))
+assert(!SafariAccessibility.isCommercialBreakerPanel([(role: "AXStaticText", name: "Try AirPlay")] + panel.dropFirst()))
+print("Commercial Breaker panel checks passed: exact roles, companion controls, duplicate rejection")
 
 // A flattened page can be large; only adjacent controls qualify as companions.
 let page = Array(repeating: (role: "AXButton", name: "Unrelated"), count: 100)
 var flattened = page
 flattened.replaceSubrange(50..<53, with: panel)
 let neighborhood = SafariAccessibility.panelNeighborhood(index: 50, count: flattened.count)
-assert(SafariAccessibility.isSkyboxPanel(Array(flattened[neighborhood])))
+assert(SafariAccessibility.isCommercialBreakerPanel(Array(flattened[neighborhood])))
 flattened[51] = (role: "AXButton", name: "Unrelated")
 flattened[90] = panel[1]
-assert(!SafariAccessibility.isSkyboxPanel(Array(flattened[neighborhood])))
+assert(!SafariAccessibility.isCommercialBreakerPanel(Array(flattened[neighborhood])))
 assert(SafariAccessibility.panelNeighborhood(index: 0, count: 2) == 0..<2)
 assert(SafariAccessibility.panelNeighborhood(index: 99, count: 100) == 95..<100)
 print("Flattened panel checks passed: nearby companions, distant rejection, page edges")

@@ -11,7 +11,7 @@
         files: ['airplay-source-trace.js', 'directv-airplay-recovery.js'] });
     } catch {
       // Permission may be withheld, or the tab may navigate/close before injection.
-      console.warn('Skybox: DIRECTV recovery could not attach; retry using the AirPlay panel.');
+      console.warn('Commercial Breaker: DIRECTV recovery could not attach; retry using the AirPlay panel.');
     }
   }
   browser.tabs.onUpdated.addListener((tabId, change, tab) => {
@@ -19,5 +19,5 @@
   });
   browser.tabs.query({ url: 'https://stream.directv.com/*' }).then(tabs => {
     for (const tab of tabs) if (tab.status === 'complete') void attach(tab.id, tab.url);
-  }).catch(() => console.warn('Skybox: could not inspect existing DIRECTV tabs.'));
+  }).catch(() => console.warn('Commercial Breaker: could not inspect existing DIRECTV tabs.'));
 })();

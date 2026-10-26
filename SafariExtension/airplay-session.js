@@ -6,19 +6,19 @@
   if (location.protocol !== 'https:' || !service) {
     return { ok: false, error: 'Open a DIRECTV or Paramount+ player first.' };
   }
-  if (globalThis.skyboxAirPlayPanel?.isConnected) {
-    return globalThis.skyboxAirPlayPanel.skyboxVersion === '0.1.11' ? { ok: true } :
+  if (globalThis.commercialBreakerAirPlayPanel?.isConnected) {
+    return globalThis.commercialBreakerAirPlayPanel.commercialBreakerVersion === '0.1.11' ? { ok: true } :
       { ok: false, error: 'Close the old page panel with Restore settings and close, then try again.' };
   }
   const host = document.createElement('div');
-  globalThis.skyboxAirPlayPanel = host;
-  host.skyboxVersion = '0.1.11';
+  globalThis.commercialBreakerAirPlayPanel = host;
+  host.commercialBreakerVersion = '0.1.11';
   host.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;';
   const root = host.attachShadow({ mode: 'closed' });
   const panel = document.createElement('section');
   panel.style.cssText = 'width:300px;padding:16px;background:#18202d;color:white;border:1px solid #8693a6;border-radius:12px;font:14px/1.5 system-ui;box-shadow:0 4px 20px #0008;';
   const title = document.createElement('strong');
-  title.textContent = `Skybox · ${service.name} AirPlay · v0.1.11`;
+  title.textContent = `Commercial Breaker · ${service.name} AirPlay · v0.1.11`;
   const status = document.createElement('p');
   status.setAttribute('role', 'status');
   status.textContent = 'Turn off Mac Screen Mirroring first. Then click Try AirPlay here.';
@@ -39,7 +39,7 @@
   const entries = [];
   const playbackEvents = [];
   // Return a string so Safari never serializes nested media numbers natively.
-  globalThis.skyboxExportAirPlayPlayback = () => JSON.stringify({
+  globalThis.commercialBreakerExportAirPlayPlayback = () => JSON.stringify({
     schemaVersion: 1, kind: 'airplay-playback', exportedAt: new Date().toISOString(),
     service: service.name, events: playbackEvents
   });
@@ -136,7 +136,7 @@
     routeButton.disabled = false;
     button.disabled = false;
     report(message);
-    globalThis.skyboxAirPlayRouteResult = JSON.stringify({
+    globalThis.commercialBreakerAirPlayRouteResult = JSON.stringify({
       measuredAt: new Date().toISOString(), message,
       sawLocal: current.sawLocal, sawReturn: current.sawReturn,
       wireless: current.video.webkitCurrentPlaybackTargetIsWireless === true,
@@ -197,7 +197,7 @@
             rect.top < innerHeight && rect.left < innerWidth && style.display !== 'none' &&
             style.visibility === 'visible' && Number(style.opacity) > 0 };
       });
-      const video = globalThis.skyboxSelectVideo(candidates);
+      const video = globalThis.commercialBreakerSelectVideo(candidates);
       selectedVideo = video;
       if (typeof video.webkitShowPlaybackTargetPicker !== 'function') {
         throw new Error('Safari’s AirPlay picker is unavailable on this video.');
@@ -308,9 +308,9 @@
       }
     }
     captionOriginals.clear();
-    document.dispatchEvent?.(new Event('skybox-airplay-trace-stop'));
+    document.dispatchEvent?.(new Event('commercial-breaker-airplay-trace-stop'));
     host.remove();
-    delete globalThis.skyboxAirPlayPanel;
+    delete globalThis.commercialBreakerAirPlayPanel;
   });
   panel.append(title, status, button, routeButton, history, close);
   root.append(panel);

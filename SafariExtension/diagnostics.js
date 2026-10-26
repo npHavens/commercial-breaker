@@ -1,5 +1,5 @@
 (() => {
-  if (globalThis.skyboxDiagnostics) return;
+  if (globalThis.commercialBreakerDiagnostics) return;
   const limit = 1200;
   const duration = 15 * 60 * 1000;
   let timer = null;
@@ -61,7 +61,7 @@
     try { sample(); }
     catch (error) { append({ kind: 'error', message: clip(error.message) }); stop('sampling error'); }
   }
-  globalThis.skyboxDiagnostics = function diagnostics(command) {
+  globalThis.commercialBreakerDiagnostics = function diagnostics(command) {
     if (location.protocol !== 'https:' ||
         !["paramountplus.com", "directv.com"].some((domain) => location.hostname === domain || location.hostname.endsWith(`.${domain}`))) {
       return { ok: false, error: 'Open DIRECTV or Paramount+ to record player signals.' };

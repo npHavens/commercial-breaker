@@ -1,6 +1,6 @@
 # Contributing
 
-Skybox is a community sports-viewing project in early development. Small,
+Commercial Breaker is a community sports-viewing project in early development. Small,
 reviewable contributions are welcome; reliability matters more than features.
 
 Branch from `main` using `fix/`, `feat/` or `chore/` names and open a pull request.

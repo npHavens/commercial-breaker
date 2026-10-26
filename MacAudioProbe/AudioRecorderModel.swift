@@ -35,7 +35,7 @@ final class AudioRecorderModel: ObservableObject {
             do {
                 let base = try FileManager.default.url(for: .applicationSupportDirectory,
                     in: .userDomainMask, appropriateFor: nil, create: true)
-                let directory = base.appendingPathComponent("SkyboxAudioProbe/recordings/\(id.uuidString)", isDirectory: true)
+                let directory = base.appendingPathComponent("\(applicationSupportDirectoryName)/recordings/\(id.uuidString)", isDirectory: true)
                 // Holds this session's Gemini log and any opt-in diagnostic samples.
                 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
                 folder = directory

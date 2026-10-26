@@ -81,7 +81,7 @@
       context.getImageData(0, 0, 1, 1);
       const image = canvas.toDataURL('image/png');
       still.src = download.href = image;
-      download.download = `skybox-screen-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+      download.download = `commercial-breaker-screen-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
       still.hidden = download.hidden = false;
       message.textContent = 'Snapshot captured; sharing stopped. Does the video area show the current game, a black rectangle, or an AirPlay placeholder?';
     } catch (error) {

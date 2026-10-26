@@ -19,15 +19,15 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
       tabs: { query: async () => [{ id: 7, url }] },
       scripting: { executeScript: async (options) => {
         calls.push(options);
-        if (options.func?.toString().includes('skyboxExportAirPlayPlayback')) {
+        if (options.func?.toString().includes('commercialBreakerExportAirPlayPlayback')) {
           return [{ result: JSON.stringify({ kind: 'airplay-playback', events: [] }) }];
         }
-        if (options.func?.toString().includes('skyboxAirPlaySourceTrace')) {
+        if (options.func?.toString().includes('commercialBreakerAirPlaySourceTrace')) {
           return [{ result: JSON.stringify({ running: true, events: [{ operation: 'HTMLMediaElement.load()' }] }) }];
         }
         if (options.world === 'MAIN' && options.func) {
           return [{ result: vm.runInNewContext(`(${options.func.toString()})(action)`, {
-            action: options.args[0], skyboxPlayerEvents: () => JSON.stringify({ ok: true,
+            action: options.args[0], commercialBreakerPlayerEvents: () => JSON.stringify({ ok: true,
               running: true, count: 1, coverage: { videojsPlayers: 0, videoElements: 2 } })
           }) }];
         }
@@ -38,9 +38,9 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
           if (failure === 'audio-hang') return new Promise(() => {});
           return [{ result: undefined }];
         }
-        if (options.func?.toString().includes('skyboxLastAudioProbeResult')) {
+        if (options.func?.toString().includes('commercialBreakerLastAudioProbeResult')) {
           return [{ result: vm.runInNewContext(`(${options.func.toString()})()`, {
-            skyboxLastAudioProbeResult: JSON.stringify({ outcome: 'unsupported', measuredAt: '2026-09-20T23:00:00Z' })
+            commercialBreakerLastAudioProbeResult: JSON.stringify({ outcome: 'unsupported', measuredAt: '2026-09-20T23:00:00Z' })
           }) }];
         }
         if (options.files?.includes('metadata-probe.js')) {
@@ -56,7 +56,7 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
             !options.args[0].startsWith('toggle-')) {
           const result = vm.runInNewContext(`(${options.func.toString()})(action)`, {
             action: options.args[0],
-            skyboxDiagnostics: () => diagnosticResult ?? { ok: true, running: false, count: 0 }
+            commercialBreakerDiagnostics: () => diagnosticResult ?? { ok: true, running: false, count: 0 }
           });
           return [{ result }];
         }
@@ -67,7 +67,7 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
   vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension/relay-target.js'), 'utf8'), context);
   vm.runInContext(source, context);
   await new Promise(setImmediate);
-  return { nodes, calls, storage };
+  return { nodes, calls, storage, context };
 }
 
 test('Paramount+ popup exposes AirPlay and wires the click to page injection', async () => {
@@ -87,7 +87,7 @@ test('export crosses the native bridge as text even with non-finite values in an
   await nodes.get('export').listeners.click[0]();
   const call = calls.find((item) => item.args?.[0] === 'export');
   const wire = vm.runInNewContext(`(${call.func.toString()})('export')`, {
-    skyboxDiagnostics: () => ({ ok: true, report })
+    commercialBreakerDiagnostics: () => ({ ok: true, report })
   });
   assert.equal(typeof wire, 'string');
   assert.equal(nodes.get('export-panel').hidden, false);
@@ -202,5 +202,27 @@ test('AirPlay export merges MAIN source trace with isolated playback events', as
   const report = JSON.parse(nodes.get('recording-json').value);
   assert.equal(report.kind, 'airplay-playback');
   assert.equal(report.sourceTrace.events[0].operation, 'HTMLMediaElement.load()');
-  assert.ok(calls.some(c => c.world === 'MAIN' && c.func?.toString().includes('skyboxAirPlaySourceTrace')));
+  assert.ok(calls.some(c => c.world === 'MAIN' && c.func?.toString().includes('commercialBreakerAirPlaySourceTrace')));
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('popup injects the commercialBreaker names and never the legacy skybox names', async () => {
+  const injectedBy = (calls) => calls.filter((call) => call.func).map((call) => call.func.toString()).join('\n');
+  const { nodes, calls } = await setup();
+  const directv = await setup(undefined, new Map(), 'https://stream.directv.com/watch');
+  await directv.nodes.get('event-start').listeners.click[0]();
+  await nodes.get('read-audio').listeners.click[0]();
+  await nodes.get('airplay').listeners.click[0]();
+  await nodes.get('airplay-export').listeners.click[0]();
+  const relayUrl = `http://192.168.1.10:8765/session/${'a'.repeat(43)}/`;
+  const relay = await setup(undefined, new Map(), relayUrl);
+  await relay.nodes.get('relay-auto').listeners.click[0]();
+  const injected = [calls, directv.calls, relay.calls].map(injectedBy).join('\n');
+  for (const name of ['Player', 'Diagnostics', 'PlayerEvents', 'AirPlayPanel', 'Version', 'AudioProbePending',
+    'LastAudioProbeResult', 'ExportAirPlayPlayback', 'AirPlaySourceTrace', 'RelayControl']) {
+    assert.ok(injected.includes(`commercialBreaker${name}`), `popup never injects commercialBreaker${name}`);
+    assert.equal(injected.includes(legacy(name)), false, `popup still injects ${legacy(name)}`);
+  }
+  assert.equal(relay.context[legacy('IsRelayUrl')], undefined);
 });

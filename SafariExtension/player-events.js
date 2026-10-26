@@ -1,7 +1,7 @@
 // Runs in the page's MAIN world so an exposed player event bus is accessible.
 // Passive subscriptions only: no monkey-patching, network hooks, or event payloads.
 (() => {
-  const previous = globalThis.skyboxPlayerEvents;
+  const previous = globalThis.commercialBreakerPlayerEvents;
   if (previous?.probeVersion === 2) return;
   // Dispose subscriptions from an older injected recorder before replacing it.
   if (typeof previous === 'function') previous('stop');
@@ -90,7 +90,7 @@
     attached.clear();
     append('stop', { reason });
   }
-  globalThis.skyboxPlayerEvents = (command = 'status') => {
+  globalThis.commercialBreakerPlayerEvents = (command = 'status') => {
     if (location.protocol !== 'https:' || !(location.hostname === 'directv.com' || location.hostname.endsWith('.directv.com'))) {
       return JSON.stringify({ ok: false, error: 'Open DIRECTV first.' });
     }
@@ -121,5 +121,5 @@
       running, dropped, coverage, entries };
     return JSON.stringify(result);
   };
-  globalThis.skyboxPlayerEvents.probeVersion = 2;
+  globalThis.commercialBreakerPlayerEvents.probeVersion = 2;
 })();

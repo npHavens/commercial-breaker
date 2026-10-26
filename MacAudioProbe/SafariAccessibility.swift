@@ -12,7 +12,7 @@ struct RouteControl: Sendable {
 struct RoutingFailure: LocalizedError {
     let message: String
     var retryableBeforeSelection = false
-    var focusReturnedToSkybox = false
+    var focusReturnedToCommercialBreaker = false
     var errorDescription: String? { message }
 }
 
@@ -38,7 +38,7 @@ actor SafariAccessibility {
     }
 
     func openPicker(pid: pid_t, mouse: Bool = false) async throws {
-        scanNotes = ["Looking for the Skybox page panel"]
+        scanNotes = ["Looking for the Commercial Breaker page panel"]
         guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Accessibility permission for SkyboxAudioProbe first.") }
         let app = AXUIElementCreateApplication(pid)
         AXUIElementSetMessagingTimeout(app, 0.25)
@@ -48,8 +48,8 @@ actor SafariAccessibility {
         let main = unsafeBitCast(mainValue, to: AXUIElement.self)
         let deadline = ProcessInfo.processInfo.systemUptime + 5
         if let cachedPageButton, belongsToWindow(cachedPageButton, main: main),
-           try isSkyboxButton(cachedPageButton, deadline: deadline) {
-            scanNotes.append("Reusing verified Skybox panel button in the current window")
+           try isCommercialBreakerButton(cachedPageButton, deadline: deadline) {
+            scanNotes.append("Reusing verified Commercial Breaker panel button in the current window")
             try await activatePageButton(cachedPageButton, pid: pid, mouse: mouse)
             return
         }
@@ -59,13 +59,13 @@ actor SafariAccessibility {
         while let (element, depth) = pending.popLast() {
             try Task.checkCancellation()
             guard seen.count < 2400, ProcessInfo.processInfo.systemUptime < deadline else {
-                scanNotes.append("Skybox panel search stopped after \(seen.count) elements")
-                throw RoutingFailure(message: "Skybox panel search exceeded its limit. Show the Skybox extension panel or HLS relay player in the active Safari tab.")
+                scanNotes.append("Commercial Breaker panel search stopped after \(seen.count) elements")
+                throw RoutingFailure(message: "Commercial Breaker panel search exceeded its limit. Show the Commercial Breaker extension panel or HLS relay player in the active Safari tab.")
             }
             guard !seen.contains(where: { CFEqual($0, element) }) else { continue }
             seen.append(element)
-            if try isSkyboxButton(element, deadline: deadline) {
-                scanNotes.append("Verified Skybox panel after \(seen.count) elements; unrelated page traversal skipped")
+            if try isCommercialBreakerButton(element, deadline: deadline) {
+                scanNotes.append("Verified Commercial Breaker panel after \(seen.count) elements; unrelated page traversal skipped")
                 cachedPageButton = element
                 try await activatePageButton(element, pid: pid, mouse: mouse)
                 return
@@ -77,7 +77,7 @@ actor SafariAccessibility {
             }
         }
         scanNotes.append("Page search completed: \(seen.count) distinct elements")
-        throw RoutingFailure(message: "Skybox's AirPlay button was not found with its companion controls. Show the extension panel (Try AirPlay) or HLS relay player (Choose AirPlay) in the active Safari tab.")
+        throw RoutingFailure(message: "Commercial Breaker's AirPlay button was not found with its companion controls. Show the extension panel (Try AirPlay) or HLS relay player (Choose AirPlay) in the active Safari tab.")
     }
 
     private func activatePageButton(_ button: AXUIElement, pid: pid_t, mouse: Bool) async throws {
@@ -145,7 +145,7 @@ actor SafariAccessibility {
 
     /// Identify the extension panel or relay's bounded player controls, not the first similarly named
     /// button elsewhere on the website. Inspect only labels, never history values.
-    private func isSkyboxButton(_ element: AXUIElement, deadline: Double) throws -> Bool {
+    private func isCommercialBreakerButton(_ element: AXUIElement, deadline: Double) throws -> Bool {
         guard value(element, kAXRoleAttribute) as? String == "AXButton",
               ["Try AirPlay", "Choose AirPlay"].contains(label(element)),
               (value(element, kAXEnabledAttribute) as? NSNumber)?.boolValue == true else { return false }
@@ -196,7 +196,7 @@ actor SafariAccessibility {
         max(0, index - 4)..<min(count, index + 5)
     }
 
-    nonisolated static func isSkyboxPanel(_ labels: [(role: String, name: String)]) -> Bool {
+    nonisolated static func isCommercialBreakerPanel(_ labels: [(role: String, name: String)]) -> Bool {
         labels.filter { $0.role == "AXButton" && $0.name == "Try AirPlay" }.count == 1
         && labels.contains { $0.role == "AXButton" && $0.name == "Restore settings and close" }
 
@@ -205,7 +205,7 @@ actor SafariAccessibility {
     /// The relay's existing page exposes these adjacent controls even when
     /// WebKit flattens the HTML into direct web-area children.
     nonisolated static func isPlayerPanel(_ labels: [(role: String, name: String)], buttonName: String) -> Bool {
-        if buttonName == "Try AirPlay" { return isSkyboxPanel(labels) }
+        if buttonName == "Try AirPlay" { return isCommercialBreakerPanel(labels) }
         guard buttonName == "Choose AirPlay" else { return false }
         return ["Choose AirPlay", "Play", "Check playback", "Stop playback"].allSatisfy { name in
             labels.filter { $0.role == "AXButton" && $0.name == name }.count == 1

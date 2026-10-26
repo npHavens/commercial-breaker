@@ -1,7 +1,7 @@
 // DIRECTV AirPlay timeline correction. Runs in the page MAIN world.
 (() => {
   if (location.origin !== 'https://stream.directv.com') return;
-  if (globalThis.skyboxDirectvRecovery?.running) return;
+  if (globalThis.commercialBreakerDirectvRecovery?.running) return;
   const events = [];
   let binding, running = true, dropped = 0, lastCorrection = -Infinity;
   const own = (object, key) => object && Object.getOwnPropertyDescriptor(object, key)?.value;
@@ -136,7 +136,7 @@
       }
     } catch { note('controller inspection failed; experiment stopping'); stop(); }
   }
-  const trace = globalThis.skyboxAirPlaySourceTrace;
+  const trace = globalThis.commercialBreakerAirPlaySourceTrace;
   const originalExport = trace?.export;
   const snapshot = () => ({ running, attached: !!binding, dropped,
     mode: 'guarded-handoff-seek', graceSeconds: 0, events: events.slice() });
@@ -153,13 +153,13 @@
     clearInterval(poll);
     binding?.detach(); binding = undefined;
     if (trace?.export === traceExport) trace.export = originalExport;
-    document.removeEventListener('skybox-airplay-trace-stop', stop);
+    document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
     note('experiment stopped');
   }
-  globalThis.skyboxDirectvRecovery = { get running() { return running; }, stop,
+  globalThis.commercialBreakerDirectvRecovery = { get running() { return running; }, stop,
     export: () => JSON.stringify(snapshot()) };
-  document.addEventListener('skybox-airplay-trace-stop', stop);
+  document.addEventListener('commercial-breaker-airplay-trace-stop', stop);
   globalThis.addEventListener('pagehide', stop);
   check();
 })();

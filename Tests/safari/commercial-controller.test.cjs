@@ -35,7 +35,7 @@ function setup(initialMuted = false) {
     }
   });
   vm.runInContext(source, context);
-  const controller = context.skyboxCreateCommercialController(video, (value) => { result = value; });
+  const controller = context.commercialBreakerCreateCommercialController(video, (value) => { result = value; });
   return { controller, video, listeners, intervals, timeouts,
     state: () => result, requests: () => requests, advance: (ms = 1000) => { clock += ms; },
     classify: (value) => { classification = value; }, fetch: (fn) => { customFetch = fn; } };
@@ -137,4 +137,13 @@ test('disposing releases automatic mute and removes all listeners and timers', a
   assert.equal(h.listeners.size, 0);
   assert.equal(h.intervals.size, 0);
   assert.equal(h.timeouts.size, 0);
+});
+
+const legacy = (name) => `skybox${name}`;
+
+test('controller factory is exposed as commercialBreakerCreateCommercialController only', () => {
+  const context = vm.createContext({});
+  vm.runInContext(source, context);
+  assert.equal(typeof context.commercialBreakerCreateCommercialController, 'function');
+  assert.equal(context[legacy('CreateCommercialController')], undefined);
 });

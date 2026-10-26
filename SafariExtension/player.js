@@ -1,9 +1,9 @@
-// Called only by Skybox's popup in the active tab's isolated extension world.
-globalThis.skyboxPlayer = function skyboxPlayer(toggle) {
+// Called only by Commercial Breaker's popup in the active tab's isolated extension world.
+globalThis.commercialBreakerPlayer = function commercialBreakerPlayer(toggle) {
   try {
     if (location.protocol !== "https:" ||
         !["paramountplus.com", "directv.com"].some((domain) => location.hostname === domain || location.hostname.endsWith(`.${domain}`))) {
-      throw new Error("Open a DIRECTV or Paramount+ video, then open Skybox again.");
+      throw new Error("Open a DIRECTV or Paramount+ video, then open Commercial Breaker again.");
     }
     const candidates = Array.from(document.querySelectorAll("video"), (element) => {
       const rect = element.getBoundingClientRect();
@@ -15,7 +15,7 @@ globalThis.skyboxPlayer = function skyboxPlayer(toggle) {
         Number(style.opacity) > 0;
       return { element, visible, playing: !element.paused && !element.ended };
     });
-    const video = globalThis.skyboxSelectVideo(candidates);
+    const video = globalThis.commercialBreakerSelectVideo(candidates);
     if (toggle) video.muted = !video.muted;
     return { ok: true, muted: video.muted, volume: video.volume, paused: video.paused };
   } catch (error) {
