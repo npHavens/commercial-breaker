@@ -56,6 +56,8 @@ cp .env.example .env                   # then set GOOGLE_CLOUD_PROJECT
 gcloud auth application-default login
 ```
 
+If starting detection reports a setup failure right after a pull, rebuild the app from this checkout.
+
 The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
 `node_modules` from the checkout it was built from. If setup is incomplete,
 starting detection reports what is missing; recording continues.

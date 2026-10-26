@@ -34,7 +34,7 @@ test('shared sports program is accepted; obsolete live football state is rejecte
  assert.throws(() => parseResult(JSON.stringify({...valid,state_at_end:'football'})));
 });
 
-test('saved clips are read only from the CommercialBreaker recordings directory', () => {
+test('recordings root is the CommercialBreaker recordings directory', () => {
   assert.equal(recordingsRoot('/Users/tester'), '/Users/tester/Library/Application Support/CommercialBreaker/recordings');
   assert.match(recordingsRoot(), /\/CommercialBreaker\/recordings$/);
 });
