@@ -10,7 +10,8 @@ permissions:
 
 concurrency:
   group: tests-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR pushes are cancelled; every commit on main finishes so a break can be traced to its merge.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The offline suites from the README. Fake workers and synthetic audio only: no secrets, no uploads.
 jobs:
