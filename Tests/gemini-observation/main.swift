@@ -9,7 +9,7 @@ import Foundation
         let script = directory.appendingPathComponent("fake.py")
         try """
         import json, sys, time
-        print(json.dumps({'ready':True}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
         for line in sys.stdin:
             request=json.loads(line)
             time.sleep(1)
@@ -27,17 +27,33 @@ import Foundation
                 observer.buffer.ingest(Array(repeating: Float(0.1), count: 16000), sampleRate: 16000, endedAt: end - 7 + Double(n))
             }
         }
-        observer.start(directory: directory)
-        feed()
-        try await Task.sleep(for: .milliseconds(600))
+        // Wait on events rather than fixed delays: a fresh CI runner can take over a second to start python3.
+        func waitUntil(_ what: String, _ condition: () -> Bool) async throws {
+            let deadline = ProcessInfo.processInfo.systemUptime + 15
+            while !condition() {
+                precondition(ProcessInfo.processInfo.systemUptime < deadline, "Timed out waiting for \(what)")
+                try await Task.sleep(for: .milliseconds(50))
+            }
+        }
+        let logURL = directory.appendingPathComponent("gemini-observations.jsonl")
+        func occurrences(of text: String) -> Int {
+            ((try? String(contentsOf: logURL, encoding: .utf8)) ?? "").components(separatedBy: text).count - 1
+        }
+        let request = "\"event\":\"request\""
+        // Audio counts as recent only briefly, so feed it once the worker is ready.
+        func startAndAwaitRequest(retainProgramAudio: Bool = false) async throws {
+            let ready = occurrences(of: "worker-ready"), sent = occurrences(of: request)
+            observer.start(directory: directory, retainProgramAudio: retainProgramAudio)
+            try await waitUntil("the fake worker to start") { occurrences(of: "worker-ready") > ready }
+            feed()
+            try await waitUntil("the fake worker to take a request") { occurrences(of: request) > sent }
+        }
+        try await startAndAwaitRequest()
         observer.resetContext()
-        try await Task.sleep(for: .milliseconds(1700))
+        try await waitUntil("a response across the reset") { occurrences(of: "discarded-stale-response") > 0 }
         assert(observer.prediction.isEmpty, "Old-game prediction must be discarded")
-        let log = try String(contentsOf: directory.appendingPathComponent("gemini-observations.jsonl"), encoding: .utf8)
-        assert(log.contains("discarded-stale-response"), "Test must exercise a response across reset")
         observer.stop()
-        observer.start(directory: directory, retainProgramAudio: true)
-        feed()
+        try await startAndAwaitRequest(retainProgramAudio: true)
         try await Task.sleep(for: .milliseconds(2600))
         assert(observer.prediction.contains("Program"), "Current context should display prediction")
         assert(observer.confirmation.contains("1/2"), "One prediction cannot confirm program")
@@ -65,7 +81,7 @@ import Foundation
         assert(!observer.enabled && observer.prediction.isEmpty, "Stop must suppress late callbacks")
         try """
         import json, sys
-        print(json.dumps({'ready':True}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
         for i,line in enumerate(sys.stdin):
             request=json.loads(line)
             if i==0:
@@ -73,8 +89,7 @@ import Foundation
             else:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
-        observer.start(directory: directory)
-        feed()
+        try await startAndAwaitRequest()
         try await Task.sleep(for: .milliseconds(2200))
         assert(observer.enabled && observer.status.contains("checking fresh audio"), "Isolated unclassified failure should recover without disabling")
         assert(observer.prediction.isEmpty, "Failure must clear old prediction")
@@ -91,7 +106,7 @@ import Foundation
             sys.stdin.read()
             """.write(to: script, atomically: true, encoding: .utf8)
             observer.start(directory: directory)
-            try await Task.sleep(for: .milliseconds(500))
+            try await waitUntil("the setup failure") { !observer.enabled }
             assert(!observer.enabled && observer.status.contains(hint), "Setup failure should name its fix")
             assert(!observer.status.contains("/private"), "Unrecognized setup errors must not be displayed")
         }
