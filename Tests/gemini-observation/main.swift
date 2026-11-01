@@ -9,7 +9,7 @@ import Foundation
         let script = directory.appendingPathComponent("fake.py")
         try """
         import json, sys, time
-        print(json.dumps({'ready':True}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64,'model':'fake-model'}), flush=True)
         for line in sys.stdin:
             request=json.loads(line)
             time.sleep(1)
@@ -35,6 +35,7 @@ import Foundation
         assert(observer.prediction.isEmpty, "Old-game prediction must be discarded")
         let log = try String(contentsOf: directory.appendingPathComponent("gemini-observations.jsonl"), encoding: .utf8)
         assert(log.contains("discarded-stale-response"), "Test must exercise a response across reset")
+        assert(log.contains("\"model\":\"fake-model\""), "worker-ready must record the model the worker reports")
         observer.stop()
         observer.start(directory: directory, retainProgramAudio: true)
         feed()
