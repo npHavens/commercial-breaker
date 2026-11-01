@@ -10,9 +10,9 @@ import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
 import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-classifier.mjs';
 import { createVertexClient } from './vertex-client.mjs';
+import { MODEL as model } from './gemini-live-worker.mjs';
 
 const root = new URL('../', import.meta.url);
-const model = 'gemini-3.8-flash';
 let phase = 'setup';
 
 export function summarize(records) {

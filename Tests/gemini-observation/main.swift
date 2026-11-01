@@ -9,7 +9,7 @@ import Foundation
         let script = directory.appendingPathComponent("fake.py")
         try """
         import json, sys, time
-        print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64,'model':'fake-model'}), flush=True)
         for line in sys.stdin:
             request=json.loads(line)
             time.sleep(1)
@@ -57,6 +57,7 @@ import Foundation
         observer.resetContext()
         try await waitUntil("a response across the reset") { !events("discarded-stale-response").isEmpty }
         assert(observer.prediction.isEmpty, "Old-game prediction must be discarded")
+        assert(events("worker-ready").last?["model"] as? String == "fake-model", "worker-ready must record the model the worker reports")
         observer.stop()
         try await startAndAwaitRequest(retainProgramAudio: true)
         let predicted = events("prediction").count
