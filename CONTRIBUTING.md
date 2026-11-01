@@ -9,7 +9,8 @@ Describe the problem, resulting behavior, checks run, and live checks still
 needed. A passing build is not evidence that AirPlay or protected video works.
 Do not merge a PR solely because its code compiles.
 
-Run the relevant offline tests from README and the native runbook. For routing
+Run the relevant offline tests from README and the native runbook; the Tests
+workflow runs them, plus an unsigned app build, on every pull request. For routing
 or capture changes, test cancellation, failure recovery, mute release, and a
 complete live break/return cycle. Never interrupt someone else's active playback
 for automated verification. Gemini evaluations upload audio: use authorized
