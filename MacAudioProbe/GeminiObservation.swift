@@ -73,7 +73,7 @@ final class GeminiObservation: ObservableObject {
             input = stdin.fileHandleForWriting
             output = stdout.fileHandleForReading
             try child.run()
-            log(["event": "enabled", "sport": sport.rawValue, "model": "gemini-3.8-flash", "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
+            log(["event": "enabled", "sport": sport.rawValue, "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
             timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
                 Task { @MainActor in await self?.tick() }
             }
@@ -186,7 +186,8 @@ final class GeminiObservation: ObservableObject {
             if value["ready"] as? Bool == true {
                 if let hash = value["promptSHA256"] as? String,
                    hash.count == 64, hash.allSatisfy({ $0.isHexDigit }) {
-                    log(["event": "worker-ready", "promptSHA256": hash])
+                    // The worker owns the model choice; record the one it reports.
+                    log(["event": "worker-ready", "promptSHA256": hash, "model": value["model"] as? String ?? "unreported"])
                 }
                 workerReady = true
                 status = "Gemini ready · waiting for eight seconds of audio"
