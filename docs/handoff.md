@@ -57,11 +57,14 @@ handoffs still stop on focus loss. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 
-`Tools/gemini-live-worker.mjs` uses Gemini 3.8 Flash at thinking level `LOW`
+`Tools/gemini-live-worker.mjs` uses Gemini 3.7 Flash at thinking level `LOW`
 (October 25: Commercial Breaker moved to Vertex project `nhs-commercial-breaker`, where 2.5
-Flash is unavailable). In the first live session that day Nick found it working
-well enough: 1.68 s median, no thinking tokens, one 20 s timeout in nine requests.
-Break and return accuracy has not been measured. `Tools/evaluate-gemini-audio.mjs` remains
+Flash is unavailable). 3.8 Flash came first and worked well on October 25 (1.68 s
+median, one 20 s timeout in nine requests), but on October 26 and November 1 its
+latency swung up to 15 s, and on November 1 5 of about 25 live requests timed out. 3.7 Flash
+answered in 2.1–3.6 s in a side-by-side probe on November 1, then had 14 of 14 live
+requests succeed (2.4 s median), so Nick chose to keep it. Break and return accuracy
+has not been measured on either. `Tools/evaluate-gemini-audio.mjs` remains
 the 2.5-only saved-clip experiment and needs a project with 2.5 access. Football prompt:
 `Tools/minimal-classifier.mjs` (crowd-minimal-v2); uncertain intelligible content
 is classified best-effort rather than routinely unclear. Exact digital silence
