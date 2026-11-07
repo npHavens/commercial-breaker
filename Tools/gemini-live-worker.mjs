@@ -76,7 +76,7 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000
         const response = await generateContent({ model: MODEL,
           contents: makeContents(request.id, prompt, request.audio), config: {
             responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: 4096,
-            // Gemini 3 deprecates thinkingBudget (intermittent 400s); LOW was kept from the 3.8 baseline.
+            // Gemini 3 deprecates thinkingBudget (intermittent 400s). LOW is carried over from 3.8 Flash; 3.7's lowest level is unchecked.
             thinkingConfig: { thinkingLevel: 'LOW' }, abortSignal: controller.signal,
           } });
         if (closed) return;

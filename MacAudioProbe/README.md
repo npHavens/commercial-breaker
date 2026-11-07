@@ -148,7 +148,8 @@ Football includes halftime analysis; UFC includes between-fight coverage. Anothe
 sport's commentary is not proof of return. Unknown selections fail worker setup.
 Standalone observation defaults to Football. Selection is not persisted at relaunch.
 
-The enabled log records sport and worker-ready records the assembled prompt hash.
+The enabled log records sport and worker-ready records the assembled prompt hash and the model
+the worker reports.
 The old prompt.txt remains for historical offline evaluations; it is no longer the
 live worker prompt. Confirmation timing and six-slot system-audio diagnostics are
 unchanged. Live classification improvement is unverified.
