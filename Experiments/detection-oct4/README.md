@@ -36,8 +36,8 @@ The ceiling is held constant to isolate prompt/output differences; reducing it
 does not itself guarantee lower latency.
 
 Note added November 7: since October 25 `Tools/compare-detection.mjs` has not
-reproduced these runs. It sent 3.8 Flash at thinking level `LOW` until November 1,
-and now sends the live worker's model and request settings. Each run's `run.json`
+reproduced these runs. It sent 3.8 Flash at thinking level `LOW` until the 3.7
+switch (PR #12), and since then sends the live worker's model and request settings. Each run's `run.json`
 records the model and settings it used.
 
 Dry run (no credentials or uploads):
