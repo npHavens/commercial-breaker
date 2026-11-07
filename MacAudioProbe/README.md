@@ -1,3 +1,16 @@
+# Gemini 3.7 Flash — v0.2.47
+
+Live detection uses `gemini-3.7-flash` instead of 3.8 Flash, after 3.8's latency
+spikes and timeouts on October 26 and November 1. Thinking level, token ceiling,
+timeout, prompts and confirmation are unchanged. The worker change applies to
+older builds on the next pull. This build changes only the Gemini log: the enabled
+event no longer names a model, and worker-ready always records the model the
+worker reports (`unreported` if absent, `invalid` if malformed), plus the prompt
+hash when it is 64 lowercase hex characters.
+
+Live verification pending: worker-ready logging the model in a rebuilt app, and
+break/return accuracy on 3.7 Flash.
+
 # Unused features removed — v0.2.46
 
 The app now has two tabs: Automatic and AirPlay. Removed: the Recorder tab,
