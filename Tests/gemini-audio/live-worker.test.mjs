@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyFailure, parseRequest, createWorker, createLineReader, MAX_LINE_BYTES } from '../../Tools/gemini-live-worker.mjs';
+import { classifyFailure, parseRequest, createWorker, createLineReader, MAX_LINE_BYTES, REQUEST } from '../../Tools/gemini-live-worker.mjs';
 
 function wav() {
   const b = Buffer.alloc(256044);
@@ -52,11 +52,14 @@ test('validates exact eight-second mono PCM16 WAV and rejects misleading headers
   assert.throws(() => parseRequest(line('abcdef012345', wav().subarray(0, 200))));
 });
 
-test('request uses Flash at its lowest thinking level and forwards only validated output', async () => {
+test('request uses Flash at thinking level LOW and forwards only validated output', async () => {
+  // Detection settings change only on purpose; compare-detection shares these values.
+  assert.deepEqual(REQUEST, { thinkingLevel: 'LOW', maxOutputTokens: 4096, timeoutMs: 20_000 });
   const output = [];
   const worker = createWorker({ prompt: 'classify', emit: r => output.push(r), generateContent: async args => {
-    assert.equal(args.model, 'gemini-3.8-flash');
+    assert.equal(args.model, 'gemini-3.7-flash');
     assert.deepEqual(args.config.thinkingConfig, { thinkingLevel: 'LOW' });
+    assert.equal(args.config.maxOutputTokens, 4096);
     assert.equal(args.contents[0].parts[1].inlineData.mimeType, 'audio/wav');
     return response;
   } });

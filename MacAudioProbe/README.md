@@ -1,3 +1,16 @@
+# Gemini 3.7 Flash — v0.2.47
+
+Live detection uses `gemini-3.7-flash` instead of 3.8 Flash, after 3.8's latency
+spikes and timeouts on October 26 and November 1. Thinking level, token ceiling,
+timeout, prompts and confirmation are unchanged. The worker change applies to
+older builds on the next pull. This build changes only the Gemini log: the enabled
+event no longer names a model, and worker-ready always records the model the
+worker reports (`unreported` if absent, `invalid` if malformed), plus the prompt
+hash when it is 64 lowercase hex characters.
+
+Live verification pending: worker-ready logging the model in a rebuilt app, and
+break/return accuracy on 3.7 Flash.
+
 # Unused features removed — v0.2.46
 
 The app now has two tabs: Automatic and AirPlay. Removed: the Recorder tab,
@@ -148,7 +161,8 @@ Football includes halftime analysis; UFC includes between-fight coverage. Anothe
 sport's commentary is not proof of return. Unknown selections fail worker setup.
 Standalone observation defaults to Football. Selection is not persisted at relaunch.
 
-The enabled log records sport and worker-ready records the assembled prompt hash.
+The enabled log records sport and worker-ready records the assembled prompt hash and the model
+the worker reports.
 The old prompt.txt remains for historical offline evaluations; it is no longer the
 live worker prompt. Confirmation timing and six-slot system-audio diagnostics are
 unchanged. Live classification improvement is unverified.
@@ -576,10 +590,12 @@ shared configuration is not Vertex, matching the destination named in the UI.
    closing the app, or the 15-minute recorder limit stops both. An audio request
    already sent cannot be recalled. Muting and routing remain manual throughout.
 
-The worker uses `gemini-3.8-flash` at its lowest thinking level, `LOW`; Gemini 3
+The worker uses `gemini-3.7-flash` at thinking level `LOW`; Gemini 3
 models no longer support the `thinkingBudget: 0` that disabled thinking on 2.5
-Flash, which new Vertex projects cannot use. The football prompt was tuned on 2.5
-Flash, so its accuracy on 3.8 Flash is unproven. This is an experimental
+Flash, which new Vertex projects cannot use. 3.7 replaced 3.8 Flash on November 1
+after repeated 3.8 latency spikes and timeouts; the worker-ready log records the
+model the worker requests (an alias; the version Vertex served is not logged). The football prompt was tuned on 2.5 Flash, so its accuracy on 3.7
+Flash is unproven. This is an experimental
 latency baseline, not a validated detector or permanent model choice. One request
 is allowed at a time, without retries or queued audio. Non-timeout failures disable Gemini
 while recording continues; timeout recovery follows v0.2.14 above. Capture gaps, nonfinite input, format changes and game
