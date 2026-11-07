@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B00000000000000000000006 /* SkyboxAudioProbe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = SkyboxAudioProbe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000006 /* Commercial Breaker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = "Commercial Breaker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -26,7 +26,7 @@
 		A00000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B00000000000000000000006 /* SkyboxAudioProbe.app */,
+				B00000000000000000000006 /* Commercial Breaker.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -34,13 +34,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B00000000000000000000005 /* SkyboxAudioProbe */ = {
+		B00000000000000000000005 /* CommercialBreaker */ = {
             isa = PBXNativeTarget;
             buildConfigurationList = B0000000000000000000000A;
             buildPhases = (B00000000000000000000007, B00000000000000000000008);
             buildRules = (); dependencies = ();
             fileSystemSynchronizedGroups = (B00000000000000000000004);
-            name = SkyboxAudioProbe; productName = SkyboxAudioProbe;
+            name = CommercialBreaker; productName = "Commercial Breaker";
             productReference = B00000000000000000000006;
             productType = "com.apple.product-type.application";
         };
@@ -52,7 +52,7 @@
 			attributes = {
 				LastUpgradeCheck = 2660;
 			};
-			buildConfigurationList = A00000000000000000000009 /* Build configuration list for PBXProject "SkyboxProbe" */;
+			buildConfigurationList = A00000000000000000000009 /* Build configuration list for PBXProject "CommercialBreaker" */;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -65,7 +65,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B00000000000000000000005 /* SkyboxAudioProbe */,
+				B00000000000000000000005 /* CommercialBreaker */,
 			);
 		};
 /* End PBXProject section */
@@ -107,12 +107,12 @@
                 DEVELOPMENT_TEAM = SHL25NTZ48;
                 GENERATE_INFOPLIST_FILE = YES;
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
-                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.47;
+                MARKETING_VERSION = 0.2.48;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
-                PRODUCT_NAME = "$(TARGET_NAME)";
+                PRODUCT_NAME = "Commercial Breaker";
                 SDKROOT = macosx;
                 SUPPORTED_PLATFORMS = macosx;
                 SWIFT_VERSION = 5.0;
@@ -130,12 +130,12 @@
                 DEVELOPMENT_TEAM = SHL25NTZ48;
                 GENERATE_INFOPLIST_FILE = YES;
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
-                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+                INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.47;
+                MARKETING_VERSION = 0.2.48;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
-                PRODUCT_NAME = "$(TARGET_NAME)";
+                PRODUCT_NAME = "Commercial Breaker";
                 SDKROOT = macosx;
                 SUPPORTED_PLATFORMS = macosx;
                 SWIFT_VERSION = 5.0;
@@ -147,7 +147,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A00000000000000000000009 /* Build configuration list for PBXProject "SkyboxProbe" */ = {
+		A00000000000000000000009 /* Build configuration list for PBXProject "CommercialBreaker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A0000000000000000000000B /* Debug */,

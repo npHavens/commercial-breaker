@@ -24,7 +24,7 @@ final class RoutingModel: ObservableObject {
     func requestPermission() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let granted = AXIsProcessTrustedWithOptions(options)
-        status = granted ? "Accessibility permission is enabled." : "Enable SkyboxAudioProbe in Privacy & Security → Accessibility, then retry."
+        status = granted ? "Accessibility permission is enabled." : "Enable Commercial Breaker in Privacy & Security → Accessibility, then retry."
     }
 
     func inspect() {
@@ -205,7 +205,7 @@ final class RoutingModel: ObservableObject {
 
     private func prepareSafari() async throws -> pid_t {
         try Task.checkCancellation()
-        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Accessibility permission for SkyboxAudioProbe first.") }
+        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Accessibility permission for Commercial Breaker first.") }
         guard let safari = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.Safari").first else {
             throw RoutingFailure(message: "Open Safari with the streaming player active first.")
         }

@@ -18,7 +18,7 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.47 and Safari extension source v0.2.21. AirPlay has been working well
+Native v0.2.48 and Safari extension source v0.2.21. AirPlay has been working well
 in personal use; Nick also confirmed Mac playback and the v0.2.44 startup fix
 working on October 18, and a live v0.2.45 start with the standalone setup
 (see below). v0.2.46 removes unused features: the app now has Automatic and
@@ -28,11 +28,11 @@ can cause false returns. Packaged extension attachment still needs reload testin
 
 ## Development
 
-Open `SkyboxProbe.xcodeproj` and select **SkyboxAudioProbe**, the only target.
+Open `CommercialBreaker.xcodeproj` and select **CommercialBreaker**, the only target.
 Use a full Xcode installation and configure your own signing team.
 
 ```sh
-xcodebuild -project SkyboxProbe.xcodeproj -scheme SkyboxAudioProbe \
+xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
   -derivedDataPath build/mac-audio CODE_SIGNING_ALLOWED=NO build
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
