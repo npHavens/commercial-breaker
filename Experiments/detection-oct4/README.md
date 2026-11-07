@@ -27,13 +27,18 @@ synthetic silent WAV:
   An audible sales pitch or standalone promotion overrides those cues. This
   tests Nick's hypothesis that the combination is useful despite occasional ads.
 
-All use Gemini 2.5 Flash, thinking disabled, the same 4096-token ceiling and
-20-second request timeout. Requests are sequential, with rotating variant order
+The October 4 runs all used Gemini 2.5 Flash, thinking disabled, the same
+4096-token ceiling and 20-second request timeout (see the note below for reruns). Requests are sequential, with rotating variant order
 and no retries. Each clip is converted once and reused across variants; result
 records include its hash. Only the blind ID, prompt and audio enter the request.
 Prompts, schemas, hashes, token usage and request latency are saved per run.
 The ceiling is held constant to isolate prompt/output differences; reducing it
 does not itself guarantee lower latency.
+
+Note added November 7: since October 25 `Tools/compare-detection.mjs` has not
+reproduced these runs. It sent 3.8 Flash at thinking level `LOW` until the 3.7
+switch (PR #12), and since then sends the live worker's model and request settings. Each run's `run.json`
+records the model and settings it used.
 
 Dry run (no credentials or uploads):
 

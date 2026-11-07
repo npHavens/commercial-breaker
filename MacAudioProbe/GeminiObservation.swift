@@ -73,7 +73,7 @@ final class GeminiObservation: ObservableObject {
             input = stdin.fileHandleForWriting
             output = stdout.fileHandleForReading
             try child.run()
-            log(["event": "enabled", "sport": sport.rawValue, "model": "gemini-3.8-flash", "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
+            log(["event": "enabled", "sport": sport.rawValue, "windowSeconds": 8, "intervalSeconds": 5, "confirmationIntervalSeconds": 1, "timerSeconds": 0.25])
             timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
                 Task { @MainActor in await self?.tick() }
             }
@@ -184,10 +184,10 @@ final class GeminiObservation: ObservableObject {
                 stop(message: Self.setupMessage(value["error"] as? String)); return
             }
             if value["ready"] as? Bool == true {
-                if let hash = value["promptSHA256"] as? String,
-                   hash.count == 64, hash.allSatisfy({ $0.isHexDigit }) {
-                    log(["event": "worker-ready", "promptSHA256": hash])
-                }
+                // The worker owns the model choice; record the one it reports. Malformed values stay out of the log.
+                var ready: [String: Any] = ["event": "worker-ready", "model": Self.loggedModel(value["model"])]
+                if let hash = value["promptSHA256"] as? String, Self.isPromptHash(hash) { ready["promptSHA256"] = hash }
+                log(ready)
                 workerReady = true
                 status = "Gemini ready · waiting for eight seconds of audio"
                 continue
@@ -306,6 +306,17 @@ final class GeminiObservation: ObservableObject {
         case "app-rebuild-required": "Gemini could not start · rebuild the app from this checkout. Recording continues."
         default: "Gemini could not start · see Gemini setup in the README. Recording continues."
         }
+    }
+
+    /// Lowercase ASCII hex only, as the worker and evaluation tools write it, so logged hashes compare exactly.
+    static func isPromptHash(_ hash: String) -> Bool { hash.wholeMatch(of: #/[0-9a-f]{64}/#) != nil }
+
+    /// Model IDs such as `gemini-3.7-flash` or `publishers/google/models/gemini-3.7-flash@001`;
+    /// a ready line without a `model` key is `unreported`, and anything else, `null` included, is `invalid`.
+    static func loggedModel(_ reported: Any?) -> String {
+        guard let reported else { return "unreported" }
+        guard let model = reported as? String, model.wholeMatch(of: #/[A-Za-z0-9._@\/-]{1,128}/#) != nil else { return "invalid" }
+        return model
     }
 
     /// Settings come from the ignored `.env` beside this checkout's `package.json`.
