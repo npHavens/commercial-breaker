@@ -184,11 +184,13 @@ final class GeminiObservation: ObservableObject {
                 stop(message: Self.setupMessage(value["error"] as? String)); return
             }
             if value["ready"] as? Bool == true {
+                // The worker owns the model choice; record the one it reports. Malformed values stay out of the log.
+                var ready: [String: Any] = ["event": "worker-ready", "model": Self.loggedModel(value["model"])]
                 if let hash = value["promptSHA256"] as? String,
                    hash.count == 64, hash.allSatisfy({ $0.isHexDigit }) {
-                    // The worker owns the model choice; record the one it reports.
-                    log(["event": "worker-ready", "promptSHA256": hash, "model": value["model"] as? String ?? "unreported"])
+                    ready["promptSHA256"] = hash
                 }
+                log(ready)
                 workerReady = true
                 status = "Gemini ready · waiting for eight seconds of audio"
                 continue
@@ -307,6 +309,12 @@ final class GeminiObservation: ObservableObject {
         case "app-rebuild-required": "Gemini could not start · rebuild the app from this checkout. Recording continues."
         default: "Gemini could not start · see Gemini setup in the README. Recording continues."
         }
+    }
+
+    /// Model IDs such as `gemini-3.7-flash`; anything else is logged as `invalid`.
+    static func loggedModel(_ reported: Any?) -> String {
+        guard let model = reported as? String else { return "unreported" }
+        return model.wholeMatch(of: #/[a-z0-9.-]{1,64}/#) == nil ? "invalid" : model
     }
 
     /// Settings come from the ignored `.env` beside this checkout's `package.json`.

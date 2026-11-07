@@ -95,6 +95,7 @@ import Foundation
         """.write(to: script, atomically: true, encoding: .utf8)
         let recoveries = events("request-recovery").count
         try await startAndAwaitRequest()
+        assert(events("worker-ready").last?["model"] as? String == "unreported", "A ready line without a model must say so")
         try await waitUntil("recovery from the failed request") { events("request-recovery").count > recoveries }
         assert(observer.enabled && observer.status.contains("checking fresh audio"), "Isolated unclassified failure should recover without disabling")
         assert(observer.prediction.isEmpty, "Failure must clear old prediction")
@@ -108,22 +109,18 @@ import Foundation
         try await waitUntil("a prediction after recovery") { events("prediction").count > recovered }
         assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failure should restore observation")
         observer.stop()
-        // Readiness does not depend on the prompt hash, and a malformed hash is never logged.
+        // Readiness does not depend on the reported values, and malformed ones are never logged.
         try """
         import json, sys
-        print(json.dumps({'ready':True,'promptSHA256':'not-a-hash'}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'not-a-hash','model':'Not a model'}), flush=True)
         for line in sys.stdin:
             print(json.dumps({'id':json.loads(line)['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
-        let ready = events("worker-ready").count, sent = events("request").count
-        observer.start(directory: directory)
-        var fedAt = 0.0
-        try await waitUntil("a request after a ready line with a malformed hash") {
-            let now = ProcessInfo.processInfo.systemUptime
-            if now - fedAt > 0.5 { feed(); fedAt = now }
-            return events("request").count > sent
-        }
-        assert(events("worker-ready").count == ready, "A malformed prompt hash must not be logged")
+        try await startAndAwaitRequest()
+        let malformed = events("worker-ready").last
+        assert(malformed?["promptSHA256"] == nil, "A malformed prompt hash must not be logged")
+        assert(malformed?["model"] as? String == "invalid", "A malformed model must not be logged")
+        assert(GeminiObservation.loggedModel(String(repeating: "a", count: 65)) == "invalid", "Model IDs are capped at 64 characters")
         observer.stop()
         for (error, hint) in [("configuration-missing", "GOOGLE_CLOUD_PROJECT"), ("dependencies-missing", "npm ci"), ("app-rebuild-required", "rebuild the app"), ("/private/path", "README")] {
             try """
