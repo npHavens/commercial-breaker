@@ -186,8 +186,8 @@ final class GeminiObservation: ObservableObject {
             if value["ready"] as? Bool == true {
                 // The worker owns the model choice; record the one it reports. Malformed values stay out of the log.
                 var ready: [String: Any] = ["event": "worker-ready", "model": Self.loggedModel(value["model"])]
-                if let hash = value["promptSHA256"] as? String,
-                   hash.count == 64, hash.allSatisfy({ $0.isHexDigit }) {
+                // Lowercase only, as the worker and evaluation tools write it, so logged hashes compare exactly.
+                if let hash = value["promptSHA256"] as? String, hash.wholeMatch(of: #/[0-9a-f]{64}/#) != nil {
                     ready["promptSHA256"] = hash
                 }
                 log(ready)
@@ -311,10 +311,12 @@ final class GeminiObservation: ObservableObject {
         }
     }
 
-    /// Model IDs such as `gemini-3.7-flash`; anything else is logged as `invalid`.
+    /// Model IDs such as `gemini-3.7-flash` or `publishers/google/models/gemini-3.7-flash@001`;
+    /// a missing model is `unreported` and anything else is `invalid`.
     static func loggedModel(_ reported: Any?) -> String {
-        guard let model = reported as? String else { return "unreported" }
-        return model.wholeMatch(of: #/[a-z0-9.-]{1,64}/#) == nil ? "invalid" : model
+        guard let reported else { return "unreported" }
+        guard let model = reported as? String, model.wholeMatch(of: #/[A-Za-z0-9._@\/-]{1,128}/#) != nil else { return "invalid" }
+        return model
     }
 
     /// Settings come from the ignored `.env` beside this checkout's `package.json`.
