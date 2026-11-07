@@ -581,7 +581,7 @@ The worker uses `gemini-3.7-flash` at thinking level `LOW`; Gemini 3
 models no longer support the `thinkingBudget: 0` that disabled thinking on 2.5
 Flash, which new Vertex projects cannot use. 3.7 replaced 3.8 Flash on November 1
 after repeated 3.8 latency spikes and timeouts; the worker-ready log records the
-model in use. The football prompt was tuned on 2.5 Flash, so its accuracy on 3.7
+model the worker requests (an alias; the version Vertex served is not logged). The football prompt was tuned on 2.5 Flash, so its accuracy on 3.7
 Flash is unproven. This is an experimental
 latency baseline, not a validated detector or permanent model choice. One request
 is allowed at a time, without retries or queued audio. Non-timeout failures disable Gemini

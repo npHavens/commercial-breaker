@@ -186,10 +186,7 @@ final class GeminiObservation: ObservableObject {
             if value["ready"] as? Bool == true {
                 // The worker owns the model choice; record the one it reports. Malformed values stay out of the log.
                 var ready: [String: Any] = ["event": "worker-ready", "model": Self.loggedModel(value["model"])]
-                // Lowercase only, as the worker and evaluation tools write it, so logged hashes compare exactly.
-                if let hash = value["promptSHA256"] as? String, hash.wholeMatch(of: #/[0-9a-f]{64}/#) != nil {
-                    ready["promptSHA256"] = hash
-                }
+                if let hash = value["promptSHA256"] as? String, Self.isPromptHash(hash) { ready["promptSHA256"] = hash }
                 log(ready)
                 workerReady = true
                 status = "Gemini ready · waiting for eight seconds of audio"
@@ -310,6 +307,9 @@ final class GeminiObservation: ObservableObject {
         default: "Gemini could not start · see Gemini setup in the README. Recording continues."
         }
     }
+
+    /// Lowercase ASCII hex only, as the worker and evaluation tools write it, so logged hashes compare exactly.
+    static func isPromptHash(_ hash: String) -> Bool { hash.wholeMatch(of: #/[0-9a-f]{64}/#) != nil }
 
     /// Model IDs such as `gemini-3.7-flash` or `publishers/google/models/gemini-3.7-flash@001`;
     /// a ready line without a `model` key is `unreported`, and anything else, `null` included, is `invalid`.
