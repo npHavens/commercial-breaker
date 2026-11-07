@@ -18,11 +18,16 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 ## Current checkpoint
 
 - Main is at 7d627d8 with PRs #1–#13 merged. The Skybox → Commercial Breaker
-  rename (plan PR #6, code PR #7) is in, apart from the Xcode target and product
-  name, which wait for phase 4 (see Commands).
-- Native v0.2.47 built signed from 7d627d8 after the checkout move, at
-  `build/v0.2.47/Build/Products/Debug/SkyboxAudioProbe.app`. Its first live run
-  (permissions carrying over, worker-ready logging the model) is not yet verified.
+  rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
+  follow in the v0.2.48 rename (see Commands).
+- Native v0.2.48 built signed from 89a56e5 (the offline suites and all 12 native tests
+  pass there) after the rename, at
+  `build/v0.2.48/Build/Products/Debug/Commercial Breaker.app`, with the same bundle
+  ID and designated requirement as before. Its first live run (no new permission
+  prompts, System Settings listing Commercial Breaker) is not yet verified.
+- Native v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) was built after the checkout
+  move. Its live run (permissions carrying over, worker-ready logging the model) is not
+  yet verified.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
   verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
@@ -101,7 +106,7 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    Claude review to `/code-review high`.
 6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
    (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
-   renames the Xcode target and product, and adds the icon set from the
+   builds the app shell and adds the icon set from the
    Scoreboard CB design in Figma. Moving experiment findings into `docs/archive`
    is its own PR.
 
@@ -151,17 +156,15 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 
 ## Commands
 
-The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
-`SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target, scheme and `SkyboxAudioProbe.app`
-product and the `/tmp/skybox-*` test paths. The checkout moved on November 7 with the v0.2.47
+Since v0.2.48 the project is `CommercialBreaker.xcodeproj` with one `CommercialBreaker`
+target and scheme, building `Commercial Breaker.app`. Not renamed: the `MacAudioProbe/`
+source folder and `MacAudioProbe-Info.plist`. The checkout moved on November 7 with the v0.2.47
 rebuild. A built app runs `Tools/` from the path it was built in, so any later move needs a rebuild.
 
 The `com.nohandsstack.skybox.*` bundle IDs and the `com.nohandsstack.skybox.audio-meter`
 queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audio and
-Accessibility grants to the bundle ID, so they must never be renamed. Six System Settings
-instructions still name the old app until the target and product rename in phase 4, because
-that is the name System Settings lists: `SafariAccessibility.swift` x3, `RoutingModel.swift` x2,
-`MicrophoneInput.swift` x1.
+Accessibility grants to the bundle ID, so they must never be renamed. The app's System
+Settings instructions name Commercial Breaker, the name System Settings lists since v0.2.48.
 
 ### After pulling the rename
 
@@ -185,12 +188,25 @@ show it as "see Gemini setup in the README").
 ```sh
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
 python3 -m unittest discover -s Tests -p 'test_*.py'
-xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
-  MacAudioProbe/GeminiConfirmation.swift MacAudioProbe/AutomaticCommercialPolicy.swift \
-  Tests/automatic-commercial-policy/main.swift -o /tmp/skybox-policy-tests
-/tmp/skybox-policy-tests
+Tests/run-native-tests.sh
 ```
 
+### After the v0.2.48 app rename
+
+The app file changes from `SkyboxAudioProbe.app` to `Commercial Breaker.app`. Its bundle ID
+and designated requirement are unchanged, so macOS should keep its grants. Not yet verified.
+
+1. Quit the old app. Its process and menu are still named SkyboxAudioProbe, so it is easy to
+   miss. Never run an old and a new build at once: they share a bundle ID, and both would
+   try to capture and mute.
+2. Launch `Commercial Breaker.app` from a NEW derived-data path and confirm there is no
+   prompt for microphone, system audio or Accessibility.
+3. System Settings may keep listing the grant as SkyboxAudioProbe while old builds remain on
+   disk, because every build shares the bundle ID. That row is this app; do not add a
+   second one. Keep the v0.2.47 build as the fallback until v0.2.48 is verified live;
+   after that, Nick may delete the old `SkyboxAudioProbe.app` builds under `build/`
+   (build output, not experiment data) so macOS only knows the new name.
+
 Local Xcode is `/Users/nickhavens/Downloads/Xcode.app`. Use scheme
-`SkyboxAudioProbe` and a NEW derivedDataPath to avoid altering the running bundle.
+`CommercialBreaker` and a NEW derivedDataPath to avoid altering the running bundle.
 A build can be done separately; launch/restart only when Nick's playback permits.

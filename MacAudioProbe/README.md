@@ -136,10 +136,10 @@ The old `build/mac-audio` app is retained. No Safari reload or route command was
 issued during this change.
 
 ```sh
-xcrun swiftc -module-cache-path /tmp/skybox-swift-module-cache \
+xcrun swiftc -module-cache-path /tmp/commercial-breaker-swift-module-cache \
   MacAudioProbe/ViewingActivity.swift Tests/viewing-activity/main.swift \
-  -o /tmp/skybox-viewing-tests
-/tmp/skybox-viewing-tests
+  -o /tmp/commercial-breaker-viewing-tests
+/tmp/commercial-breaker-viewing-tests
 ```
 
 # System mouse event experiment — v0.2.40
@@ -633,11 +633,11 @@ the new UI still requires a user-started session.
 ```sh
 node --test Tests/gemini-audio/*.test.mjs
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swiftc \
-  -parse-as-library -module-cache-path /tmp/skybox-swift-module-cache \
+  -parse-as-library -module-cache-path /tmp/commercial-breaker-swift-module-cache \
   MacAudioProbe/GeminiAudioBuffer.swift MacAudioProbe/GeminiRecovery.swift \
   MacAudioProbe/GeminiConfirmation.swift MacAudioProbe/GeminiObservation.swift \
-  Tests/gemini-observation/main.swift -o /tmp/skybox-observation-tests
-/tmp/skybox-observation-tests
+  Tests/gemini-observation/main.swift -o /tmp/commercial-breaker-observation-tests
+/tmp/commercial-breaker-observation-tests
 ```
 
 ---
@@ -980,10 +980,10 @@ signing changes if macOS invalidates the prior grant.
 Selection checks:
 
 ```sh
-xcrun swiftc -module-cache-path /tmp/skybox-module-cache \
+xcrun swiftc -module-cache-path /tmp/commercial-breaker-module-cache \
   MacAudioProbe/AirPlayRouteChoice.swift Tests/airplay-routing/main.swift \
-  -o /tmp/skybox-routing-tests
-/tmp/skybox-routing-tests
+  -o /tmp/commercial-breaker-routing-tests
+/tmp/commercial-breaker-routing-tests
 ```
 
 These cover exact and trimmed matching, case sensitivity, disabled destinations,
@@ -1025,8 +1025,8 @@ Alternatively, from the project root on Nick's Mac:
 DEVELOPER_DIR=/Users/nickhavens/Downloads/Xcode.app/Contents/Developer \
   xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath build/mac-audio build
-open "build/mac-audio/Build/Products/Debug/Commercial Breaker.app"
+  -derivedDataPath build/v0.2.48 build
+open "build/v0.2.48/Build/Products/Debug/Commercial Breaker.app"
 ```
 
 The development target uses Apple Development signing. No extra dependencies or audio
@@ -1097,10 +1097,10 @@ Diagnostic files persist across launches; each run gets a distinct filename.
 ## Verification
 
 ```sh
-xcrun swiftc -module-cache-path /tmp/skybox-module-cache \
+xcrun swiftc -module-cache-path /tmp/commercial-breaker-module-cache \
   MacAudioProbe/AudioLevels.swift Tests/mac-audio/main.swift \
-  -o /tmp/skybox-audio-tests
-/tmp/skybox-audio-tests
+  -o /tmp/commercial-breaker-audio-tests
+/tmp/commercial-breaker-audio-tests
 ```
 
 Checks cover peak/RMS, silence versus missing data, nonfinite input, clipping,
