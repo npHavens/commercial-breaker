@@ -28,9 +28,11 @@ synthetic silent WAV:
   tests Nick's hypothesis that the combination is useful despite occasional ads.
 
 All use Gemini 2.5 Flash, thinking disabled, the same 4096-token ceiling and
-20-second request timeout. Those were the live settings then. The tool now takes
-its model from the live worker, while its thinking level, token ceiling and
-timeout are its own copies; each run's `run.json` records all four. Requests are sequential, with rotating variant order
+20-second request timeout.
+
+Note added November 7: `Tools/compare-detection.mjs` now sends the live worker's
+current model and request settings, so a rerun does not reproduce these runs.
+Each run's `run.json` records the model and settings it used. Requests are sequential, with rotating variant order
 and no retries. Each clip is converted once and reused across variants; result
 records include its hash. Only the blind ID, prompt and audio enter the request.
 Prompts, schemas, hashes, token usage and request latency are saved per run.

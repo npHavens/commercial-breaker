@@ -57,7 +57,9 @@ import Foundation
         observer.resetContext()
         try await waitUntil("a response across the reset") { !events("discarded-stale-response").isEmpty }
         assert(observer.prediction.isEmpty, "Old-game prediction must be discarded")
-        assert(events("worker-ready").last?["model"] as? String == "fake-model", "worker-ready must record the model the worker reports")
+        let ready = events("worker-ready").last
+        assert(ready?["model"] as? String == "fake-model", "worker-ready must record the model the worker reports")
+        assert(ready?["promptSHA256"] as? String == String(repeating: "0", count: 64), "worker-ready must record a valid prompt hash")
         observer.stop()
         try await startAndAwaitRequest(retainProgramAudio: true)
         let predicted = events("prediction").count

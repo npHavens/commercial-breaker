@@ -64,7 +64,10 @@ median, one 20 s timeout in nine requests), but on October 26 and November 1 its
 latency swung up to 15 s, and on November 1 5 of about 25 live requests timed out. 3.7 Flash
 answered in 2.1–3.6 s in a side-by-side probe on November 1, then had 14 of 14 live
 requests succeed (2.4 s median), so Nick chose to keep it. Break and return accuracy
-has not been measured on either. `Tools/evaluate-gemini-audio.mjs` remains
+has not been measured on either, and whether 3.7 offers a level below `LOW` is
+unchecked (see Next work). The worker picks up the switch on the next pull, but a
+v0.2.46 build still logs `gemini-3.8-flash` in its enabled event; rebuild before
+comparing sessions, since only a new build logs the worker's reported model. `Tools/evaluate-gemini-audio.mjs` remains
 the 2.5-only saved-clip experiment and needs a project with 2.5 access. Football prompt:
 `Tools/minimal-classifier.mjs` (crowd-minimal-v2); uncertain intelligible content
 is classified best-effort rather than routinely unclear. Exact digital silence
@@ -95,6 +98,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    renames the Xcode target and product, and adds the icon set from the
    Scoreboard CB design in Figma. Moving experiment findings into `docs/archive`
    is its own PR.
+
+7. Check whether Gemini 3.7 Flash supports a thinking level below `LOW`. If it
+   does, trying it changes live latency and accuracy, so measure it live.
 
 Do not combine all of this into one rewrite.
 

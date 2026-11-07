@@ -10,6 +10,9 @@ import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { createVertexClient, setupFailure } from './vertex-client.mjs';
 
 export const MODEL = 'gemini-3.7-flash';
+/** Shared with Tools/compare-detection.mjs so offline comparisons send what live detection sends.
+ *  Gemini 3 deprecates thinkingBudget (intermittent 400s). LOW is carried over from 3.8 Flash; 3.7's lowest level is unchecked. */
+export const REQUEST = { thinkingLevel: 'LOW', maxOutputTokens: 4096, timeoutMs: 20_000 };
 export const MAX_LINE_BYTES = 540_000;
 const WAV_BYTES = 44 + 8 * 16_000 * 2;
 
@@ -49,7 +52,7 @@ export function classifyFailure(error) {
 }
 
 /** No queue or retry: a slow request never creates a backlog of stale predictions. */
-export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000, returnDetection = false, crowdDetection = false }) {
+export function createWorker({ generateContent, prompt, emit, timeoutMs = REQUEST.timeoutMs, returnDetection = false, crowdDetection = false }) {
   let active = null;
   let closed = false;
   return {
@@ -75,9 +78,8 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = 20_000
       try {
         const response = await generateContent({ model: MODEL,
           contents: makeContents(request.id, prompt, request.audio), config: {
-            responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: 4096,
-            // Gemini 3 deprecates thinkingBudget (intermittent 400s). LOW is carried over from 3.8 Flash; 3.7's lowest level is unchecked.
-            thinkingConfig: { thinkingLevel: 'LOW' }, abortSignal: controller.signal,
+            responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: REQUEST.maxOutputTokens,
+            thinkingConfig: { thinkingLevel: REQUEST.thinkingLevel }, abortSignal: controller.signal,
           } });
         if (closed) return;
         if (timedOut) { emit({ id: request.id, error: 'timeout' }); return; }
