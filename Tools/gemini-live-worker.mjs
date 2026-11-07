@@ -10,7 +10,7 @@ import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { createVertexClient, setupFailure } from './vertex-client.mjs';
 
 export const MODEL = 'gemini-3.7-flash';
-/** Shared with Tools/compare-detection.mjs so offline comparisons send what live detection sends.
+/** Tools/compare-detection.mjs sends and records each of these, so a field added here must be added there too.
  *  Gemini 3 deprecates thinkingBudget (intermittent 400s). LOW is carried over from 3.8 Flash; 3.7's lowest level is unchecked. */
 export const REQUEST = { thinkingLevel: 'LOW', maxOutputTokens: 4096, timeoutMs: 20_000 };
 export const MAX_LINE_BYTES = 540_000;
