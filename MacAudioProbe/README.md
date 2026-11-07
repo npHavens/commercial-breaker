@@ -1,3 +1,16 @@
+# App renamed to Commercial Breaker — v0.2.48
+
+The Xcode project, target and scheme are now `CommercialBreaker.xcodeproj` and
+`CommercialBreaker`, and the app builds as `Commercial Breaker.app`, the name macOS
+shows in System Settings, the Dock and the menu bar. The bundle identifier and
+signing team are unchanged, so microphone, system-audio and Accessibility grants
+should carry over; the app's own messages now say to enable Commercial Breaker
+in System Settings. The app category is Entertainment. Detection, routing and
+logs are unchanged. The `MacAudioProbe/` source folder keeps its name.
+
+Live verification pending: the renamed app starting without new permission
+prompts, and System Settings listing it as Commercial Breaker.
+
 # Gemini 3.7 Flash — v0.2.47
 
 Live detection uses `gemini-3.7-flash` instead of 3.8 Flash, after 3.8's latency
@@ -977,8 +990,8 @@ These cover exact and trimmed matching, case sensitivity, disabled destinations,
 empty/missing names, duplicate matches, and an empty picker. They do not simulate
 Safari's actual Accessibility tree or prove that a press changes the route.
 
-`SkyboxAudioProbe` is a macOS target in the existing `SkyboxProbe.xcodeproj`.
-It has independent Audio and Video tabs. Requires macOS 14.2 or newer.
+This target was then `SkyboxAudioProbe` in `SkyboxProbe.xcodeproj` (now `CommercialBreaker`).
+It had independent Audio and Video tabs at the time. Requires macOS 14.2 or newer.
 The native build and arithmetic checks pass. Local DIRECTV audio capture and
 mute-while-capturing were verified on September 20, 2026. Native AirPlay audio
 capture and tap-based TV muting failed in the subsequent test.
@@ -1005,15 +1018,15 @@ Audio evidence files in the diagnostics directory:
 
 ## Build and open
 
-Select the **SkyboxAudioProbe** scheme and **My Mac** in Xcode, then Run.
+Select the **CommercialBreaker** scheme and **My Mac** in Xcode, then Run.
 Alternatively, from the project root on Nick's Mac:
 
 ```sh
 DEVELOPER_DIR=/Users/nickhavens/Downloads/Xcode.app/Contents/Developer \
-  xcodebuild -project SkyboxProbe.xcodeproj -scheme SkyboxAudioProbe \
+  xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
   -derivedDataPath build/mac-audio build
-open build/mac-audio/Build/Products/Debug/SkyboxAudioProbe.app
+open "build/mac-audio/Build/Products/Debug/Commercial Breaker.app"
 ```
 
 The development target uses Apple Development signing. No extra dependencies or audio
