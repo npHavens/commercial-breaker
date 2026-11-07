@@ -66,9 +66,9 @@ answered in 2.1–3.6 s in a side-by-side probe on November 1, then had 14 of 14
 requests succeed (2.4 s median), so Nick chose to keep it. Break and return accuracy
 has not been measured on either, and whether 3.7 offers a level below `LOW` is
 unchecked (see Next work). The worker picks up the switch on the next pull, but a
-build from before this change still logs `gemini-3.8-flash` in its enabled event and
-no model on worker-ready. Rebuild before comparing sessions; a new build's worker-ready
-event carries `model`. `Tools/evaluate-gemini-audio.mjs` remains
+v0.2.46 build still logs `gemini-3.8-flash` in its enabled event and no model on
+worker-ready. Rebuild (v0.2.47) before comparing sessions; its worker-ready event
+carries `model`. `Tools/evaluate-gemini-audio.mjs` remains
 the 2.5-only saved-clip experiment and needs a project with 2.5 access. Football prompt:
 `Tools/minimal-classifier.mjs` (crowd-minimal-v2); uncertain intelligible content
 is classified best-effort rather than routinely unclear. Exact digital silence
