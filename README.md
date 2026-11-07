@@ -34,7 +34,7 @@ Use a full Xcode installation and configure your own signing team.
 ```sh
 xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath build/mac-audio CODE_SIGNING_ALLOWED=NO build
+  -derivedDataPath build/ci CODE_SIGNING_ALLOWED=NO build
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
 python3 -m unittest discover -s Tests -p 'test_*.py'
 Tests/run-native-tests.sh

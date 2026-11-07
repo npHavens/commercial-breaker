@@ -338,6 +338,8 @@ Launch the rebuilt app and confirm macOS does not re-prompt for microphone, syst
 
 ### Task 7: Xcode target, scheme and product name
 
+**Done in v0.2.48, ahead of the rest of phase 4, at Nick's request.** The product is `Commercial Breaker.app` rather than `CommercialBreaker.app` below, because macOS shows the file name in System Settings and ignores a display name on an unlocalized app. The original deferral note follows.
+
 **Deferred into phase 4 of `docs/commercial-breaker-plan.md`, not run standalone.** Phase 4 already owns "rename the app, target and scheme", rebuilds the window around the new name, and adds the icon. Renaming the target here instead would mean doing it twice and invalidating the build commands between two in-flight branches.
 
 **Files phase 4 touches for the rename:** `SkyboxProbe.xcodeproj/project.pbxproj`, `SkyboxProbe.xcodeproj/project.xcworkspace/contents.xcworkspacedata`, `SkyboxProbe.xcodeproj/xcshareddata/xcschemes/SkyboxAudioProbe.xcscheme`, `SkyboxProbe.xcodeproj/xcshareddata/xcschemes/SkyboxProbe.xcscheme` (deleted, not renamed).
