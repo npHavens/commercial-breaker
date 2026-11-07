@@ -123,6 +123,10 @@ import Foundation
         assert(malformed?["promptSHA256"] == nil, "A prompt hash that is not lowercase hex must not be logged")
         assert(malformed?["model"] as? String == "invalid", "A malformed model must not be logged")
         observer.stop()
+        let zeros = String(repeating: "0", count: 64)
+        for (hash, valid) in [(zeros, true), (String(repeating: "A", count: 64), false), (String(zeros.dropLast()) + "\u{FF10}", false), (zeros + "0", false)] {
+            assert(GeminiObservation.isPromptHash(hash) == valid, "\(hash) must \(valid ? "" : "not ")be logged as a prompt hash")
+        }
         let longest = String(repeating: "a", count: 128)
         for (reported, logged) in [("publishers/google/models/gemini-3.7-flash@001", "publishers/google/models/gemini-3.7-flash@001"), (longest, longest),
                                    (longest + "a", "invalid"), ("", "invalid"), (37, "invalid"), (NSNull(), "invalid")] as [(Any, String)] {
