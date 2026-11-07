@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { cp, mkdtemp, realpath, rm } from 'node:fs/promises';
@@ -7,14 +7,19 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createVertexClient, setupFailure, vertexConfig } from '../../Tools/vertex-client.mjs';
-import { workerSettings } from '../../Tools/gemini-live-worker.mjs';
+import { MODEL, workerSettings } from '../../Tools/gemini-live-worker.mjs';
 
 const tools = fileURLToPath(new URL('../../Tools/', import.meta.url));
 const installed = (() => { try { createRequire(import.meta.url).resolve('@google/genai'); return true; } catch { return false; } })();
 
 /** Starts the real worker with only the given settings; no request is ever sent. */
+// A failed assertion skips the test's stdin.end(); without this the live worker keeps the run open.
+const workers = [];
+after(() => { for (const child of workers) child.kill(); });
+
 function startWorker(script, env) {
   const child = spawn(process.execPath, [script], { env: { PATH: process.env.PATH, ...env }, stdio: ['pipe', 'pipe', 'ignore'] });
+  workers.push(child);
   const first = new Promise((resolve, reject) => {
     let text = '';
     child.stdout.on('data', chunk => {
@@ -80,6 +85,8 @@ test('configured worker becomes ready without contacting Vertex', { skip: !insta
     const ready = await first;
     assert.equal(ready.ready, true);
     assert.equal(ready.classifier, 'crowd-minimal-v2');
+    // The app logs the model from this line; it is the only record of which model classified a session.
+    assert.equal(ready.model, MODEL);
     child.stdin.end();
     assert.equal(await exited, 0);
   } finally { await rm(home, { recursive: true, force: true }); }

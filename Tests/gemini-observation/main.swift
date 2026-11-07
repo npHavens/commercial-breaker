@@ -112,16 +112,20 @@ import Foundation
         // Readiness does not depend on the reported values, and malformed ones are never logged.
         try """
         import json, sys
-        print(json.dumps({'ready':True,'promptSHA256':'not-a-hash','model':'Not a model'}), flush=True)
+        print(json.dumps({'ready':True,'promptSHA256':'A'*64,'model':'not a model'}), flush=True)
         for line in sys.stdin:
             print(json.dumps({'id':json.loads(line)['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
         try await startAndAwaitRequest()
         let malformed = events("worker-ready").last
-        assert(malformed?["promptSHA256"] == nil, "A malformed prompt hash must not be logged")
+        assert(malformed?["promptSHA256"] == nil, "A prompt hash that is not lowercase hex must not be logged")
         assert(malformed?["model"] as? String == "invalid", "A malformed model must not be logged")
-        assert(GeminiObservation.loggedModel(String(repeating: "a", count: 65)) == "invalid", "Model IDs are capped at 64 characters")
         observer.stop()
+        let longest = String(repeating: "a", count: 128)
+        for (reported, logged) in [("publishers/google/models/gemini-3.7-flash@001", "publishers/google/models/gemini-3.7-flash@001"), (longest, longest),
+                                   (longest + "a", "invalid"), ("", "invalid"), (37, "invalid"), (NSNull(), "invalid")] as [(Any, String)] {
+            assert(GeminiObservation.loggedModel(reported) == logged, "\(reported) must be logged as \(logged)")
+        }
         for (error, hint) in [("configuration-missing", "GOOGLE_CLOUD_PROJECT"), ("dependencies-missing", "npm ci"), ("app-rebuild-required", "rebuild the app"), ("/private/path", "README")] {
             try """
             import json, sys
