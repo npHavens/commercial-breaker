@@ -10,7 +10,7 @@ import { parseResult, responseSchema } from './standard-classifier.mjs';
 import { sportPrompt } from './sport-prompt.mjs';
 import { minimalPrompt, minimalSchema, parseMinimalResult } from './minimal-classifier.mjs';
 import { createVertexClient } from './vertex-client.mjs';
-import { MODEL as model } from './gemini-live-worker.mjs';
+import { MODEL as model, REQUEST } from './gemini-live-worker.mjs';
 
 const root = new URL('../', import.meta.url);
 let phase = 'setup';
@@ -85,8 +85,7 @@ async function main() {
     const run = new URL(`Experiments/detection-oct4/results/${new Date().toISOString().replaceAll(':', '-')}/`, root);
     await mkdir(run, { recursive: true });
     const records = [];
-    await writeFile(new URL('run.json', run), JSON.stringify({ model, provider: 'vertex', tailSeconds: 8,
-      thinkingLevel: 'LOW', maxOutputTokens: 4096, timeoutMs: 20000, attempts: 1,
+    await writeFile(new URL('run.json', run), JSON.stringify({ model, provider: 'vertex', tailSeconds: 8, ...REQUEST, attempts: 1,
       note: 'Rotating variant order; provisional markers, not reviewed ground truth. Silence is synthetic.',
       variants: Object.fromEntries(Object.entries(variants).map(([name, value]) => [name, {
         prompt: value.prompt, schema: value.schema, promptSHA256: createHash('sha256').update(value.prompt).digest('hex'),
@@ -100,8 +99,8 @@ async function main() {
         const started = performance.now();
         phase = 'request';
         const response = await ai.models.generateContent({ model, contents: makeContents(sample.sample_id, settings.prompt, audio[index]), config: {
-          responseMimeType: 'application/json', responseSchema: settings.schema, maxOutputTokens: 4096,
-          thinkingConfig: { thinkingLevel: 'LOW' }, abortSignal: AbortSignal.timeout(20000),
+          responseMimeType: 'application/json', responseSchema: settings.schema, maxOutputTokens: REQUEST.maxOutputTokens,
+          thinkingConfig: { thinkingLevel: REQUEST.thinkingLevel }, abortSignal: AbortSignal.timeout(REQUEST.timeoutMs),
         } });
         const elapsedMs = performance.now() - started;
         phase = 'validation';

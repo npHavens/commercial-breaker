@@ -1,4 +1,4 @@
-import test, { after } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { cp, mkdtemp, realpath, rm } from 'node:fs/promises';
@@ -13,13 +13,8 @@ const tools = fileURLToPath(new URL('../../Tools/', import.meta.url));
 const installed = (() => { try { createRequire(import.meta.url).resolve('@google/genai'); return true; } catch { return false; } })();
 
 /** Starts the real worker with only the given settings; no request is ever sent. */
-// A failed assertion skips the test's stdin.end(); without this the live worker keeps the run open.
-const workers = [];
-after(() => { for (const child of workers) child.kill(); });
-
 function startWorker(script, env) {
   const child = spawn(process.execPath, [script], { env: { PATH: process.env.PATH, ...env }, stdio: ['pipe', 'pipe', 'ignore'] });
-  workers.push(child);
   const first = new Promise((resolve, reject) => {
     let text = '';
     child.stdout.on('data', chunk => {
@@ -58,11 +53,14 @@ test('client is configured for Vertex with a single attempt', { skip: !installed
 
 test('worker reports missing configuration, then waits for the app to close input', async () => {
   const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), {});
-  assert.deepEqual(await first, { ready: false, error: 'configuration-missing' });
-  // Staying alive lets the app read the reason before its termination handler runs.
-  assert.equal(await Promise.race([exited, new Promise(resolve => setTimeout(() => resolve('running'), 200))]), 'running');
-  child.stdin.end();
-  assert.equal(await exited, 1);
+  // Each finally stops a worker left running by a failed assertion, which would otherwise hang the run.
+  try {
+    assert.deepEqual(await first, { ready: false, error: 'configuration-missing' });
+    // Staying alive lets the app read the reason before its termination handler runs.
+    assert.equal(await Promise.race([exited, new Promise(resolve => setTimeout(() => resolve('running'), 200))]), 'running');
+    child.stdin.end();
+    assert.equal(await exited, 1);
+  } finally { child.kill(); }
 });
 
 test('worker outside an installed checkout reports missing dependencies', async () => {
@@ -71,9 +69,11 @@ test('worker outside an installed checkout reports missing dependencies', async 
   try {
     await cp(tools, join(copy, 'Tools'), { recursive: true });
     const { child, first, exited } = startWorker(join(copy, 'Tools/gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test' });
-    assert.deepEqual(await first, { ready: false, error: 'dependencies-missing' });
-    child.stdin.end();
-    assert.equal(await exited, 1);
+    try {
+      assert.deepEqual(await first, { ready: false, error: 'dependencies-missing' });
+      child.stdin.end();
+      assert.equal(await exited, 1);
+    } finally { child.kill(); }
   } finally { await rm(copy, { recursive: true, force: true }); }
 });
 
@@ -82,13 +82,15 @@ test('configured worker becomes ready without contacting Vertex', { skip: !insta
   const home = await mkdtemp(join(tmpdir(), 'commercial-breaker-home-'));
   try {
     const { child, first, exited } = startWorker(join(tools, 'gemini-live-worker.mjs'), { GOOGLE_CLOUD_PROJECT: 'commercial-breaker-test', HOME: home });
-    const ready = await first;
-    assert.equal(ready.ready, true);
-    assert.equal(ready.classifier, 'crowd-minimal-v2');
-    // The app logs the model from this line; it is the only record of which model classified a session.
-    assert.equal(ready.model, MODEL);
-    child.stdin.end();
-    assert.equal(await exited, 0);
+    try {
+      const ready = await first;
+      assert.equal(ready.ready, true);
+      assert.equal(ready.classifier, 'crowd-minimal-v2');
+      // The app logs the requested model from this line; nothing else records it per session.
+      assert.equal(ready.model, MODEL);
+      child.stdin.end();
+      assert.equal(await exited, 0);
+    } finally { child.kill(); }
   } finally { await rm(home, { recursive: true, force: true }); }
 });
 
