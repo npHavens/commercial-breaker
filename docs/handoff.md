@@ -4,7 +4,7 @@
 
 Repo: https://github.com/npHavens/commercial-breaker (public, MIT, No Hands Stack LLC;
 renamed from `skybox` on October 26, and the old URLs redirect).
-Local checkout: `/Users/nickhavens/Projects/skybox`.
+Local checkout: `/Users/nickhavens/Projects/commercial-breaker` (moved from `skybox` on November 7).
 Baseline PR #1 merged into main on October 18 (20e5b4e); Codex reviewed the
 final commit with no findings. Start focused branches from updated main. Read
 README, CONTRIBUTING and `docs/roadmap.md`. Project notes: https://app.notion.com/p/3e04004d3caa810b915fc3f95af2235b.
@@ -17,13 +17,14 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at d079dec with PRs #1–#7 merged. The Skybox → Commercial Breaker
+- Main is at 7d627d8 with PRs #1–#13 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in, apart from the Xcode target and product
   name, which wait for phase 4 (see Commands).
-- Native v0.2.46 (two tabs: Automatic and AirPlay) built from d079dec, signed and
-  running. Build path:
-  `build/mac-audio-oct26-rename/Build/Products/Debug/SkyboxAudioProbe.app`.
-  On October 26 Nick ran it on a recorded DIRECTV game. The support folder
+- Native v0.2.47 built signed from 7d627d8 after the checkout move, at
+  `build/v0.2.47/Build/Products/Debug/SkyboxAudioProbe.app`. Its first live run
+  (permissions carrying over, worker-ready logging the model) is not yet verified.
+- The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
+  verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
   Accessibility, and an AirPlay break moved to the Mac and returned to TV.
 - The return to TV fails when another app, usually VS Code, is frontmost: see
@@ -102,6 +103,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
 
 7. Check whether Gemini 3.7 Flash supports a thinking level below `LOW`. If it
    does, trying it changes live latency and accuracy, so measure it live.
+8. Deferred from PR #12: one request-config builder in `Tools/gemini-live-worker.mjs`
+   that the worker and `Tools/compare-detection.mjs` both send and that `run.json`
+   records; reuse the worker's `safeUsage` there; and show the request settings in
+   the dry run.
 
 Do not combine all of this into one rewrite.
 
@@ -144,8 +149,8 @@ ed3600d. This handoff is a subsequent documentation-only commit.
 
 The rename from Skybox to Commercial Breaker is in progress. Not yet migrated: the
 `SkyboxProbe.xcodeproj`, the `SkyboxAudioProbe` target, scheme and `SkyboxAudioProbe.app`
-product, the `/tmp/skybox-*` test paths and the local checkout directory. Move the checkout
-with phase 4's rebuild, because a built app runs `Tools/` from the path it was built in.
+product and the `/tmp/skybox-*` test paths. The checkout moved on November 7 with the v0.2.47
+rebuild. A built app runs `Tools/` from the path it was built in, so any later move needs a rebuild.
 
 The `com.nohandsstack.skybox.*` bundle IDs and the `com.nohandsstack.skybox.audio-meter`
 queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audio and
