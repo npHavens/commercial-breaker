@@ -312,7 +312,7 @@ final class GeminiObservation: ObservableObject {
     }
 
     /// Model IDs such as `gemini-3.7-flash` or `publishers/google/models/gemini-3.7-flash@001`;
-    /// a missing model is `unreported` and anything else is `invalid`.
+    /// a ready line without a `model` key is `unreported`, and anything else, `null` included, is `invalid`.
     static func loggedModel(_ reported: Any?) -> String {
         guard let reported else { return "unreported" }
         guard let model = reported as? String, model.wholeMatch(of: #/[A-Za-z0-9._@\/-]{1,128}/#) != nil else { return "invalid" }
