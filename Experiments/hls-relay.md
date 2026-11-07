@@ -25,7 +25,7 @@ Python 3.9 or newer is sufficient; there are no third-party dependencies.
 2. Open Terminal and run:
 
    ```sh
-   cd /Users/nickhavens/Projects/skybox
+   cd /Users/nickhavens/Projects/commercial-breaker
    python3 Tools/hls_relay.py
    ```
 
