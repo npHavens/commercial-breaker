@@ -1,4 +1,4 @@
-# Commercial Breaker handoff to Claude — October 26, 2026
+# Commercial Breaker handoff to Claude — November 7, 2026
 
 ## Start here
 
@@ -32,9 +32,11 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- Codex automatic reviews run on every PR (Smart detect). Recheck GitHub before
-  merging.
-- Offline suites on d079dec (October 26): 172 JavaScript tests, 37 Python tests and
+- Every PR gets a Codex review (Smart detect), a Claude review running
+  `/code-review high` (`.github/workflows/claude-review.yml`), and the offline suites
+  plus an unsigned app build in CI (`.github/workflows/tests.yml`). Recheck GitHub
+  before merging.
+- Offline suites on 7d627d8 (November 7): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
 
 ## Behavior and important code
@@ -94,7 +96,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    removed tvOS/PiP, the Audio, Video and Recorder tabs, markers, clip store and
    cue detector.
 5. Done: PRs #6 and #7 renamed Skybox to Commercial Breaker, live-verified
-   October 26.
+   October 26. PRs #8–#10 added the code review rules and Claude review, #11 added
+   CI, #12 switched detection to Gemini 3.7 Flash (v0.2.47), and #13 moved the
+   Claude review to `/code-review high`.
 6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
    (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
    renames the Xcode target and product, and adds the icon set from the
@@ -103,10 +107,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
 
 7. Check whether Gemini 3.7 Flash supports a thinking level below `LOW`. If it
    does, trying it changes live latency and accuracy, so measure it live.
-8. Deferred from PR #12: one request-config builder in `Tools/gemini-live-worker.mjs`
-   that the worker and `Tools/compare-detection.mjs` both send and that `run.json`
-   records; reuse the worker's `safeUsage` there; and show the request settings in
-   the dry run.
+8. Deferred from PR #12: the worker and `Tools/compare-detection.mjs` each build
+   their own `generateContent` config from `REQUEST`; export one builder from
+   `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
+   `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
 
 Do not combine all of this into one rewrite.
 
@@ -166,7 +170,10 @@ after a rebuild; an old binary's worker start fails with `app-rebuild-required` 
 show it as "see Gemini setup in the README").
 
 1. Pull only when no detection session is running.
-2. Rebuild to a NEW derived-data path (the build command is in the README).
+2. Rebuild signed to a NEW derived-data path: the command under "Build and open" in
+   `MacAudioProbe/README.md` with a fresh `-derivedDataPath`. The README's
+   `CODE_SIGNING_ALLOWED=NO` command only checks compilation; an unsigned build loses
+   the macOS permission grants.
 3. Quit the old app, launch the new one, and confirm the history now lives in
    `~/Library/Application Support/CommercialBreaker/`.
 4. Reload the temporary Safari extension, re-grant site access if Safari asks, and refresh

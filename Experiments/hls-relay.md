@@ -22,10 +22,9 @@ need live verification.
 Python 3.9 or newer is sufficient; there are no third-party dependencies.
 
 1. In the working Paramount Safari tab, copy the bearer value from the successful key request's Authorization header. Do not paste it into chat or save it in source code.
-2. Open Terminal and run:
+2. Open Terminal and run from the repository root:
 
    ```sh
-   cd /Users/nickhavens/Projects/commercial-breaker
    python3 Tools/hls_relay.py
    ```
 
