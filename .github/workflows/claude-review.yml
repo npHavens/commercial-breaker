@@ -2,6 +2,9 @@ name: Claude review
 
 # The review job lives in claude-review-reusable.yml. Another repo uses this same caller
 # with `uses: npHavens/commercial-breaker/.github/workflows/claude-review-reusable.yml@<full SHA>`.
+# When moving that pin, confirm the SHA is on this repo's main (this prints identical or ahead):
+#   gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status
+# and check the triggers and permissions here against the reusable workflow at that SHA.
 on:
   pull_request:
     types: [opened, ready_for_review]
@@ -10,6 +13,10 @@ on:
 
 jobs:
   claude-review:
+    # Keeps comments that cannot be a request from starting a run; the called gate decides.
+    if: >-
+      github.event_name == 'pull_request'
+      || (github.event.issue.pull_request && contains(github.event.comment.body, '@claude review'))
     # The called workflow's token cannot exceed these.
     permissions:
       contents: read
