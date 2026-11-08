@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 0435c42 with PRs #1–#19 merged. The Skybox → Commercial Breaker
+- Main is at cf89a40 with PRs #1–#20 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -52,7 +52,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
-  after it brings the Python suite to 41; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  after it brought the Python suite to 41, and the review workflow tests to 64; CI runs it on pull requests and pushes to main. No new audio was uploaded.
 
 ## Behavior and important code
 
@@ -126,16 +126,14 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
-9. Commit tests for the gate, rules-restore and summary scripts in `.github/workflows/claude-review-reusable.yml`.
-   They must run from the default branch, because a PR controls its own copy of any script file.
-10. Confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
+9. Confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
    `--setting-sources user` are untested too.
-11. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
+10. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-12. After PR #20 merges, move the pin in the other three repos to its merge commit or later,
-   each with a successful live run as the merge gate requires. The No Hands Stack HQ session
+11. Move the pin in the other three repos to the latest review-workflow merge commit, copy
+   CB's updated `claude-review.yml` with it, and show a successful live run in each as the merge gate requires. The No Hands Stack HQ session
    coordinates this. On November 8 each repo's run log showed its own repo checked out for
    the rules restore; none of those PRs tampered with a rules file, so that case was only
    tested locally.
