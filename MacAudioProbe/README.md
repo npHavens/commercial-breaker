@@ -3,14 +3,14 @@
 The Xcode project, target and scheme are now `CommercialBreaker.xcodeproj` and
 `CommercialBreaker`, and the app builds as `Commercial Breaker.app`, the name macOS
 shows in System Settings, the Dock and the menu bar. The bundle identifier and
-signing team are unchanged, so the designated requirement macOS ties grants to is
+signing certificate are unchanged, so the designated requirement macOS ties grants to is
 identical; the app's own messages now say to enable Commercial Breaker
 in System Settings. The app category is Entertainment. Detection, routing and
 logs are unchanged. The `MacAudioProbe/` source folder keeps its name.
 
 On November 8 a football session showed the Accessibility and microphone grants
-survived. Still pending: the system-audio grant (used only at a break), and System
-Settings listing it as Commercial Breaker. The window title now reads its version from the bundle, so a
+survived. Still pending: the system-audio grant (a Mac playback start or a break uses it),
+a break/return cycle, and System Settings listing it as Commercial Breaker. The window title now reads its version from the bundle, so a
 version bump edits only `MARKETING_VERSION`.
 
 # Gemini 3.7 Flash — v0.2.47
