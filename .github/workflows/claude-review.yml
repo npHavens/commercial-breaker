@@ -40,14 +40,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          if [[ "$GITHUB_EVENT_NAME" == issue_comment && ! "${COMMENT_BODY,,}" =~ ^[[:space:]]*@claude\ review([[:space:]]|$) ]]; then
-            echo "The comment does not start with @claude review. Skipping."
-            exit 0
-          fi
-          cross_repo="$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq .isCrossRepository)"
-          if [[ "$cross_repo" != false ]]; then
-            gh pr comment "$PR_NUMBER" --body "Claude review does not run on fork PRs."
-            exit 0
+          # The job condition has already excluded forks for the pull_request trigger.
+          if [[ "$GITHUB_EVENT_NAME" == issue_comment ]]; then
+            if [[ ! "${COMMENT_BODY,,}" =~ ^[[:space:]]*@claude\ review([[:space:]]|$) ]]; then
+              echo "The comment does not start with @claude review. Skipping."
+              exit 0
+            fi
+            cross_repo="$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq .isCrossRepository)"
+            if [[ "$cross_repo" != false ]]; then
+              gh pr comment "$PR_NUMBER" --body "Claude review does not run on fork PRs."
+              exit 0
+            fi
           fi
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
@@ -95,20 +98,22 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      # The reviewer applies AGENTS.md, so a PR must not be able to rewrite its own review
-      # rules. They come from the default branch because a PR chooses its own base.
+      # The reviewer applies AGENTS.md, so a PR's content must not rewrite its own review
+      # rules. They come from the default branch because a PR chooses its own base. A
+      # pull_request run uses the PR's copy of this file, so a same-repo writer could drop
+      # this step; comment-triggered runs use the default branch's copy.
       # The action restores .claude, CLAUDE.md and similar paths, but not AGENTS.md.
       # Removing first also drops any AGENTS.md the PR added. If an AGENTS.md starts
       # pointing at a separate review rules file, restore that file here too.
       - name: Restore review rules from the default branch
         shell: bash
         run: |
-          find . -path ./.git -prune -o -path ./.review-base -prune -o -name AGENTS.md -exec rm -rf {} +
+          find . -path ./.git -prune -o -path ./.review-base -prune -o -iname AGENTS.md -exec rm -rf {} +
           while IFS= read -r -d '' rules; do
             # A PR can turn a folder that held rules into a file; those rules then cover nothing.
             mkdir -p "$(dirname "$rules")" || continue
-            cp ".review-base/$rules" "$rules"
-          done < <(cd .review-base && find . -path ./.git -prune -o -name AGENTS.md -type f -print0)
+            cp -L ".review-base/$rules" "$rules"
+          done < <(cd .review-base && find . -path ./.git -prune -o -name AGENTS.md \( -type f -o -type l \) -print0)
           rm -rf .review-base
 
       # The scrub in the review step will not start without bubblewrap, and Ubuntu blocks
@@ -125,8 +130,8 @@ jobs:
       # --jq, so what it can reach must not be worth stealing. It gets this job's token,
       # limited to the permissions above and expiring with the job, rather than the Claude
       # GitHub App token, which can write to the repo. The scrub removes the Claude login
-      # from its commands. The Read denies keep it out of .git/config and the runner's files
-      # (Grep and Glob honor Read rules on a best-effort basis).
+      # from its commands. The Read denies keep it out of .git/config, /proc and the runner's
+      # temp folder (Grep and Glob honor Read rules on a best-effort basis).
       # ~/.claude stays readable because large command output is saved there.
       - id: review
         uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1.0.269
@@ -154,8 +159,8 @@ jobs:
         run: |
           severities="$(gh api --paginate "repos/$GH_REPO/pulls/$PR_NUMBER/comments?per_page=100" --jq '
             .[]
-            | select(.user.login == "github-actions[bot]" and .created_at >= env.STARTED_AT)
-            | (.body | capture("^\\[(?<severity>High|Medium|Low)\\]") | .severity) // "Unrated"
+            | select(.user.login == "github-actions[bot]" and .in_reply_to_id == null and .created_at >= env.STARTED_AT)
+            | (.body | capture("^\\W*\\[(?<severity>High|Medium|Low)\\]") | .severity) // "Unrated"
           ')"
           count() { grep -cx "$1" <<<"$severities" || true; }
           high="$(count High)" medium="$(count Medium)" low="$(count Low)" unrated="$(count Unrated)"
