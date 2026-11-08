@@ -3,14 +3,14 @@
 The Xcode project, target and scheme are now `CommercialBreaker.xcodeproj` and
 `CommercialBreaker`, and the app builds as `Commercial Breaker.app`, the name macOS
 shows in System Settings, the Dock and the menu bar. The bundle identifier and
-signing team are unchanged, so microphone, system-audio and Accessibility grants
-should carry over; the app's own messages now say to enable Commercial Breaker
+signing team are unchanged, so the designated requirement macOS ties grants to is
+identical; the app's own messages now say to enable Commercial Breaker
 in System Settings. The app category is Entertainment. Detection, routing and
 logs are unchanged. The `MacAudioProbe/` source folder keeps its name.
 
-On November 8 Nick ran a football session on it with no permission prompt
-reported. Still pending: System Settings listing it as Commercial Breaker, and a
-break/return cycle. The window title now reads its version from the bundle, so a
+On November 8 a football session showed the Accessibility and microphone grants
+survived. Still pending: the system-audio grant (used only at a break), and System
+Settings listing it as Commercial Breaker. The window title now reads its version from the bundle, so a
 version bump edits only `MARKETING_VERSION`.
 
 # Gemini 3.7 Flash — v0.2.47
@@ -1024,11 +1024,12 @@ Select the **CommercialBreaker** scheme and **My Mac** in Xcode, then Run.
 Alternatively, from the project root on Nick's Mac:
 
 ```sh
+out=build/$(date +%Y%m%d-%H%M%S)    # a new folder, never the running build's
 DEVELOPER_DIR=/Users/nickhavens/Downloads/Xcode.app/Contents/Developer \
   xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath build/<new-folder> build    # never the running build's folder
-open "build/<new-folder>/Build/Products/Debug/Commercial Breaker.app"
+  -derivedDataPath "$out" build
+open "$out/Build/Products/Debug/Commercial Breaker.app"
 ```
 
 The development target uses Apple Development signing. No extra dependencies or audio

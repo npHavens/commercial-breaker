@@ -5,11 +5,11 @@ struct AutomaticCommercialView: View {
     @ObservedObject var recorder: AudioRecorderModel
     @ObservedObject var routing: RoutingModel
     /// MARKETING_VERSION, so a version bump edits only the build settings.
-    private let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+    private static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Automatic commercial test · v\(version)").font(.title2.bold())
+            Text("Automatic commercial test · v\(Self.version)").font(.title2.bold())
             Picker("Sport", selection: $model.sport) {
                 ForEach(GeminiObservation.Sport.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }.disabled(model.busy || recorder.running)

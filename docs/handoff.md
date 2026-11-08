@@ -24,10 +24,12 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   pass there) after the rename, at
   `build/v0.2.48/Build/Products/Debug/Commercial Breaker.app`, with the same bundle
   ID and designated requirement as before. On November 8 Nick watched football with
-  it for 36 minutes with no permission prompt reported: worker-ready logged
+  it for 36 minutes with no permission prompt reported. Accessibility and microphone
+  grants worked (routing read Safari's picker; detection ran); worker-ready logged
   `gemini-3.7-flash`, 347 predictions at a 2.3 s median, and 10 failures (7 timeouts)
-  in one burst early on, all recovered. Not yet checked: System Settings listing
-  Commercial Breaker, and a break/return cycle.
+  in one burst early on, all recovered. Not yet checked: the system-audio grant,
+  which a break/return cycle exercises, and System Settings listing Commercial Breaker.
+  The title-version change after cf46103 has not run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
@@ -44,7 +46,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   plus an unsigned app build in CI (`.github/workflows/tests.yml`). Recheck GitHub
   before merging.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
-  all 12 native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
+  all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
+  after it brings the Python suite to 40; CI runs every commit. No new audio was uploaded.
 
 ## Behavior and important code
 
@@ -196,9 +199,12 @@ Tests/run-native-tests.sh
 ### After the v0.2.48 app rename
 
 The app file changes from `SkyboxAudioProbe.app` to `Commercial Breaker.app`. Its bundle ID
-and designated requirement are unchanged, so macOS keeps its grants: the November 8 session
-reported no permission prompt. Still open: the System Settings name and a break/return cycle.
-`Tests/test_app_identity.py` fails if the bundle ID, signing team or product name changes.
+and designated requirement are unchanged. On November 8 two grants were shown to survive:
+Accessibility (routing read Safari's picker at 18:41 UTC) and microphone (347 predictions).
+System audio is used only at a break, so it is unverified until a break/return cycle; the
+System Settings name is also unchecked. `Tests/test_app_identity.py` fails if the bundle ID,
+signing team or identity, sandbox setting, product name or version changes in one
+configuration only, or if entitlements are added.
 
 1. Quit the old app. Its process and menu are still named SkyboxAudioProbe, so it is easy to
    miss. Never run an old and a new build at once: they share a bundle ID, and both would
