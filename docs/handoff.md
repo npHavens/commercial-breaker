@@ -17,17 +17,19 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 7d627d8 with PRs #1–#13 merged. The Skybox → Commercial Breaker
+- Main is at 10da4ed with PRs #1–#14 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
-- Native v0.2.48 built signed from 89a56e5 (the offline suites and all 12 native tests
+- Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
   pass there) after the rename, at
   `build/v0.2.48/Build/Products/Debug/Commercial Breaker.app`, with the same bundle
-  ID and designated requirement as before. Its first live run (no new permission
-  prompts, System Settings listing Commercial Breaker) is not yet verified.
-- Native v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) was built after the checkout
-  move. Its live run (permissions carrying over, worker-ready logging the model) is not
-  yet verified.
+  ID and designated requirement as before. On November 8 Nick watched football with
+  it for 36 minutes with no permission prompt reported: worker-ready logged
+  `gemini-3.7-flash`, 347 predictions at a 2.3 s median, and 10 failures (7 timeouts)
+  in one burst early on, all recovered. Not yet checked: System Settings listing
+  Commercial Breaker, and a break/return cycle.
+- v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
+  completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
   verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
