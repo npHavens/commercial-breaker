@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 38f437b with PRs #1–#16 merged. The Skybox → Commercial Breaker
+- Main is at 3a28545 with PRs #1–#17 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -44,9 +44,11 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   accepted earlier; it was not separately confirmed in the October 26 test.
 - Every PR gets a Codex review (Smart detect) and the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
-  review running `/code-review high` (`.github/workflows/claude-review.yml`) when they
+  review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
+  `claude-review.yml`; other repos can pin it by commit SHA) when they
   open or are marked ready; fork PRs never do. To review later pushes, start a comment
-  with `@claude review`. That run uses main's copy of the workflow. Its comments come
+  with `@claude review`. That run uses the default branch's caller: here that means main's reusable
+  workflow, while other repos get the SHA they pin. Its comments come
   from `github-actions[bot]`. Recheck GitHub before merging.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
@@ -124,7 +126,7 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
-9. Commit tests for the gate, rules-restore and summary scripts in `.github/workflows/claude-review.yml`.
+9. Commit tests for the gate, rules-restore and summary scripts in `.github/workflows/claude-review-reusable.yml`.
    They must run from the default branch, because a PR controls its own copy of any script file.
 10. On the next PR's Claude review, compare it with a local `/code-review high` on the same
    commit, and confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
@@ -133,6 +135,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
+12. After the reusable-workflow PR merges, confirm `@claude review` through the new caller,
+   and one run from another repo pinned to that PR's merge commit or later (earlier commits
+   don't have the file): `default_branch`, the rules restore and `gh` should target the
+   caller's repo. Its checks are named `claude-review / gate` and `claude-review / review`.
 
 Do not combine all of this into one rewrite.
 
