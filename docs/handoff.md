@@ -42,10 +42,12 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- Every PR gets a Codex review (Smart detect), a Claude review running
-  `/code-review high` (`.github/workflows/claude-review.yml`), and the offline suites
-  plus an unsigned app build in CI (`.github/workflows/tests.yml`). Recheck GitHub
-  before merging.
+- Every PR gets a Codex review (Smart detect) and the offline suites plus an unsigned
+  app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
+  review running `/code-review high` (`.github/workflows/claude-review.yml`) when they
+  open or are marked ready; fork PRs never do. To review later pushes, start a comment
+  with `@claude review`. That run uses main's copy of the workflow. Its comments come
+  from `github-actions[bot]`. Recheck GitHub before merging.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brings the Python suite to 41; CI runs it on pull requests and pushes to main. No new audio was uploaded.
@@ -122,6 +124,8 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
+9. Commit tests for the gate and summary scripts in `.github/workflows/claude-review.yml`.
+   They must run from the default branch, because a PR controls its own copy of any script file.
 
 Do not combine all of this into one rewrite.
 
