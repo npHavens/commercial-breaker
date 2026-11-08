@@ -104,9 +104,9 @@ jobs:
       # pull_request run uses the PR's copy of this file, so a same-repo writer controls
       # every safeguard in this job; comment-triggered runs use the default branch's copy.
       # The action restores .claude, the root CLAUDE.md and similar paths, but not AGENTS.md,
-      # the CODE_REVIEW.md it points to, or nested CLAUDE.md files. Removing first also drops
-      # any copy the PR added. If an AGENTS.md starts pointing at another review rules file,
-      # restore that file here too.
+      # a CODE_REVIEW.md that one points to (some repos sharing this file have one), or nested
+      # CLAUDE.md files. Removing first also drops any copy the PR added. If an AGENTS.md
+      # starts pointing at another review rules file, restore that file here too.
       - name: Restore review rules from the default branch
         shell: bash
         run: |
@@ -138,7 +138,7 @@ jobs:
       - id: review
         uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1.0.269
         env:
-          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
