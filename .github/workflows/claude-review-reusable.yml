@@ -4,12 +4,11 @@ name: Claude review (reusable)
 # triggers and permissions; claude-review.yml here is the example. Other repos pin this
 # file by full commit SHA, so a change here reaches them only when they move the pin.
 # In a called workflow, github.* and github.token belong to the caller's repo and event.
-# Every caller's job uses exactly this filter; change it there too if the gate's phrase changes:
+# Every caller's job uses exactly this filter. The gate below owns the trigger phrase:
 #   github.event_name == 'pull_request'
 #   || (github.event.issue.pull_request
 #     && github.event.comment.user.type != 'Bot'
-#     && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
-#     && contains(github.event.comment.body, '@claude review'))
+#     && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
 on:
   workflow_call:
     secrets:
@@ -161,7 +160,12 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
-          prompt: /code-review high ${{ env.PR_NUMBER }} --comment --max-findings all
+          # The label rule is repeated here because the skill runs forked and may not see the
+          # appended system prompt.
+          prompt: |
+            /code-review high ${{ env.PR_NUMBER }} --comment --max-findings all
+
+            Every inline comment body must start with [High], [Medium] or [Low] as its first characters, before any title or bold text.
           claude_args: |
             --model claude-opus-5-5
             --setting-sources user
