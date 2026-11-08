@@ -52,7 +52,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
-  after it brings the Python suite to 41; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  after it brought the Python suite to 41, and the review workflow tests to 64; CI runs it on pull requests and pushes to main. No new audio was uploaded.
 
 ## Behavior and important code
 

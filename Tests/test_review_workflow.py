@@ -204,9 +204,13 @@ class SummaryTests(ScriptCase):
         self.assertNotIn('stale', text)
 
     def test_unusable_run_records_are_treated_as_no_calls(self):
-        call = json.dumps([{'type': 'tool_use', 'name': comment_tool}])
-        for record in ('', 'not json', f'{call}\n{call}\n'):
+        for record in ('', 'not json'):
             self.assertTrue(self.summary(record=record).startswith('Claude review finished'), repr(record))
+
+    def test_calls_are_counted_across_a_multi_document_record(self):
+        call = json.dumps([{'type': 'tool_use', 'name': comment_tool}])
+        text = self.summary(record=f'{call}\n{call}\n')
+        self.assertTrue(text.startswith('Claude review made 2 comment call(s), but none posted.'), text)
 
 
 class DeniedToolsTests(ScriptCase):
@@ -233,9 +237,19 @@ class CallerContractTests(unittest.TestCase):
     def test_caller_filter_matches_the_one_the_reusable_workflow_documents(self):
         text = caller.read_text(encoding='utf-8')
         expression = re.search(r'if: >-\n(.*?)\n\s*# The called', text, re.S).group(1)
-        documented = re.sub(r'\n# ?', '\n', workflow.read_text(encoding='utf-8'))
-        squash = lambda value: ' '.join(value.split())
-        self.assertIn(squash(expression), squash(documented))
+        lines = workflow.read_text(encoding='utf-8').splitlines()
+        start = next(i for i, line in enumerate(lines) if line.startswith('# Callers should use exactly this filter'))
+        block = []
+        for line in lines[start + 1:]:
+            if not line.startswith('#   '):
+                break
+            block.append(line[1:])
+        self.assertEqual(' '.join(expression.split()), ' '.join(' '.join(block).split()))
+
+    def test_review_prompt_is_only_the_skill_command(self):
+        # Text after the command becomes part of the skill's review target.
+        text = workflow.read_text(encoding='utf-8')
+        self.assertRegex(text, r'prompt: /code-review high \$\{\{ env\.PR_NUMBER \}\} --comment --max-findings all\n')
 
 
 if __name__ == '__main__':

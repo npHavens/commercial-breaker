@@ -4,12 +4,12 @@ name: Claude review
 # Outside that repo, pin `uses:` to
 #   npHavens/commercial-breaker/.github/workflows/claude-review-reusable.yml@<full SHA>
 # When moving that pin:
-#   1. Check the triggers, permissions and job-level if: against commercial-breaker's caller at
-#      that SHA.
-#   2. Confirm the SHA is on commercial-breaker's main, because GitHub can resolve a fork's
+#   1. Confirm the SHA is on commercial-breaker's main, because GitHub can resolve a fork's
 #      commit under that repo's name. Run the command below; it must print identical or ahead.
 #      On behind or diverged, stop.
 #        gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status
+#   2. Check the triggers, permissions and job-level if: against commercial-breaker's caller at
+#      that SHA.
 on:
   pull_request:
     types: [opened, ready_for_review]
@@ -20,7 +20,7 @@ jobs:
   claude-review:
     # Skips bots and non-collaborators cheaply; the called gate owns the trigger phrase.
     if: >-
-      github.event_name == 'pull_request'
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft)
       || (github.event.issue.pull_request
         && github.event.comment.user.type != 'Bot'
         && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))

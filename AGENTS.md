@@ -10,8 +10,10 @@ Before asking a maintainer to merge a pull request:
 1. CI passes.
 2. Codex has reviewed the final head commit and is clean, or its findings are answered. If it does not start on its own, comment `@codex review`. Keep that phrase out of PR descriptions, where it starts a Codex cloud task instead of a review.
 3. The GitHub Claude review has run on the final head commit, its summary starts "Claude review finished" or "Claude review posted" and names that commit, and its findings are fixed or answered. It runs automatically only when a PR is opened or marked ready. After any later push, an owner, member or collaborator account must post a comment whose first words are exactly `@claude review`; then wait for the summary.
-4. A PR that edits `.github/workflows/claude-review.yml` or `claude-review-reusable.yml` also needs a run started by that comment, because its automatic run uses the PR's own copy of those files. Every edit to a caller or the reusable workflow, including a pin move, must also show a successful live run on the final head commit before merge: mark the PR draft, then ready, from a collaborator account, because events made with `GITHUB_TOKEN` don't start workflows. After merging a caller change, a real `@claude review` comment confirms the comment path works.
+4. A PR that edits `.github/workflows/claude-review.yml` or `claude-review-reusable.yml` also needs a run started by that comment, because its automatic run uses the PR's own copy of those files. Every edit to a caller or the reusable workflow, including a pin move, must also show a successful live run on the final head commit before merge: mark the PR draft, then ready, but not with `GITHUB_TOKEN`, whose events don't start workflows.
 5. A routing or capture PR has run the live checks in CONTRIBUTING, or says plainly which are still needed.
+
+After a caller change merges, the author confirms the comment path with a real `@claude review` comment.
 
 When asking for the merge, report the CI, Codex and Claude results and how each finding was handled. A maintainer merges; agents do not. A local `/code-review high` is optional. Fork PRs don't get the Claude review, so a maintainer decides how to review them.
 

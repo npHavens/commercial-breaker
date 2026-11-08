@@ -4,8 +4,8 @@ name: Claude review (reusable)
 # triggers and permissions; claude-review.yml here is the example. Other repos pin this
 # file by full commit SHA, so a change here reaches them only when they move the pin.
 # In a called workflow, github.* and github.token belong to the caller's repo and event.
-# Every caller's job uses exactly this filter. The gate below owns the trigger phrase:
-#   github.event_name == 'pull_request'
+# Callers should use exactly this filter. The gate below owns the trigger phrase:
+#   (github.event_name == 'pull_request' && !github.event.pull_request.draft)
 #   || (github.event.issue.pull_request
 #     && github.event.comment.user.type != 'Bot'
 #     && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
@@ -32,6 +32,7 @@ jobs:
         && github.event.pull_request.head.repo.full_name == github.repository)
       || (github.event_name == 'issue_comment'
         && github.event.issue.pull_request
+        && github.event.comment.user.type != 'Bot'
         && contains(github.event.comment.body, '@claude review')
         && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
@@ -145,6 +146,14 @@ jobs:
           sudo apt-get install -y --no-install-recommends bubblewrap socat
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
+      # The forked /code-review skill does not get the appended system prompt, so the label
+      # rule also goes in the user-level CLAUDE.md that --setting-sources user loads.
+      - name: Give the forked reviewer the severity rule
+        shell: bash
+        run: |
+          mkdir -p ~/.claude
+          echo 'Start every inline PR review comment body with exactly one of [High], [Medium] or [Low] as its first characters, before any title or bold text.' >> ~/.claude/CLAUDE.md
+
       # Runs the built-in /code-review skill at high effort and posts every finding as a comment.
       # The model needs gh to read the PR, and gh can print its own environment through
       # --jq, so what it can reach must not be worth stealing. It gets this job's token,
@@ -160,12 +169,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
-          # The label rule is repeated here because the skill runs forked and may not see the
-          # appended system prompt.
-          prompt: |
-            /code-review high ${{ env.PR_NUMBER }} --comment --max-findings all
-
-            Every inline comment body must start with [High], [Medium] or [Low] as its first characters, before any title or bold text.
+          prompt: /code-review high ${{ env.PR_NUMBER }} --comment --max-findings all
           claude_args: |
             --model claude-opus-5-5
             --setting-sources user
@@ -229,8 +233,7 @@ jobs:
             summary="Claude review did not complete. It posted $tally before stopping, so treat the review as partial."
           fi
           # From the run's own record. It reads 0 if that record omits the calls.
-          attempted="$(jq '[.. | objects | select(.type == "tool_use" and .name == "mcp__github_inline_comment__create_inline_comment")] | length' "$EXECUTION_FILE" 2>/dev/null || echo 0)"
-          [[ "$attempted" =~ ^[0-9]+$ ]] || attempted=0
+          attempted="$(jq -s '[.. | objects | select(.type == "tool_use" and .name == "mcp__github_inline_comment__create_inline_comment")] | length' "$EXECUTION_FILE" 2>/dev/null || echo 0)"
           if ((attempted > total)); then
             if ((total == 0)) && [[ "$CONCLUSION" == success ]]; then
               summary="Claude review made $attempted comment call(s), but none posted."
