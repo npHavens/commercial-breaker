@@ -47,8 +47,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
   `claude-review.yml`; other repos call it at `@main`) when they
   open or are marked ready; fork PRs never do. To review later pushes, start a comment
-  with `@claude review`. That run uses the default branch's caller: here that means main's reusable
-  workflow, and other repos get main's too. Its comments come
+  with `@claude review`. Here, that run uses main's caller and so main's reusable workflow. Other
+  repos always get commercial-breaker's main, whichever branch's caller runs. Its comments come
   from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
@@ -133,7 +133,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
 11. Switch the other three repos to `@main`: copy CB's `claude-review.yml` except its `uses:` line,
-   which becomes the `@main` path in its header, and show a successful live run in each. The
+   which becomes the `@main` path in its header, and show a successful live run in each. After
+   each switch merges, confirm the comment path with a real `@claude review` comment there,
+   because comment runs on the switch PR still use the old pin. The
    No Hands Stack HQ session coordinates this. On November 8 each repo's run log showed its
    own repo checked out for the rules restore; none of those PRs tampered with a rules file,
    so that case was only tested locally. Severity labels were still missing in some of those
