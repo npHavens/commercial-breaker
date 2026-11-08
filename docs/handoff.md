@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at cf89a40 with PRs #1–#20 merged. The Skybox → Commercial Breaker
+- Main is at 9a2ddc3 with PRs #1–#21 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -45,10 +45,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Every PR gets a Codex review (Smart detect) and the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
-  `claude-review.yml`; other repos can pin it by commit SHA) when they
+  `claude-review.yml`; other repos call it at `@main`) when they
   open or are marked ready; fork PRs never do. To review later pushes, start a comment
   with `@claude review`. That run uses the default branch's caller: here that means main's reusable
-  workflow, while other repos get the SHA they pin. Its comments come
+  workflow, and other repos get main's too. Its comments come
   from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
@@ -132,11 +132,12 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-11. Move the pin in the other three repos to the latest review-workflow merge commit, copy
-   CB's updated `claude-review.yml` with it, and show a successful live run in each as the merge gate requires. The No Hands Stack HQ session
-   coordinates this. On November 8 each repo's run log showed its own repo checked out for
-   the rules restore; none of those PRs tampered with a rules file, so that case was only
-   tested locally.
+11. Switch the other three repos to `@main`: copy CB's `claude-review.yml` except its `uses:` line,
+   which becomes the `@main` path in its header, and show a successful live run in each. The
+   No Hands Stack HQ session coordinates this. On November 8 each repo's run log showed its
+   own repo checked out for the rules restore; none of those PRs tampered with a rules file,
+   so that case was only tested locally. Severity labels were still missing in some of those
+   repos before PR #21, so check whether its user-level `CLAUDE.md` rule fixed them.
 
 Do not combine all of this into one rewrite.
 
