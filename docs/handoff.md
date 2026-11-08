@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 9a2ddc3 with PRs #1–#21 merged. The Skybox → Commercial Breaker
+- Main is at abd88ea with PRs #1–#22 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -46,10 +46,13 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
   `claude-review.yml`; other repos call it at `@main`) when they
-  open or are marked ready; fork PRs never do. To review later pushes, start a comment
-  with `@claude review`. Here, that run uses main's caller and so main's reusable workflow. Other
-  repos always get commercial-breaker's main, whichever branch's caller runs. Its comments come
-  from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
+  open or are marked ready; fork PRs never do. To review later pushes, mark the PR draft,
+  then ready. A comment starting `@claude review` also starts a review, but it reports on the
+  default branch's commit, not the required check on the PR's head. Here, that run uses main's
+  caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
+  once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
+  `main` requires a PR, passing CI and `claude-review / review`, blocks force pushes and deletion,
+  and applies those rules to admins. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brought the Python suite to 41, and the review workflow tests to 64; CI runs it on pull requests and pushes to main. No new audio was uploaded.
