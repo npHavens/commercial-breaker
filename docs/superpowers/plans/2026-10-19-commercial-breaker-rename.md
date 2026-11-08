@@ -365,7 +365,7 @@ Carried into phase 4 as requirements:
 | `build/**` (~4,500 matches) | Gitignored Xcode artifacts; cleared by the next clean build |
 | AX labels `"Try AirPlay"`, `"Restore settings and close"` | Matched by the Swift AX layer; contain no product name |
 | Files deleted by phase 2 (PR #5) | Already gone before the code tasks run |
-| Accessibility instruction strings naming `SkyboxAudioProbe` | They named what System Settings listed until Task 7 renamed the product (done in v0.2.48) |
+| Accessibility instruction strings naming `SkyboxAudioProbe` | Kept until Task 7; v0.2.48 renamed them with the product |
 
 ## Execution order
 
