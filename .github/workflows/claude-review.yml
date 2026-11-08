@@ -2,10 +2,12 @@ name: Claude review
 
 # The review job lives in claude-review-reusable.yml. Another repo uses this same caller
 # with `uses: npHavens/commercial-breaker/.github/workflows/claude-review-reusable.yml@<full SHA>`.
-# When moving that pin, confirm the SHA is on this repo's main. This must print identical or
-# ahead; behind or diverged means it is not on main, so stop:
+# When moving that pin, confirm the SHA is on commercial-breaker's main, because GitHub can
+# resolve a fork's commit under that repo's name. This must print identical or ahead; behind
+# or diverged means it is not on main, so stop:
 #   gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status
-# and check the triggers and permissions here against the reusable workflow at that SHA.
+# and check the triggers, permissions and job-level if: here against the reusable workflow at
+# that SHA. A changed trigger phrase would otherwise skip reviews silently with a green run.
 on:
   pull_request:
     types: [opened, ready_for_review]
@@ -17,7 +19,10 @@ jobs:
     # Skips the job for comments that cannot be a request; the called gate still decides.
     if: >-
       github.event_name == 'pull_request'
-      || (github.event.issue.pull_request && contains(github.event.comment.body, '@claude review'))
+      || (github.event.issue.pull_request
+        && github.event.comment.user.type != 'Bot'
+        && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+        && contains(github.event.comment.body, '@claude review'))
     # The called workflow's token cannot exceed these.
     permissions:
       contents: read
