@@ -30,7 +30,7 @@ actor SafariAccessibility {
     func requestForeground(pid: pid_t) throws -> Int32 {
         try Task.checkCancellation()
         guard AXIsProcessTrusted() else {
-            throw RoutingFailure(message: "Enable Accessibility permission for SkyboxAudioProbe first.")
+            throw RoutingFailure(message: "Enable Accessibility permission for Commercial Breaker first.")
         }
         let app = AXUIElementCreateApplication(pid)
         AXUIElementSetMessagingTimeout(app, 0.25)
@@ -39,7 +39,7 @@ actor SafariAccessibility {
 
     func openPicker(pid: pid_t, mouse: Bool = false) async throws {
         scanNotes = ["Looking for the Commercial Breaker page panel"]
-        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Accessibility permission for SkyboxAudioProbe first.") }
+        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Accessibility permission for Commercial Breaker first.") }
         let app = AXUIElementCreateApplication(pid)
         AXUIElementSetMessagingTimeout(app, 0.25)
         guard let mainValue = value(app, kAXMainWindowAttribute), CFGetTypeID(mainValue) == AXUIElementGetTypeID() else {
@@ -282,7 +282,7 @@ actor SafariAccessibility {
 
     private func scan(pid: pid_t, includeWeb: Bool, explorePage: Bool = false) throws -> [Control] {
         scanNotes = []
-        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable SkyboxAudioProbe in System Settings → Privacy & Security → Accessibility.") }
+        guard AXIsProcessTrusted() else { throw RoutingFailure(message: "Enable Commercial Breaker in System Settings → Privacy & Security → Accessibility.") }
         let app = AXUIElementCreateApplication(pid)
         AXUIElementSetMessagingTimeout(app, 0.25)
         // Scan the front Safari window plus non-browser popup windows. Never search
