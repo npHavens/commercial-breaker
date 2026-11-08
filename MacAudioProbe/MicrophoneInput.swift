@@ -27,7 +27,7 @@ final class MicrophoneInput {
             try Task.checkCancellation()
             guard attempt == id else { throw CancellationError() }
             guard allowed else {
-                throw failure("Microphone access was denied. Enable Skybox in System Settings → Privacy & Security → Microphone.")
+                throw failure("Microphone access was denied. Enable Commercial Breaker in System Settings → Privacy & Security → Microphone.")
             }
 
             let engine = AVAudioEngine()
