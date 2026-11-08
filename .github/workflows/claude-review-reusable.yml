@@ -7,8 +7,10 @@ name: Claude review (reusable)
 on:
   workflow_call:
     secrets:
+      # Optional so that fork and Dependabot runs, which get no secrets, reach the gate
+      # instead of possibly failing at the call.
       CLAUDE_CODE_OAUTH_TOKEN:
-        required: true
+        required: false
 
 jobs:
   # Deciding is its own job so a comment that only mentions the trigger never enters the
