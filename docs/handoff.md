@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 10da4ed with PRs #1–#14 merged. The Skybox → Commercial Breaker
+- Main is at 38f437b with PRs #1–#16 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -126,6 +126,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
 9. Commit tests for the gate and summary scripts in `.github/workflows/claude-review.yml`.
    They must run from the default branch, because a PR controls its own copy of any script file.
+10. On the next PR's Claude review, compare it with a local `/code-review high` on the same
+   commit, and confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
+   `--setting-sources user` are untested too.
 
 Do not combine all of this into one rewrite.
 
