@@ -129,6 +129,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
 10. On the next PR's Claude review, compare it with a local `/code-review high` on the same
    commit, and confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
    `--setting-sources user` are untested too.
+11. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
+   two `find` commands, does not check for symlinked parent folders or differently cased names,
+   and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
+   the name list.
 
 Do not combine all of this into one rewrite.
 
