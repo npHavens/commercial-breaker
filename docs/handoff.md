@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 10da4ed with PRs #1–#14 merged. The Skybox → Commercial Breaker
+- Main is at 38f437b with PRs #1–#16 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -124,8 +124,15 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
-9. Commit tests for the gate and summary scripts in `.github/workflows/claude-review.yml`.
+9. Commit tests for the gate, rules-restore and summary scripts in `.github/workflows/claude-review.yml`.
    They must run from the default branch, because a PR controls its own copy of any script file.
+10. On the next PR's Claude review, compare it with a local `/code-review high` on the same
+   commit, and confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
+   `--setting-sources user` are untested too.
+11. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
+   two `find` commands, does not check for symlinked parent folders or differently cased names,
+   and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
+   the name list.
 
 Do not combine all of this into one rewrite.
 
