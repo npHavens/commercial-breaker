@@ -3,6 +3,18 @@
 Start with the README, CONTRIBUTING and `docs/handoff.md`. The repository is
 public: keep secrets, recordings and stream URLs out of it.
 
+## Merge gate
+
+Before asking a maintainer to merge a pull request:
+
+1. CI passes.
+2. Codex is clean, or its findings are answered.
+3. The GitHub Claude review has run on the final head commit, its summary starts "Claude review finished" or "Claude review posted", and its findings are fixed or answered. It runs automatically only when a PR is opened or marked ready. After any later push, an owner, member or collaborator account must post a comment whose first words are exactly `@claude review`; then wait for the summary.
+4. A PR that edits `.github/workflows/claude-review.yml` or `claude-review-reusable.yml` also needs a run started by that comment, because its automatic run uses the PR's own copy of those files.
+5. A routing or capture PR has run the live checks in CONTRIBUTING, or says plainly which are still needed.
+
+When asking for the merge, report the CI, Codex and Claude results and how each finding was handled. A maintainer merges; agents do not. A local `/code-review high` is optional. Fork PRs don't get the Claude review, so a maintainer decides how to review them.
+
 ## Code Review Rules
 
 ### Review standard
