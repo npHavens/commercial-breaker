@@ -111,6 +111,15 @@ jobs:
           done < <(cd .review-base && find . -path ./.git -prune -o -name AGENTS.md -type f -print0)
           rm -rf .review-base
 
+      # The scrub in the review step will not start without bubblewrap, and Ubuntu blocks
+      # the user namespaces it needs. The action only sets this up with allowed_non_write_users.
+      - name: Install the subprocess sandbox
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bubblewrap socat
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       # Runs the same built-in /code-review skill and effort as the local merge-gate review.
       # The model needs gh to read the PR, and gh can print its own environment through
       # --jq, so what it can reach must not be worth stealing. It gets this job's token,
