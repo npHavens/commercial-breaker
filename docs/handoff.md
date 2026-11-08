@@ -45,9 +45,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Every PR gets a Codex review (Smart detect) and the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
-  `claude-review.yml`; other repos pin it by commit SHA) when they
+  `claude-review.yml`; other repos can pin it by commit SHA) when they
   open or are marked ready; fork PRs never do. To review later pushes, start a comment
-  with `@claude review`. That run uses main's copy of the workflow. Its comments come
+  with `@claude review`. That run uses the default branch's caller: here that means main's reusable
+  workflow, while other repos get the SHA they pin. Its comments come
   from `github-actions[bot]`. Recheck GitHub before merging.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
@@ -134,6 +135,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
+12. After the reusable-workflow PR merges, confirm `@claude review` through the new caller,
+   and one run from another repo pinned to that PR's merge commit or later (earlier commits
+   don't have the file): `default_branch`, the rules restore and `gh` should target the
+   caller's repo. Its checks are named `claude-review / gate` and `claude-review / review`.
 
 Do not combine all of this into one rewrite.
 
