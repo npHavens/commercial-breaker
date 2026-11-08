@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at f43cf9e with PRs #1–#18 merged. The Skybox → Commercial Breaker
+- Main is at 0435c42 with PRs #1–#19 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -134,16 +134,6 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-12. Confirm `@claude review` through the new caller. Pinned caller runs from Interview Edge,
-   Aftertone and Lazy Saturdays were reported working on November 8, but confirm on one that
-   `default_branch`, the rules restore and `gh` targeted the caller's repo. A pin needs PR #18's
-   merge commit or later. The checks are named `claude-review / gate` and `claude-review / review`.
-13. Add a job-level `if:` to the caller so unrelated comments don't start a run. Document
-   checking that a pinned SHA is on this repo's main, because GitHub can resolve a fork's
-   commit under the parent repo's name: `gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status`
-   should report `identical` or `ahead`. Have the review summary name the commit it reviewed,
-   log the denied tool names with an attempted-versus-posted comment count, and change the
-   reusable workflow's "local merge-gate review" comment now that it is optional.
 
 Do not combine all of this into one rewrite.
 
