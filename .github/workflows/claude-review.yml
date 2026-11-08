@@ -13,7 +13,8 @@ jobs:
     # Same-repo, non-draft PRs are reviewed when opened or marked ready. Later pushes are
     # not reviewed automatically: comment "@claude review" to review the new head.
     # Fork PRs are never reviewed, because the reviewer holds a token that can write to
-    # the repo's PRs. This condition only filters cheaply; the step makes the final decision.
+    # the repo's PRs. This condition is the only fork check for pull_request; for comments,
+    # it only filters cheaply and the step makes the final decision.
     if: >-
       (github.event_name == 'pull_request'
         && !github.event.pull_request.draft
@@ -40,14 +41,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          if [[ "$GITHUB_EVENT_NAME" == issue_comment && ! "${COMMENT_BODY,,}" =~ ^[[:space:]]*@claude\ review([[:space:]]|$) ]]; then
-            echo "The comment does not start with @claude review. Skipping."
-            exit 0
-          fi
-          cross_repo="$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq .isCrossRepository)"
-          if [[ "$cross_repo" != false ]]; then
-            gh pr comment "$PR_NUMBER" --body "Claude review does not run on fork PRs."
-            exit 0
+          # The job condition has already excluded forks for the pull_request trigger.
+          if [[ "$GITHUB_EVENT_NAME" == issue_comment ]]; then
+            if [[ ! "${COMMENT_BODY,,}" =~ ^[[:space:]]*@claude\ review([[:space:]]|$) ]]; then
+              echo "The comment does not start with @claude review. Skipping."
+              exit 0
+            fi
+            cross_repo="$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq .isCrossRepository)"
+            if [[ "$cross_repo" != false ]]; then
+              gh pr comment "$PR_NUMBER" --body "Claude review does not run on fork PRs."
+              exit 0
+            fi
           fi
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
@@ -95,20 +99,23 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      # The reviewer applies AGENTS.md, so a PR must not be able to rewrite its own review
-      # rules. They come from the default branch because a PR chooses its own base.
-      # The action restores .claude, CLAUDE.md and similar paths, but not AGENTS.md.
-      # Removing first also drops any AGENTS.md the PR added. If an AGENTS.md starts
-      # pointing at a separate review rules file, restore that file here too.
+      # The reviewer applies AGENTS.md, so a PR's content must not rewrite its own review
+      # rules. They come from the default branch because a PR chooses its own base. A
+      # pull_request run uses the PR's copy of this file, so a same-repo writer controls
+      # every safeguard in this job; comment-triggered runs use the default branch's copy.
+      # The action restores .claude, the root CLAUDE.md and similar paths, but not AGENTS.md,
+      # a CODE_REVIEW.md that one points to (some repos sharing this file have one), or nested
+      # CLAUDE.md files. Removing first also drops any copy the PR added. If an AGENTS.md
+      # starts pointing at another review rules file, restore that file here too.
       - name: Restore review rules from the default branch
         shell: bash
         run: |
-          find . -path ./.git -prune -o -path ./.review-base -prune -o -name AGENTS.md -exec rm -rf {} +
+          find . -path ./.git -prune -o -path ./.review-base -prune -o \( -name AGENTS.md -o -name CODE_REVIEW.md -o -name CLAUDE.md -o -name CLAUDE.local.md \) -exec rm -rf {} +
           while IFS= read -r -d '' rules; do
             # A PR can turn a folder that held rules into a file; those rules then cover nothing.
             mkdir -p "$(dirname "$rules")" || continue
             cp ".review-base/$rules" "$rules"
-          done < <(cd .review-base && find . -path ./.git -prune -o -name AGENTS.md -type f -print0)
+          done < <(cd .review-base && find . -path ./.git -prune -o \( -name AGENTS.md -o -name CODE_REVIEW.md -o -name CLAUDE.md -o -name CLAUDE.local.md \) -type f -print0)
           rm -rf .review-base
 
       # The scrub in the review step will not start without bubblewrap, and Ubuntu blocks
@@ -125,13 +132,13 @@ jobs:
       # --jq, so what it can reach must not be worth stealing. It gets this job's token,
       # limited to the permissions above and expiring with the job, rather than the Claude
       # GitHub App token, which can write to the repo. The scrub removes the Claude login
-      # from its commands. The Read denies keep it out of .git/config and the runner's files
-      # (Grep and Glob honor Read rules on a best-effort basis).
+      # from its commands. The Read denies keep it out of .git/config, /proc and the runner's
+      # temp folder (Grep and Glob honor Read rules on a best-effort basis).
       # ~/.claude stays readable because large command output is saved there.
       - id: review
         uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1.0.269
         env:
-          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
@@ -152,11 +159,14 @@ jobs:
           STARTED_AT: ${{ steps.start.outputs.started_at }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          severities="$(gh api --paginate "repos/$GH_REPO/pulls/$PR_NUMBER/comments?per_page=100" --jq '
+          if ! severities="$(gh api --paginate "repos/$GH_REPO/pulls/$PR_NUMBER/comments?per_page=100" --jq '
             .[]
             | select(.user.login == "github-actions[bot]" and .created_at >= env.STARTED_AT)
             | (.body | capture("^\\[(?<severity>High|Medium|Low)\\]") | .severity) // "Unrated"
-          ')"
+          ')"; then
+            gh pr comment "$PR_NUMBER" --body "Claude review's inline comments could not be counted (conclusion: ${CONCLUSION:-none}). [Run log]($RUN_URL)"
+            exit 0
+          fi
           count() { grep -cx "$1" <<<"$severities" || true; }
           high="$(count High)" medium="$(count Medium)" low="$(count Low)" unrated="$(count Unrated)"
           total=$((high + medium + low + unrated))
