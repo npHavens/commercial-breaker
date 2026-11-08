@@ -1,8 +1,8 @@
 name: Claude review (reusable)
 
 # The review job shared by this repo and others. Each repo has a small caller with the
-# triggers and permissions; claude-review.yml here is the example. Other repos pin this
-# file by full commit SHA, so a change here reaches them only when they move the pin.
+# triggers and permissions; claude-review.yml here is the example. Other repos call this
+# file at @main, so a merge here reaches all of them at once.
 # In a called workflow, github.* and github.token belong to the caller's repo and event.
 # Callers should use exactly this filter. The gate below owns the trigger phrase:
 #   (github.event_name == 'pull_request' && !github.event.pull_request.draft)

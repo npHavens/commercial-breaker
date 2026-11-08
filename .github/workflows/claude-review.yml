@@ -1,15 +1,9 @@
 name: Claude review
 
 # The gate and review jobs live in commercial-breaker's claude-review-reusable.yml.
-# Outside that repo, pin `uses:` to
-#   npHavens/commercial-breaker/.github/workflows/claude-review-reusable.yml@<full SHA>
-# When moving that pin:
-#   1. Confirm the SHA is on commercial-breaker's main, because GitHub can resolve a fork's
-#      commit under that repo's name. Run the command below; it must print identical or ahead.
-#      On behind or diverged, stop.
-#        gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status
-#   2. Check the triggers, permissions and job-level if: against commercial-breaker's caller at
-#      that SHA.
+# Outside that repo, set `uses:` below to
+#   npHavens/commercial-breaker/.github/workflows/claude-review-reusable.yml@main
+# and keep the triggers, permissions and job-level if: matching commercial-breaker's caller.
 on:
   pull_request:
     types: [opened, ready_for_review]
