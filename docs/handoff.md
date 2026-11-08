@@ -140,9 +140,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    merge commit or later. The checks are named `claude-review / gate` and `claude-review / review`.
 13. Add a job-level `if:` to the caller so unrelated comments don't start a run. Document
    checking that a pinned SHA is on this repo's main, because GitHub can resolve a fork's
-   commit under the parent repo's name: `gh api repos/npHavens/commercial-breaker/compare/main...<sha> --jq .status`
-   should report `behind` or `identical`. Have the review summary name the commit it reviewed,
-   and change the reusable workflow's "local merge-gate review" comment now that it is optional.
+   commit under the parent repo's name: `gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status`
+   should report `identical` or `ahead`. Have the review summary name the commit it reviewed,
+   log the denied tool names with an attempted-versus-posted comment count, and change the
+   reusable workflow's "local merge-gate review" comment now that it is optional.
 
 Do not combine all of this into one rewrite.
 
