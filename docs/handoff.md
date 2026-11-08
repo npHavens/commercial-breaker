@@ -124,6 +124,8 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
+9. Commit tests for the gate and summary scripts in `.github/workflows/claude-review.yml`.
+   They must run from the default branch, because a PR controls its own copy of any script file.
 
 Do not combine all of this into one rewrite.
 
