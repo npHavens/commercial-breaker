@@ -9,9 +9,9 @@ Before asking a maintainer to merge a pull request:
 
 1. CI passes.
 2. Codex is clean, or its findings are answered.
-3. The GitHub Claude review has run on the final head commit, with its findings fixed or answered. It runs automatically only when a PR is opened or marked ready, so after any later push, comment `@claude review` and wait for its summary.
+3. The GitHub Claude review has run on the final head commit, its summary does not say "did not complete", and its findings are fixed or answered. It runs automatically only when a PR is opened or marked ready. After any later push, a maintainer's account must start a comment with `@claude review`; then wait for the summary.
 
-A maintainer merges; agents do not. A local `/code-review high` is optional.
+A maintainer merges; agents do not. A local `/code-review high` is optional. Fork PRs don't get the Claude review, so a maintainer decides how to review them.
 
 ## Code Review Rules
 

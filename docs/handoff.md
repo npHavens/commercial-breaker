@@ -135,12 +135,14 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
 12. Confirm `@claude review` through the new caller. Pinned caller runs from Interview Edge,
-   Aftertone and Lazy Saturdays were reported working on November 8. A pin needs PR #18's
+   Aftertone and Lazy Saturdays were reported working on November 8, but confirm on one that
+   `default_branch`, the rules restore and `gh` targeted the caller's repo. A pin needs PR #18's
    merge commit or later. The checks are named `claude-review / gate` and `claude-review / review`.
 13. Add a job-level `if:` to the caller so unrelated comments don't start a run. Document
    checking that a pinned SHA is on this repo's main, because GitHub can resolve a fork's
-   commit under the parent repo's name: `gh api repos/<owner>/<repo>/compare/main...<sha>`
-   should report `behind` or `identical`.
+   commit under the parent repo's name: `gh api repos/npHavens/commercial-breaker/compare/main...<sha> --jq .status`
+   should report `behind` or `identical`. Have the review summary name the commit it reviewed,
+   and change the reusable workflow's "local merge-gate review" comment now that it is optional.
 
 Do not combine all of this into one rewrite.
 
