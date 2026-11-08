@@ -1,4 +1,4 @@
-# Commercial Breaker handoff to Claude — November 7, 2026
+# Commercial Breaker handoff to Claude — November 8, 2026
 
 ## Start here
 
@@ -43,7 +43,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   `/code-review high` (`.github/workflows/claude-review.yml`), and the offline suites
   plus an unsigned app build in CI (`.github/workflows/tests.yml`). Recheck GitHub
   before merging.
-- Offline suites on 7d627d8 (November 7): 172 JavaScript tests, 37 Python tests and
+- Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. No new audio was uploaded.
 
 ## Behavior and important code
@@ -196,7 +196,9 @@ Tests/run-native-tests.sh
 ### After the v0.2.48 app rename
 
 The app file changes from `SkyboxAudioProbe.app` to `Commercial Breaker.app`. Its bundle ID
-and designated requirement are unchanged, so macOS should keep its grants. Not yet verified.
+and designated requirement are unchanged, so macOS keeps its grants: the November 8 session
+reported no permission prompt. Still open: the System Settings name and a break/return cycle.
+`Tests/test_app_identity.py` fails if the bundle ID, signing team or product name changes.
 
 1. Quit the old app. Its process and menu are still named SkyboxAudioProbe, so it is easy to
    miss. Never run an old and a new build at once: they share a bundle ID, and both would

@@ -8,8 +8,10 @@ should carry over; the app's own messages now say to enable Commercial Breaker
 in System Settings. The app category is Entertainment. Detection, routing and
 logs are unchanged. The `MacAudioProbe/` source folder keeps its name.
 
-Live verification pending: the renamed app starting without new permission
-prompts, and System Settings listing it as Commercial Breaker.
+On November 8 Nick ran a football session on it with no permission prompt
+reported. Still pending: System Settings listing it as Commercial Breaker, and a
+break/return cycle. The window title now reads its version from the bundle, so a
+version bump edits only `MARKETING_VERSION`.
 
 # Gemini 3.7 Flash — v0.2.47
 
@@ -1025,8 +1027,8 @@ Alternatively, from the project root on Nick's Mac:
 DEVELOPER_DIR=/Users/nickhavens/Downloads/Xcode.app/Contents/Developer \
   xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
-  -derivedDataPath build/v0.2.48 build
-open "build/v0.2.48/Build/Products/Debug/Commercial Breaker.app"
+  -derivedDataPath build/<new-folder> build    # never the running build's folder
+open "build/<new-folder>/Build/Products/Debug/Commercial Breaker.app"
 ```
 
 The development target uses Apple Development signing. No extra dependencies or audio

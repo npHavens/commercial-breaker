@@ -123,8 +123,7 @@ cycle with the trimmed extension, including the short handoff rewind.
 
 Build the main window, Settings and Diagnostics described above, and add an app
 icon. (Done early in v0.2.48: the app, target and scheme are renamed to Commercial
-Breaker and the category is Entertainment.) Rewrite every user-facing string for
-the new window. Map
+Breaker and the category is Entertainment.) Rewrite every user-facing string. Map
 `AutomaticCommercialModel` state onto the user-visible states above.
 **Done when:** a view-state test covers each state, Diagnostics still offers
 picker inspection and recovery, and Nick watches one full game half using only
