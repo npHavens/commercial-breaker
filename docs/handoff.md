@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at 3a28545 with PRs #1–#17 merged. The Skybox → Commercial Breaker
+- Main is at f43cf9e with PRs #1–#18 merged. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -49,7 +49,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   open or are marked ready; fork PRs never do. To review later pushes, start a comment
   with `@claude review`. That run uses the default branch's caller: here that means main's reusable
   workflow, while other repos get the SHA they pin. Its comments come
-  from `github-actions[bot]`. Recheck GitHub before merging.
+  from `github-actions[bot]`. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brings the Python suite to 41; CI runs it on pull requests and pushes to main. No new audio was uploaded.
@@ -128,17 +128,22 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
 9. Commit tests for the gate, rules-restore and summary scripts in `.github/workflows/claude-review-reusable.yml`.
    They must run from the default branch, because a PR controls its own copy of any script file.
-10. On the next PR's Claude review, compare it with a local `/code-review high` on the same
-   commit, and confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
+10. Confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
    `--setting-sources user` are untested too.
 11. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-12. After the reusable-workflow PR merges, confirm `@claude review` through the new caller,
-   and one run from another repo pinned to that PR's merge commit or later (earlier commits
-   don't have the file): `default_branch`, the rules restore and `gh` should target the
-   caller's repo. Its checks are named `claude-review / gate` and `claude-review / review`.
+12. Confirm `@claude review` through the new caller. Pinned caller runs from Interview Edge,
+   Aftertone and Lazy Saturdays were reported working on November 8, but confirm on one that
+   `default_branch`, the rules restore and `gh` targeted the caller's repo. A pin needs PR #18's
+   merge commit or later. The checks are named `claude-review / gate` and `claude-review / review`.
+13. Add a job-level `if:` to the caller so unrelated comments don't start a run. Document
+   checking that a pinned SHA is on this repo's main, because GitHub can resolve a fork's
+   commit under the parent repo's name: `gh api repos/npHavens/commercial-breaker/compare/<sha>...main --jq .status`
+   should report `identical` or `ahead`. Have the review summary name the commit it reviewed,
+   log the denied tool names with an attempted-versus-posted comment count, and change the
+   reusable workflow's "local merge-gate review" comment now that it is optional.
 
 Do not combine all of this into one rewrite.
 
