@@ -134,8 +134,11 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-12. After PR #20 merges, move the pin in the other three repos, each with a successful live
-   run as the merge gate requires. HQ coordinates this.
+12. After PR #20 merges, move the pin in the other three repos to its merge commit or later,
+   each with a successful live run as the merge gate requires. The No Hands Stack HQ session
+   coordinates this. On November 8 each repo's run log showed its own repo checked out for
+   the rules restore; none of those PRs tampered with a rules file, so that case was only
+   tested locally.
 
 Do not combine all of this into one rewrite.
 
