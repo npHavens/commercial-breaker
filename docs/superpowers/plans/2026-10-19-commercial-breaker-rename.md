@@ -338,7 +338,7 @@ Launch the rebuilt app and confirm macOS does not re-prompt for microphone, syst
 
 ### Task 7: Xcode target, scheme and product name
 
-**Done in v0.2.48, ahead of the rest of phase 4, at Nick's request.** The product is `Commercial Breaker.app` rather than `CommercialBreaker.app` below, because macOS shows the file name in System Settings and ignores a display name on an unlocalized app. The original deferral note follows.
+**Done in v0.2.48, ahead of the rest of phase 4, at Nick's request.** The product is `Commercial Breaker.app` rather than `CommercialBreaker.app` below, because macOS shows the file name in System Settings and ignores a display name on an unlocalized app. It renamed six instruction strings, the microphone one included. The icon and wordmark stay with phase 4. The original deferral note follows.
 
 **Deferred into phase 4 of `docs/commercial-breaker-plan.md`, not run standalone.** Phase 4 already owns "rename the app, target and scheme", rebuilds the window around the new name, and adds the icon. Renaming the target here instead would mean doing it twice and invalidating the build commands between two in-flight branches.
 
@@ -365,8 +365,8 @@ Carried into phase 4 as requirements:
 | `build/**` (~4,500 matches) | Gitignored Xcode artifacts; cleared by the next clean build |
 | AX labels `"Try AirPlay"`, `"Restore settings and close"` | Matched by the Swift AX layer; contain no product name |
 | Files deleted by phase 2 (PR #5) | Already gone before the code tasks run |
-| Accessibility instruction strings naming `SkyboxAudioProbe` | They name what System Settings lists until Task 7 renames the product |
+| Accessibility instruction strings naming `SkyboxAudioProbe` | They named what System Settings listed until Task 7 renamed the product (done in v0.2.48) |
 
 ## Execution order
 
-Task 1 first and alone — every other task cites it. Tasks 2 and 3 are independent and can run in either order. Task 4 before Task 5, since both touch the same extension files and Task 4 is the riskier diff. Tasks 2–6 wait for PRs #4 and #5 to merge, then run in order on one local branch; Task 6 is written against the post-phase-2 tree. Task 7 does not run; it rides phase 4.
+Task 1 first and alone — every other task cites it. Tasks 2 and 3 are independent and can run in either order. Task 4 before Task 5, since both touch the same extension files and Task 4 is the riskier diff. Tasks 2–6 wait for PRs #4 and #5 to merge, then run in order on one local branch; Task 6 is written against the post-phase-2 tree. Task 7 was to ride phase 4; it ran early in v0.2.48.
