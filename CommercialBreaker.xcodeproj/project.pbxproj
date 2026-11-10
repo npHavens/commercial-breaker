@@ -101,6 +101,7 @@
         B0000000000000000000000D = {
             isa = XCBuildConfiguration;
             buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                 CLANG_ENABLE_MODULES = YES;
                 CODE_SIGN_STYLE = Manual;
                 CODE_SIGN_IDENTITY = "Apple Development";
@@ -109,7 +110,7 @@
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
                 INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.48;
+                MARKETING_VERSION = 0.2.50;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
                 PRODUCT_NAME = "Commercial Breaker";
@@ -124,6 +125,7 @@
         B0000000000000000000000E = {
             isa = XCBuildConfiguration;
             buildSettings = {
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
                 CLANG_ENABLE_MODULES = YES;
                 CODE_SIGN_STYLE = Manual;
                 CODE_SIGN_IDENTITY = "Apple Development";
@@ -132,7 +134,7 @@
                 INFOPLIST_FILE = "MacAudioProbe-Info.plist";
                 INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
                 MACOSX_DEPLOYMENT_TARGET = 14.2;
-                MARKETING_VERSION = 0.2.48;
+                MARKETING_VERSION = 0.2.50;
                 CURRENT_PROJECT_VERSION = 1;
                 PRODUCT_BUNDLE_IDENTIFIER = com.nohandsstack.skybox.audio-probe;
                 PRODUCT_NAME = "Commercial Breaker";
