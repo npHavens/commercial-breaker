@@ -119,8 +119,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    Claude review to `/code-review high`.
 6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
    (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
-   builds the app shell and adds the icon set from the
-   Scoreboard CB design in Figma. Moving experiment findings into `docs/archive`
+   builds the app shell and adds the rest of the icon set from the
+   Scoreboard CB design in Figma: the static app icon is in v0.2.50, while the
+   runtime Dock state, menu bar glyph and Safari toolbar icons are still to come.
+   Moving experiment findings into `docs/archive`
    is its own PR.
 
 7. Check whether Gemini 3.7 Flash supports a thinking level below `LOW`. If it
