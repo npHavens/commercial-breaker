@@ -11,8 +11,12 @@ import zlib
 
 iconset = Path(__file__).resolve().parents[1] / 'MacAudioProbe' / 'Assets.xcassets' / 'AppIcon.appiconset'
 
-# The ad bulb lit, as in the Scoreboard CB design's Blocking state.
-LIT_BULB = (0xF0, 0x5A, 0x3C)
+# Colours of the Scoreboard CB design. The ad bulb is lit only in the Blocking state.
+PLATE, BULB, DARK_AD_BULB, LIT_AD_BULB = (0x14, 0x1A, 0x17), (0xF0, 0xB6, 0x4B), (0x3D, 0x24, 0x20), (0xF0, 0x5A, 0x3C)
+
+
+def opaque_colours(rows):
+    return [tuple(row[x:x + 3]) for row in rows for x in range(0, len(row), 4) if row[x + 3] == 255]
 
 
 @lru_cache(maxsize=None)
@@ -85,6 +89,15 @@ class AppIconTests(unittest.TestCase):
                           if (min(x, y, width - 1 - x, height - 1 - y) < band) and rows[y][x * 4 + 3]]
                 self.assertEqual(opaque[:5], [], f'the outer {band} px are not transparent')
 
+    def test_plate_and_bulbs_are_drawn(self):
+        # The art is flat, so its colours come through exactly; a blank or broken render fails.
+        for path in self.files:
+            with self.subTest(path.name):
+                colours = opaque_colours(read_png(path)[2])
+                self.assertTrue(colours, 'nothing is drawn')
+                self.assertEqual(max(set(colours), key=colours.count), PLATE, 'the plate is not the main colour')
+                self.assertIn(BULB, colours)
+
     def test_static_icon_shows_the_ad_bulb_dark(self):
         # Lit means blocking, so only the runtime Dock icon may show it. Figma's frames named
         # icon_*.png use the lit Blocking state; render.sh uses the Watching state instead. The
@@ -93,8 +106,9 @@ class AppIconTests(unittest.TestCase):
             with self.subTest(path.name):
                 _, _, rows = read_png(path)
                 lit = [row[x:x + 4] for row in rows for x in range(0, len(row), 4)
-                       if row[x + 3] > 128 and all(abs(row[x + i] - LIT_BULB[i]) <= 40 for i in range(3))]
+                       if row[x + 3] > 128 and all(abs(row[x + i] - LIT_AD_BULB[i]) <= 40 for i in range(3))]
                 self.assertEqual(lit[:5], [], 'the ad bulb is lit')
+                self.assertIn(DARK_AD_BULB, opaque_colours(rows), 'the dark ad bulb is missing')
 
 
 if __name__ == '__main__':

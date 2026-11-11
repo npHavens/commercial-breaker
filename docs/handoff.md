@@ -57,7 +57,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
-  icon and identity tests to 68 Python tests in total; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  icon and identity tests to 69 Python tests in total; CI runs it on pull requests and pushes to main. No new audio was uploaded.
 
 ## Behavior and important code
 
