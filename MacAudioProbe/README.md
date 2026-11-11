@@ -8,7 +8,8 @@ recovered in the same worker 19 times, about a minute after the first was sent. 
 October 27 timeouts lasted at least three minutes, continuing across a restart.
 
 On the TV and in Mac playback, a streak of timeouts and temporary failures (HTTP 408, 429,
-5xx, allowlisted transport errors) now stops detection once it has spent five minutes
+5xx, allowlisted transport errors, which now include the codes a dropped network gives:
+`ENOTFOUND`, `ECONNREFUSED`, `EHOSTUNREACH`, `ENETDOWN`) now stops detection once it has spent five minutes
 failing: the time its failed requests were outstanding plus the waits before each retry.
 Continuous 20-second timeouts stop at the tenth, about 5 minutes 20 seconds in. Failures
 the worker could not classify may be permanent, such as missing credentials, so the third

@@ -44,6 +44,9 @@ struct GeminiRecovery {
     private var unclassifiedFailures = 0
     private var lastFailure = 0.0
 
+    /// Whether a failure streak is still running, rather than expired or reset by an answer.
+    func inStreak(now: Double) -> Bool { consecutiveFailures > 0 && now - lastFailure <= Self.streakExpiresAfter }
+
     /// The wait before retrying after the `n`th failure in a row; 0 before any failure.
     private static func delay(after n: Int) -> Double { min(Double(n * 5), longestDelay) }
 
@@ -54,8 +57,9 @@ struct GeminiRecovery {
         failingSeconds += Self.delay(after: consecutiveFailures) + (now - sent)
         consecutiveFailures += 1
         if failure == .unclassified { unclassifiedFailures += 1 }
-        if let failuresInARowLimit, consecutiveFailures >= failuresInARowLimit { return .stopAfterFailuresInARow }
+        // Checked first so possible configuration problems keep their own message.
         if unclassifiedFailures >= Self.unclassifiedLimit { return .stopUnclassified }
+        if let failuresInARowLimit, consecutiveFailures >= failuresInARowLimit { return .stopAfterFailuresInARow }
         if failingSeconds >= Self.giveUpAfter { return .stopAfterTime }
         let delay = Self.delay(after: consecutiveFailures)
         resumeAt = now + delay
