@@ -109,7 +109,8 @@ class AppIconTests(unittest.TestCase):
     def test_static_icon_shows_the_ad_bulb_dark(self):
         # Lit means blocking, so only the runtime Dock icon may show it. Figma's frames named
         # icon_*.png use the lit Blocking state; render.sh uses the Watching state instead. The
-        # small sizes are pixel-snapped, so even at 16 px a lit bulb is one exact #F05A3C pixel.
+        # small sizes are pixel-snapped, so even at 16 px a lit bulb shows as one #F05A3C pixel;
+        # the tolerance also catches its anti-aliased edges in renders of the 1024 art.
         for path in self.files:
             with self.subTest(path.name):
                 _, _, rows = read_png(path)
