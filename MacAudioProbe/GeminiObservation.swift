@@ -24,8 +24,8 @@ final class GeminiObservation: ObservableObject {
     private var diagnosticSlot = 0
     private var workerReady = false
     private var recovery = GeminiRecovery()
-    /// Seconds the current failure streak has spent failing; 0 while Gemini answers.
-    var failingSeconds: Double { recovery.failingSeconds }
+    /// Failed requests in a row since Gemini last answered; 0 while it answers.
+    var consecutiveFailures: Int { recovery.consecutiveFailures }
     private var directory: URL?
     private var lastPredictionTime = 0.0
     private static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
@@ -216,7 +216,7 @@ final class GeminiObservation: ObservableObject {
                     continue
                 case .stopAfterTime:
                     let limit = Duration.seconds(GeminiRecovery.giveUpAfter).formatted(.units(allowed: [.minutes, .seconds], width: .wide))
-                    message = "Gemini kept failing for \(limit) · recording continues"
+                    message = "Gemini requests kept failing for over \(limit) · recording continues"
                 case .stopUnclassified:
                     message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) unexplained request failures · recording continues"
                 case nil:
@@ -248,8 +248,8 @@ final class GeminiObservation: ObservableObject {
             prediction = "\(label) · \(Date().formatted(date: .omitted, time: .standard)) · \(String(format: "%.1f", elapsed / 1000))s response"
             let changed = confirmer.accept(state, end: pending.end)
             confirmation = confirmer.display
-            // A local silence answer leaves a failure streak running, so keep saying so.
-            status = recovery.consecutiveFailures > 0 ? "Gemini request failed · checking fresh audio"
+            // A local silence answer leaves a failure streak running without contacting Gemini.
+            status = recovery.consecutiveFailures > 0 ? "Audio is silent · Gemini not reached since a failed request"
                 : "Gemini observation only · playback unchanged"
             log(["event": "confirmation", "id": pending.id,
                  "candidate": confirmer.candidate?.rawValue ?? "unclear", "count": confirmer.count,

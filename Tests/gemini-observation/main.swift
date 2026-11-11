@@ -92,10 +92,10 @@ import Foundation
             request=json.loads(line)
             if i==0:
                 print(json.dumps({'id':request['id'],'error':'request-failed'}), flush=True)
-            elif i==2:
-                print(json.dumps({'id':request['id'],'error':'timeout'}), flush=True)
             elif i==1:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable'},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
+            elif i==2:
+                print(json.dumps({'id':request['id'],'error':'timeout'}), flush=True)
             else:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
@@ -117,6 +117,7 @@ import Foundation
         let silent = events("prediction").count
         feed()
         try await waitUntil("the worker's local silence answer") { events("prediction").count > silent }
+        assert(observer.status.hasPrefix("Audio is silent"), "A silence answer mid-streak must not report Gemini as healthy")
         // The worker answers digital silence without Gemini, so the next failure continues the streak.
         let silenceSent = uptime(events("request").last)
         try await waitUntil("the regular interval") { ProcessInfo.processInfo.systemUptime >= silenceSent + 5 }
