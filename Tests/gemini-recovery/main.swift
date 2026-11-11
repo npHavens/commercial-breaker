@@ -25,12 +25,21 @@ outcomes = outage(&policy, from: 0, upTo: 20)
 assert(outcomes.count == 10 && outcomes.last == .stopAfterTime && policy.failingSeconds == 320)
 print("Failure streak delays and five-minute limit passed")
 
-// Time without failed requests does not count: one timeout, ten minutes of digital silence
-// answered locally (no succeeded() call), then one more timeout.
+// Time without failed requests does not count: a timeout, 40 s of local silence answers (no
+// succeeded() call), then another timeout continues the streak without the gap.
 policy = GeminiRecovery()
 _ = policy.failed(.temporary, sent: 0, now: 20)
-assert(policy.failed(.temporary, sent: 620, now: 640) == .retry(after: 10) && policy.failingSeconds == 45)
-print("Gaps between failed requests passed")
+assert(policy.failed(.temporary, sent: 60, now: 80) == .retry(after: 10) && policy.failingSeconds == 45)
+// After a longer gap the streak has expired: 4.5 minutes of failing, half an hour of silence,
+// then one timeout starts over rather than stopping detection.
+policy = GeminiRecovery()
+let longOutage = outage(&policy, from: 0, upTo: 9)
+assert(longOutage.allSatisfy { $0 != .stopAfterTime } && policy.failingSeconds == 285)
+assert(policy.failed(.temporary, sent: 2100, now: 2120) == .retry(after: 5) && policy.failingSeconds == 20)
+policy = GeminiRecovery(failuresInARowLimit: 3)
+_ = policy.failed(.unclassified, sent: 0, now: 1); _ = policy.failed(.unclassified, sent: 6, now: 7)
+assert(policy.failed(.unclassified, sent: 600, now: 601) == .retry(after: 5), "Expired counts do not carry over")
+print("Gaps between failed requests and streak expiry passed")
 
 // October 27: timeouts for at least three minutes, across a restart, would keep retrying.
 policy = GeminiRecovery()

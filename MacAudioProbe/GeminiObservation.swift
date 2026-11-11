@@ -214,7 +214,7 @@ final class GeminiObservation: ObservableObject {
                          "failingSeconds": recovery.failingSeconds.rounded()])
                     continue
                 case .stopAfterTime:
-                    message = "Gemini stopped after over \(Int(GeminiRecovery.giveUpAfter / 60)) minutes of failed requests · recording continues"
+                    message = "Gemini stopped after \(Int(GeminiRecovery.giveUpAfter / 60)) minutes of failed requests · recording continues"
                 case .stopAfterFailuresInARow:
                     let count = recovery.consecutiveFailures
                     message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") with no answer · recording continues"

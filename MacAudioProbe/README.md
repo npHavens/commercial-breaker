@@ -19,13 +19,15 @@ fail.
 
 Streaks run from Gemini's last answer. The worker's local digital-silence answers never
 reach Gemini, so they neither reset a streak nor count toward it, and the status then
-reads "Audio is silent · Gemini not reached since a failed request". `request-recovery`
+reads "Audio is silent · Gemini not reached since a failed request". A streak expires when
+its next failed request goes out more than a minute after the previous failure, since
+retries follow within 15 seconds. `request-recovery`
 events log `failingSeconds`, and stop messages name the limit that was hit.
 
 In AirPlay mode, retrying for minutes would leave the TV without picture during a break.
 The Gemini session that runs while playback is on the Mac (muted, or audible after the
 three-minute limit) therefore stops at its third failed request with no answer from Gemini
-in between, and automation returns playback to the TV.
+in between, and automatic mode stops and returns playback to the TV.
 
 While a streak lasts there is no detection: a break can be missed on the TV, and on the
 Mac the three-minute mute limit still restores sound. Prompts, sample length,
