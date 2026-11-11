@@ -17,7 +17,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at abd88ea with PRs #1–#22 merged. The Skybox → Commercial Breaker
+- PRs #1–#24 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
+  not yet seen live; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -55,7 +56,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   and applies those rules to admins. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
-  after it brought the Python suite to 41, and the review workflow tests to 64; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
+  icon and identity tests to 70 Python tests in total; CI runs it on pull requests and pushes to main. No new audio was uploaded.
 
 ## Behavior and important code
 
@@ -119,8 +121,10 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    Claude review to `/code-review high`.
 6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
    (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
-   builds the app shell and adds the icon set from the
-   Scoreboard CB design in Figma. Moving experiment findings into `docs/archive`
+   builds the app shell and adds the rest of the icon set from the
+   Scoreboard CB design in Figma: the static app icon is in v0.2.50, while the
+   runtime Dock state, menu bar glyph and Safari toolbar icons are still to come.
+   Moving experiment findings into `docs/archive`
    is its own PR.
 
 7. Check whether Gemini 3.7 Flash supports a thinking level below `LOW`. If it

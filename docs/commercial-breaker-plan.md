@@ -123,7 +123,10 @@ cycle with the trimmed extension, including the short handoff rewind.
 
 Build the main window, Settings and Diagnostics described above, and add an app
 icon. (Done early in v0.2.48: the app, target and scheme are renamed to Commercial
-Breaker and the category is Entertainment.) Rewrite every user-facing string. Map
+Breaker and the category is Entertainment. v0.2.50 adds the static app icon from the
+Scoreboard CB design in Figma, rendered from the Watching state of its "Final / App
+icon" component so the red ad bulb is dark; the lit bulb is kept for showing blocking
+at runtime.) Rewrite every user-facing string. Map
 `AutomaticCommercialModel` state onto the user-visible states above.
 **Done when:** a view-state test covers each state, Diagnostics still offers
 picker inspection and recovery, and Nick watches one full game half using only
@@ -174,4 +177,5 @@ TypeScript/React extension migration; Node from Homebrew; app-specific muting
   board, the bundle identifier excepted, which is not renamed so the permissions
   already granted are kept.
 - The app icon starts as a simple placeholder I make, replaceable with real art.
+  (Superseded: v0.2.50 ships the Scoreboard CB art directly.)
 - Sport stays a setting rather than being detected automatically.
