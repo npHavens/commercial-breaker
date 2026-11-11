@@ -20,10 +20,10 @@ seconds, so the request cadence changes only while requests fail. `request-recov
 events log `failingSeconds`, and stop messages name the limit that was hit.
 
 In AirPlay mode, waiting minutes would leave the TV without picture during a break, so
-while playback is on the Mac (muted, or audible after the three-minute limit) a streak
-that has spent a minute failing ends automation and returns playback to the TV, which
-happens at the third timeout in a row, as before. On the TV and in Mac playback, detection
-keeps retrying. While a streak lasts there is no detection: a break can be missed on the
+while playback is on the Mac (muted, or audible after the three-minute limit) the third
+failed request in a row ends automation and returns playback to the TV, as every streak did
+before. On the TV and in Mac playback, detection keeps retrying. A local silence answer
+mid-streak shows "Audio is silent · Gemini not reached since a failed request". While a streak lasts there is no detection: a break can be missed on the
 TV, and on the Mac the three-minute mute limit still restores sound. Prompts, sample
 length, confirmation thresholds, the 20-second request timeout and the 25-second
 unresponsive-worker stop are unchanged.

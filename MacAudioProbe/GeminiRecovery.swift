@@ -27,18 +27,20 @@ struct GeminiRecovery {
     /// Time spent otherwise, such as waiting for audio or on local silence answers, is not counted.
     private(set) var failingSeconds = 0.0
     private var unclassifiedFailures = 0
-    private var lastDelay = 0.0
+
+    /// The wait before retrying after the `n`th failure in a row; 0 before any failure.
+    private static func delay(after n: Int) -> Double { min(Double(n * 5), longestDelay) }
 
     /// `sent` is when the failed request went out, so a 20-second timeout counts in full.
     mutating func failed(_ failure: Failure, sent: Double, now: Double) -> Outcome {
+        failingSeconds += Self.delay(after: consecutiveFailures) + (now - sent)
         consecutiveFailures += 1
-        failingSeconds += lastDelay + (now - sent)
         if failure == .unclassified { unclassifiedFailures += 1 }
         if unclassifiedFailures >= Self.unclassifiedLimit { return .stopUnclassified }
         if failingSeconds >= Self.giveUpAfter { return .stopAfterTime }
-        lastDelay = min(Double(consecutiveFailures * 5), Self.longestDelay)
-        resumeAt = now + lastDelay
-        return .retry(after: lastDelay)
+        let delay = Self.delay(after: consecutiveFailures)
+        resumeAt = now + delay
+        return .retry(after: delay)
     }
 
     /// Call only for answers from Gemini; the worker's local silence result says nothing about it.
@@ -47,6 +49,5 @@ struct GeminiRecovery {
         unclassifiedFailures = 0
         resumeAt = 0
         failingSeconds = 0
-        lastDelay = 0
     }
 }
