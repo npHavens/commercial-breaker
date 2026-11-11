@@ -8,19 +8,25 @@ same worker 19 times, about a minute after the first was sent. On October 27 tim
 three minutes, continuing across a restart.
 
 A streak of timeouts and temporary failures (HTTP 408, 429, 5xx, allowlisted transport
-errors) now stops detection once five minutes have passed since its first failed request
-was sent; it stops at the first failure after that, up to about 35 seconds later. Failures the
-worker could not classify may be permanent, such as missing credentials, so a streak still
-stops at the third of those. HTTP 4xx other than 408 and 429 and malformed or incomplete responses
-still stop at once. Retries use fresh audio, one request at a time, after 5, 10 and then
-every 15 seconds, so the request cadence changes only while requests fail. The worker's
-local answer for digital silence no longer resets a streak, since it never reached Gemini.
-`request-recovery` events log `streakSeconds`.
+errors) now stops detection once it has spent five minutes failing: the time its failed
+requests were outstanding plus the waits before each retry. Time spent waiting for audio or
+on the worker's local digital-silence answers does not count, and those answers do not
+reset the streak either, since they never reached Gemini. Continuous 20-second timeouts
+stop at the tenth, about 5 minutes 20 seconds in. Failures the worker could not classify
+may be permanent, such as missing credentials, so a streak still stops at the third of
+those. HTTP 4xx other than 408 and 429 and malformed or incomplete responses still stop at
+once. Retries use fresh audio, one request at a time, after 5, 10 and then every 15
+seconds, so the request cadence changes only while requests fail. `request-recovery`
+events log `failingSeconds`, and stop messages name the limit that was hit.
 
-While a streak lasts there is no detection: a break can be missed on the TV, and on the
-Mac the three-minute mute limit still restores sound. Prompts, sample length, confirmation
-thresholds, the 20-second request timeout and the 25-second unresponsive-worker stop are
-unchanged.
+In AirPlay mode, waiting minutes would leave the TV without picture during a break, so
+while playback is on the Mac (muted, or audible after the three-minute limit) a streak
+that has spent a minute failing ends automation and returns playback to the TV, which
+happens at the third timeout in a row, as before. On the TV and in Mac playback, detection
+keeps retrying. While a streak lasts there is no detection: a break can be missed on the
+TV, and on the Mac the three-minute mute limit still restores sound. Prompts, sample
+length, confirmation thresholds, the 20-second request timeout and the 25-second
+unresponsive-worker stop are unchanged.
 
 # App icon — v0.2.50
 

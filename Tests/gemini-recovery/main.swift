@@ -1,39 +1,57 @@
 import Foundation
+
+/// Fails 20-second timeouts back to back, each retry sent when its delay ends, as during an outage.
+/// Returns the outcomes in order.
+func outage(_ policy: inout GeminiRecovery, from start: Double, upTo limit: Int) -> [GeminiRecovery.Outcome] {
+    var sent = start, outcomes: [GeminiRecovery.Outcome] = []
+    while outcomes.count < limit {
+        let outcome = policy.failed(.temporary, sent: sent, now: sent + 20)
+        outcomes.append(outcome)
+        guard case .retry(let delay) = outcome else { break }
+        sent += 20 + delay
+    }
+    return outcomes
+}
+
 var policy = GeminiRecovery()
-// Timeouts arrive 20 s after their request was sent; the streak counts from that send.
 // Delays grow 5, 10, then hold at 15 seconds, and a third failure no longer stops detection.
-assert(policy.failed(.temporary, sent: 80, now: 100) == 5 && policy.resumeAt == 105)
-assert(policy.failed(.temporary, sent: 105, now: 125) == 10 && policy.resumeAt == 135)
-assert(policy.failed(.temporary, sent: 135, now: 155) == 15 && policy.consecutiveFailures == 3)
-assert(policy.streakSeconds(now: 155) == 75)
-assert(policy.failed(.temporary, sent: 170, now: 190) == 15)
-assert(policy.failed(.temporary, sent: 359, now: 379.9) == 15, "A streak just under five minutes still retries")
-assert(policy.failed(.temporary, sent: 360, now: 380) == nil, "A streak lasting five minutes stops detection")
+var outcomes = outage(&policy, from: 0, upTo: 4)
+assert(outcomes == [.retry(after: 5), .retry(after: 10), .retry(after: 15), .retry(after: 15)])
+assert(policy.failingSeconds == 20 + 25 + 30 + 35 && policy.resumeAt == 110 + 15)
+// Continuous timeouts count 20, 45, 75, then 35 more each: the tenth failure, at 320 s, is the
+// first at or past five minutes, so the overrun is under one delay plus one timeout.
+policy = GeminiRecovery()
+outcomes = outage(&policy, from: 0, upTo: 20)
+assert(outcomes.count == 10 && outcomes.last == .stopAfterTime && policy.failingSeconds == 320)
 print("Failure streak delays and five-minute limit passed")
 
-// October 27: timeouts for at least three minutes, across a restart. Requests went out at
-// +0, +25 and +55 s, then the restarted worker's at +117, +142 and +172 s.
+// Time without failed requests does not count: one timeout, ten minutes of digital silence
+// answered locally (no succeeded() call), then one more timeout.
 policy = GeminiRecovery()
-for sent in [0.0, 25, 55, 117, 142, 172] { assert(policy.failed(.temporary, sent: sent, now: sent + 20) != nil) }
-// November 9, 8:00 PM: three timeouts, then Gemini answered again.
+_ = policy.failed(.temporary, sent: 0, now: 20)
+assert(policy.failed(.temporary, sent: 620, now: 640) == .retry(after: 10) && policy.failingSeconds == 45)
+print("Gaps between failed requests passed")
+
+// October 27: timeouts for at least three minutes, across a restart, would keep retrying.
 policy = GeminiRecovery()
-for (sent, delay) in [(0.0, 5.0), (25, 10), (55, 15)] { assert(policy.failed(.temporary, sent: sent, now: sent + 20) == delay) }
+assert(outage(&policy, from: 0, upTo: 6) == [5, 10, 15, 15, 15, 15].map { .retry(after: $0) })
+// November 9, 8:00 PM: three timeouts, then Gemini answered again, which resets the streak.
+policy = GeminiRecovery()
+assert(outage(&policy, from: 0, upTo: 3) == [.retry(after: 5), .retry(after: 10), .retry(after: 15)])
 policy.succeeded()
-assert(policy.resumeAt == 0 && policy.consecutiveFailures == 0 && policy.streakSeconds(now: 500) == 0)
-// A success starts the next streak's five minutes over.
-assert(policy.failed(.temporary, sent: 200, now: 220) == 5 && policy.failed(.temporary, sent: 470, now: 490) == 10)
-assert(policy.failed(.temporary, sent: 480, now: 500) == nil)
-print("Outage replays, successful reset and fresh streak timing passed")
+assert(policy.resumeAt == 0 && policy.consecutiveFailures == 0 && policy.failingSeconds == 0)
+assert(outage(&policy, from: 500, upTo: 1) == [.retry(after: 5)], "A fresh streak starts at the shortest delay")
+print("Outage replays and successful reset passed")
 
 // Unclassified failures may be permanent, so the third in a streak stops it, however quickly.
 policy = GeminiRecovery()
-assert(policy.failed(.unclassified, sent: 0, now: 1) == 5 && policy.failed(.temporary, sent: 6, now: 26) == 10)
-assert(policy.failed(.unclassified, sent: 36, now: 37) == 15)
-assert(policy.failed(.unclassified, sent: 52, now: 53) == nil, "Three unclassified failures stop detection")
+assert(policy.failed(.unclassified, sent: 0, now: 1) == .retry(after: 5) && policy.failed(.temporary, sent: 6, now: 26) == .retry(after: 10))
+assert(policy.failed(.unclassified, sent: 36, now: 37) == .retry(after: 15))
+assert(policy.failed(.unclassified, sent: 52, now: 53) == .stopUnclassified, "Three unclassified failures stop detection")
 policy = GeminiRecovery()
 for _ in 0..<2 { _ = policy.failed(.unclassified, sent: 0, now: 1) }
 policy.succeeded()
-assert(policy.failed(.unclassified, sent: 10, now: 11) != nil, "A success clears the unclassified count")
+assert(policy.failed(.unclassified, sent: 10, now: 11) == .retry(after: 5), "A success clears the unclassified count")
 print("Unclassified failure limit passed")
 
 assert(GeminiRecovery.failure(error: "request-failed", httpStatus: nil) == .unclassified)

@@ -2,7 +2,8 @@ import Foundation
 
 /// Recover temporary failures using future audio, never by resending old clips.
 /// Gemini sometimes times out every request for minutes and then answers again, so a streak of
-/// timeouts and temporary failures stops detection only once it has lasted `giveUpAfter` seconds.
+/// timeouts and temporary failures stops detection only once it has spent `giveUpAfter` seconds
+/// failing.
 struct GeminiRecovery {
     static let giveUpAfter = 300.0
     /// Failures the worker could not classify may be permanent (missing credentials, a bad
@@ -11,6 +12,7 @@ struct GeminiRecovery {
     static let longestDelay = 15.0
 
     enum Failure { case temporary, unclassified }
+    enum Outcome: Equatable { case retry(after: Double), stopAfterTime, stopUnclassified }
 
     /// How a failed request may be recovered, or nil when it stops detection at once.
     static func failure(error: String, httpStatus: Int?) -> Failure? {
@@ -21,22 +23,22 @@ struct GeminiRecovery {
 
     private(set) var consecutiveFailures = 0
     private(set) var resumeAt = 0.0
+    /// Seconds this streak has spent on failed requests and on the waits before retrying them.
+    /// Time spent otherwise, such as waiting for audio or on local silence answers, is not counted.
+    private(set) var failingSeconds = 0.0
     private var unclassifiedFailures = 0
-    private var streakStart: Double?
+    private var lastDelay = 0.0
 
-    /// Seconds since the streak's first failed request was sent.
-    func streakSeconds(now: Double) -> Double { streakStart.map { now - $0 } ?? 0 }
-
-    /// The delay before the next request on fresh audio, or nil once the streak should stop.
-    /// `sent` is when the failed request went out, so a 20-second timeout counts from its start.
-    mutating func failed(_ failure: Failure, sent: Double, now: Double) -> Double? {
-        streakStart = streakStart ?? sent
+    /// `sent` is when the failed request went out, so a 20-second timeout counts in full.
+    mutating func failed(_ failure: Failure, sent: Double, now: Double) -> Outcome {
         consecutiveFailures += 1
+        failingSeconds += lastDelay + (now - sent)
         if failure == .unclassified { unclassifiedFailures += 1 }
-        guard streakSeconds(now: now) < Self.giveUpAfter, unclassifiedFailures < Self.unclassifiedLimit else { return nil }
-        let delay = min(Double(consecutiveFailures * 5), Self.longestDelay)
-        resumeAt = now + delay
-        return delay
+        if unclassifiedFailures >= Self.unclassifiedLimit { return .stopUnclassified }
+        if failingSeconds >= Self.giveUpAfter { return .stopAfterTime }
+        lastDelay = min(Double(consecutiveFailures * 5), Self.longestDelay)
+        resumeAt = now + lastDelay
+        return .retry(after: lastDelay)
     }
 
     /// Call only for answers from Gemini; the worker's local silence result says nothing about it.
@@ -44,6 +46,7 @@ struct GeminiRecovery {
         consecutiveFailures = 0
         unclassifiedFailures = 0
         resumeAt = 0
-        streakStart = nil
+        failingSeconds = 0
+        lastDelay = 0
     }
 }

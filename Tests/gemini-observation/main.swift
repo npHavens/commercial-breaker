@@ -90,8 +90,10 @@ import Foundation
         print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
         for i,line in enumerate(sys.stdin):
             request=json.loads(line)
-            if i in (0,2):
+            if i==0:
                 print(json.dumps({'id':request['id'],'error':'request-failed'}), flush=True)
+            elif i==2:
+                print(json.dumps({'id':request['id'],'error':'timeout'}), flush=True)
             elif i==1:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable'},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
             else:
@@ -104,7 +106,7 @@ import Foundation
         assert(observer.enabled && observer.status.contains("checking fresh audio"), "Isolated unclassified failure should recover without disabling")
         assert(observer.prediction.isEmpty, "Failure must clear old prediction")
         assert(observer.confirmation == "Waiting for two matching predictions")
-        assert(events("request-recovery").last?["streakSeconds"] is NSNumber, "Recovery must log how long the streak has lasted")
+        assert(events("request-recovery").last?["failingSeconds"] is NSNumber, "Recovery must log how long the streak has been failing")
         // The recovery delay starts when the failure arrives; feed once it has passed.
         func awaitRecoveryDelay() async throws {
             let recovery = events("request-recovery").last
@@ -121,11 +123,12 @@ import Foundation
         feed()
         try await waitUntil("the second failure") { events("request-recovery").count > recoveries + 1 }
         assert(events("request-recovery").last?["consecutiveFailures"] as? Int == 2, "A local silence answer must not reset the failure streak")
+        assert(observer.enabled && observer.status.contains("checking fresh audio"), "A timeout after an unclassified failure keeps recovering")
         try await awaitRecoveryDelay()
         let recovered = events("prediction").count
         feed()
         try await waitUntil("a prediction after recovery") { events("prediction").count > recovered }
-        assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failures should restore observation")
+        assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after the failures should restore observation")
         observer.stop()
         // Readiness does not depend on the reported values, and malformed ones are never logged.
         try """

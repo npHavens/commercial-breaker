@@ -51,6 +51,15 @@ struct AutomaticCommercialPolicy {
         complete(from: .mutedMac, to: .audibleMacAwaitingTV)
     }
 
+    /// Gemini failure time after which AirPlay mode ends a break early and returns playback to
+    /// the TV. Detection otherwise keeps retrying for minutes, which would leave the TV without
+    /// picture; this is where the third timeout in a row lands, as under the old three-failure rule.
+    static let offTVFailureLimit = 60.0
+
+    func endsOnGeminiFailures(failingSeconds: Double) -> Bool {
+        [.mutedMac, .audibleMacAwaitingTV].contains(phase) && failingSeconds >= Self.offTVFailureLimit
+    }
+
     mutating func confirmed(_ state: GeminiConfirmation.State) -> Action {
         switch (phase, state) {
         case (.awaitingLocalProgram, .program):
