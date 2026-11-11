@@ -34,13 +34,14 @@ final class GeminiObservation: ObservableObject {
         self.makeWorker = makeWorker
     }
 
-    func start(directory: URL, retainProgramAudio: Bool = false, sport: Sport = .football, returnDetection: Bool = false) {
+    func start(directory: URL, retainProgramAudio: Bool = false, sport: Sport = .football, returnDetection: Bool = false,
+               failuresInARowLimit: Int? = nil) {
         guard !enabled else { return }
         self.directory = directory
         self.retainProgramAudio = retainProgramAudio
         generation = UUID()
         buffer.reset()
-        recovery = GeminiRecovery()
+        recovery = GeminiRecovery(failuresInARowLimit: failuresInARowLimit)
         lastAudioEndSent = nil
         lastSent = 0
         preparing = nil
@@ -202,18 +203,31 @@ final class GeminiObservation: ObservableObject {
                      "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0])
                 prediction = ""
                 resetConfirmation()
-                let retryable = GeminiRecovery.allowsRetry(error: error, httpStatus: value["httpStatus"] as? Int)
-                if retryable, let delay = recovery.failed(now: ProcessInfo.processInfo.systemUptime) {
+                let outcome = GeminiRecovery.failure(error: error, httpStatus: value["httpStatus"] as? Int)
+                    .map { recovery.failed($0, sent: pending.sent, now: ProcessInfo.processInfo.systemUptime) }
+                let message: String
+                switch outcome {
+                case .retry(let delay):
                     status = "Gemini request failed · checking fresh audio in \(Int(delay)) seconds"
                     log(["event": "request-recovery", "delaySeconds": delay,
-                         "consecutiveFailures": recovery.consecutiveFailures])
+                         "consecutiveFailures": recovery.consecutiveFailures,
+                         "failingSeconds": recovery.failingSeconds.rounded()])
                     continue
+                case .stopAfterTime:
+                    message = "Gemini stopped after \(Int(GeminiRecovery.giveUpAfter / 60)) minutes of failed requests · recording continues"
+                case .stopAfterFailuresInARow:
+                    let count = recovery.consecutiveFailures
+                    message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") with no answer · recording continues"
+                case .stopUnclassified:
+                    message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) unexplained request failures · recording continues"
+                case nil:
+                    message = "Gemini request failed · recording continues. See the session log."
                 }
-                stop(message: retryable
-                     ? "Gemini stopped after three consecutive request failures · recording continues"
-                     : "Gemini request failed · recording continues. See the session log."); return
+                stop(message: message); return
             }
-            recovery.succeeded()
+            // The worker answers digital silence itself, which says nothing about whether Gemini is back.
+            let localSilence = value["source"] as? String == "local-digital-silence"
+            if !localSilence { recovery.succeeded() }
             guard pending.generation == generation else {
                 log(["event": "discarded-stale-response", "id": pending.id]); continue
             }
@@ -236,7 +250,9 @@ final class GeminiObservation: ObservableObject {
             prediction = "\(label) · \(Date().formatted(date: .omitted, time: .standard)) · \(String(format: "%.1f", elapsed / 1000))s response"
             let changed = confirmer.accept(state, end: pending.end)
             confirmation = confirmer.display
-            status = "Gemini observation only · playback unchanged"
+            status = localSilence && recovery.inStreak(now: ProcessInfo.processInfo.systemUptime)
+                ? "Audio is silent · Gemini not reached since a failed request"
+                : "Gemini observation only · playback unchanged"
             log(["event": "confirmation", "id": pending.id,
                  "candidate": confirmer.candidate?.rawValue ?? "unclear", "count": confirmer.count,
                  "confirmed": confirmer.confirmed?.rawValue ?? "unknown", "changed": changed,

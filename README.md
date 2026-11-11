@@ -18,7 +18,8 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.50 (the app icon; built unsigned, not yet run live) and Safari extension source v0.2.21. AirPlay has been working well
+Native v0.2.51 and Safari extension source v0.2.21; v0.2.50 (the app icon) and v0.2.51
+(Gemini outage retries) are built unsigned and not yet run live. AirPlay has been working well
 in personal use; Nick also confirmed Mac playback and the v0.2.44 startup fix
 working on October 18, and a live v0.2.45 start with the standalone setup
 (see below). v0.2.46 removes unused features: the app now has Automatic and
