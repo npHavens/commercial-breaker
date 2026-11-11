@@ -2,10 +2,12 @@
 
 The app has its icon: Scoreboard CB from the Figma design, amber bulbs on a dark plate
 with the red ad bulb dark. The lit bulb is kept for showing blocking at runtime later.
-The 16, 32 and 64 px sizes are the design's hand-drawn small versions. The PNGs are
-rendered from SVG exports of the "Final / App icon" component's Watching state with the
-component set's white panel removed, because Figma's PNG export paints it behind the
-plate. `Tests/test_app_icon.py` checks sizes, the transparent margin and the dark bulb.
+The 16, 32 and 64 px sizes are the design's hand-drawn small versions.
+`Tools/app-icon/render.sh` renders every slot from SVG exports of the "Final / App icon"
+component's Watching state, with the component set's white panel removed because Figma's
+PNG export paints it behind the plate; the script's header says how to re-export. The
+files must stay 8-bit RGBA, as rendered. `Tests/test_app_icon.py` checks sizes, the
+transparent margin and the dark bulb.
 Not yet seen live in the Dock; nothing else changes. (v0.2.49 is a local diagnostic build
 that logs front-app changes during AirPlay handoffs.)
 

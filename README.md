@@ -73,7 +73,7 @@ to `.env` (see `.env.example`) so Commercial Breaker is metered against its own 
 | --- | --- |
 | `MacAudioProbe/` | Active Swift app, capture, routing and automatic policy |
 | `SafariExtension/` | Safari controls and DIRECTV AirPlay correction |
-| `Tools/` | Runtime classifiers, prompts and relay helpers; evaluation tools |
+| `Tools/` | Runtime classifiers, prompts and relay helpers; evaluation tools; app icon rendering |
 | `Tests/` | Offline behavior and regression tests |
 | `docs/` | Contributor workflow and cleanup plan |
 | `Experiments/` | Findings and historical evidence; not used at runtime |
