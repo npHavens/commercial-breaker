@@ -45,6 +45,10 @@ class AppIdentityTests(unittest.TestCase):
         self.assertEqual(len(versions), 2)
         self.assertEqual(len(set(versions)), 1)
 
+    def test_both_configurations_use_the_catalog_icon(self):
+        # The set in MacAudioProbe/Assets.xcassets; test_app_icon.py checks its images.
+        self.assertEqual(self.settings('ASSETCATALOG_COMPILER_APPICON_NAME'), ['AppIcon'] * 2)
+
 
 if __name__ == '__main__':
     unittest.main()

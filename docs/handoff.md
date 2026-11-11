@@ -17,7 +17,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- Main is at abd88ea with PRs #1–#22 merged. The Skybox → Commercial Breaker
+- Main is at 6903b34 with PRs #1–#23 merged; PR #24 adds the app icon (v0.2.50, built
+  unsigned in CI, not yet seen live). The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -55,7 +56,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   and applies those rules to admins. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
-  after it brought the Python suite to 41, and the review workflow tests to 64; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
+  icon tests to 68; CI runs it on pull requests and pushes to main. No new audio was uploaded.
 
 ## Behavior and important code
 
