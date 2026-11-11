@@ -1,6 +1,7 @@
 """The app icon asset catalog: every macOS slot is filled at its pixel size, the plate sits inside a
 transparent margin, and the ad bulb is dark. Tools/app-icon/render.sh makes the images."""
 
+from collections import Counter
 from functools import lru_cache
 import json
 from pathlib import Path
@@ -76,6 +77,13 @@ class AppIconTests(unittest.TestCase):
                 width, height, _ = read_png(iconset / image['filename'])
                 self.assertEqual((width, height), (points * scale, points * scale))
 
+    def test_slots_of_the_same_pixel_size_share_one_rendering(self):
+        # render.sh copies these; the 32 px pair is the hand-drawn art, not the 1024 scaled down.
+        for copy, source in [('icon_16x16@2x.png', 'icon_32x32.png'), ('icon_128x128@2x.png', 'icon_256x256.png'),
+                             ('icon_256x256@2x.png', 'icon_512x512.png')]:
+            with self.subTest(copy):
+                self.assertEqual((iconset / copy).read_bytes(), (iconset / source).read_bytes())
+
     def test_plate_sits_inside_a_transparent_margin(self):
         # macOS draws app icons inside a margin of about 10% (the 1024 art's plate is 824 px), so
         # a full-bleed icon looks oversized next to others. Figma's PNG export of a component in
@@ -95,7 +103,7 @@ class AppIconTests(unittest.TestCase):
             with self.subTest(path.name):
                 colours = opaque_colours(read_png(path)[2])
                 self.assertTrue(colours, 'nothing is drawn')
-                self.assertEqual(max(set(colours), key=colours.count), PLATE, 'the plate is not the main colour')
+                self.assertEqual(Counter(colours).most_common(1)[0][0], PLATE, 'the plate is not the main colour')
                 self.assertIn(BULB, colours)
 
     def test_static_icon_shows_the_ad_bulb_dark(self):

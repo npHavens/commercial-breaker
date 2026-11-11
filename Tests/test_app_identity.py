@@ -28,7 +28,8 @@ class AppIdentityTests(unittest.TestCase):
     def test_no_sdk_specific_override_of_these_settings(self):
         # Xcode writes these as "KEY[sdk=macosx*]", which would win over the plain key for macOS.
         for key in ('PRODUCT_BUNDLE_IDENTIFIER', 'DEVELOPMENT_TEAM', 'CODE_SIGN_STYLE', 'CODE_SIGN_IDENTITY',
-                    'CODE_SIGN_ENTITLEMENTS', 'ENABLE_APP_SANDBOX', 'ENABLE_HARDENED_RUNTIME'):
+                    'CODE_SIGN_ENTITLEMENTS', 'ENABLE_APP_SANDBOX', 'ENABLE_HARDENED_RUNTIME',
+                    'ASSETCATALOG_COMPILER_APPICON_NAME'):
             self.assertNotIn(f'{key}[', self.text)
 
     def test_app_stays_unsandboxed_without_entitlements(self):
