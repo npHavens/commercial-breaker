@@ -1,3 +1,27 @@
+# Gemini outages no longer end automation — v0.2.51
+
+Detection used to stop after three temporary Gemini failures in a row, which ended
+automatic mode (and, in AirPlay mode, sent playback back to the TV). Session logs since
+October 27 show 11 such stops, each a run of 20-second timeouts with no HTTP error. Shorter
+runs recover on their own: two failed requests in a row, mostly timeouts, recovered in the
+same worker 19 times, about a minute after the first was sent. On October 27 timeouts lasted at least
+three minutes, continuing across a restart.
+
+A streak of timeouts and temporary failures (HTTP 408, 429, 5xx, allowlisted transport
+errors) now stops detection once five minutes have passed since its first failed request
+was sent; it stops at the first failure after that, up to about 35 seconds later. Failures the
+worker could not classify may be permanent, such as missing credentials, so a streak still
+stops at the third of those. HTTP 4xx other than 408 and 429 and malformed or incomplete responses
+still stop at once. Retries use fresh audio, one request at a time, after 5, 10 and then
+every 15 seconds, so the request cadence changes only while requests fail. The worker's
+local answer for digital silence no longer resets a streak, since it never reached Gemini.
+`request-recovery` events log `streakSeconds`.
+
+While a streak lasts there is no detection: a break can be missed on the TV, and on the
+Mac the three-minute mute limit still restores sound. Prompts, sample length, confirmation
+thresholds, the 20-second request timeout and the 25-second unresponsive-worker stop are
+unchanged.
+
 # App icon — v0.2.50
 
 The app has its icon: Scoreboard CB from the Figma design, amber bulbs on a dark plate

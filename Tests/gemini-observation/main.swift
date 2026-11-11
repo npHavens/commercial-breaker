@@ -90,8 +90,10 @@ import Foundation
         print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
         for i,line in enumerate(sys.stdin):
             request=json.loads(line)
-            if i==0:
+            if i in (0,2):
                 print(json.dumps({'id':request['id'],'error':'request-failed'}), flush=True)
+            elif i==1:
+                print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable'},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
             else:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
@@ -102,14 +104,28 @@ import Foundation
         assert(observer.enabled && observer.status.contains("checking fresh audio"), "Isolated unclassified failure should recover without disabling")
         assert(observer.prediction.isEmpty, "Failure must clear old prediction")
         assert(observer.confirmation == "Waiting for two matching predictions")
+        assert(events("request-recovery").last?["streakSeconds"] is NSNumber, "Recovery must log how long the streak has lasted")
         // The recovery delay starts when the failure arrives; feed once it has passed.
-        let recovery = events("request-recovery").last
-        let resumeAt = uptime(recovery) + (recovery?["delaySeconds"] as! NSNumber).doubleValue
-        try await waitUntil("the recovery delay") { ProcessInfo.processInfo.systemUptime >= resumeAt }
+        func awaitRecoveryDelay() async throws {
+            let recovery = events("request-recovery").last
+            let resumeAt = uptime(recovery) + (recovery?["delaySeconds"] as! NSNumber).doubleValue
+            try await waitUntil("the recovery delay") { ProcessInfo.processInfo.systemUptime >= resumeAt }
+        }
+        try await awaitRecoveryDelay()
+        let silent = events("prediction").count
+        feed()
+        try await waitUntil("the worker's local silence answer") { events("prediction").count > silent }
+        // The worker answers digital silence without Gemini, so the next failure continues the streak.
+        let silenceSent = uptime(events("request").last)
+        try await waitUntil("the regular interval") { ProcessInfo.processInfo.systemUptime >= silenceSent + 5 }
+        feed()
+        try await waitUntil("the second failure") { events("request-recovery").count > recoveries + 1 }
+        assert(events("request-recovery").last?["consecutiveFailures"] as? Int == 2, "A local silence answer must not reset the failure streak")
+        try await awaitRecoveryDelay()
         let recovered = events("prediction").count
         feed()
         try await waitUntil("a prediction after recovery") { events("prediction").count > recovered }
-        assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failure should restore observation")
+        assert(observer.enabled && observer.prediction.contains("Program"), "Fresh sample after unclassified failures should restore observation")
         observer.stop()
         // Readiness does not depend on the reported values, and malformed ones are never logged.
         try """
