@@ -13,11 +13,10 @@ guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixels, pixe
                                  samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
                                  bytesPerRow: 0, bitsPerPixel: 0)?.retagging(with: .sRGB),
       let context = NSGraphicsContext(bitmapImageRep: rep) else { fail("cannot create a \(pixels) px canvas") }
-// A new rep starts fully transparent.
-rep.size = NSSize(width: pixels, height: pixels)
 NSGraphicsContext.saveGraphicsState()
 NSGraphicsContext.current = context
 context.imageInterpolation = .high
+// A new rep starts fully transparent, so only the art is drawn.
 image.draw(in: NSRect(x: 0, y: 0, width: pixels, height: pixels))
 NSGraphicsContext.restoreGraphicsState()
 guard let png = rep.representation(using: .png, properties: [:]) else { fail("cannot encode \(args[3])") }
