@@ -120,7 +120,8 @@ test('framing recovers after oversized lines and handles fragmented input', () =
 test('temporary transport/service errors recover; auth and unknown errors stop, without leaking payloads', () => {
   for (const status of [408,429,500,503]) assert.deepEqual(classifyFailure({status,message:'secret'}), {error:'temporary-failure',httpStatus:status});
   for (const status of [400,401,403]) assert.deepEqual(classifyFailure({status}), {error:'request-failed',httpStatus:status});
-  assert.deepEqual(classifyFailure({cause:{code:'ECONNRESET',message:'secret'}}), {error:'temporary-failure'});
+  for (const code of ['ECONNRESET','ENOTFOUND','ENETDOWN','EHOSTUNREACH','ECONNREFUSED'])
+    assert.deepEqual(classifyFailure({cause:{code,message:'secret'}}), {error:'temporary-failure'});
   assert.deepEqual(classifyFailure(new Error('secret')), {error:'request-failed'});
 });
 

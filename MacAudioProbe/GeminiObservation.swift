@@ -250,7 +250,8 @@ final class GeminiObservation: ObservableObject {
             prediction = "\(label) · \(Date().formatted(date: .omitted, time: .standard)) · \(String(format: "%.1f", elapsed / 1000))s response"
             let changed = confirmer.accept(state, end: pending.end)
             confirmation = confirmer.display
-            status = localSilence && recovery.consecutiveFailures > 0 ? "Audio is silent · Gemini not reached since a failed request"
+            status = localSilence && recovery.inStreak(now: ProcessInfo.processInfo.systemUptime)
+                ? "Audio is silent · Gemini not reached since a failed request"
                 : "Gemini observation only · playback unchanged"
             log(["event": "confirmation", "id": pending.id,
                  "candidate": confirmer.candidate?.rawValue ?? "unclear", "count": confirmer.count,

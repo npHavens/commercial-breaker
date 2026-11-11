@@ -39,6 +39,7 @@ assert(policy.failed(.temporary, sent: 2100, now: 2120) == .retry(after: 5) && p
 policy = GeminiRecovery(failuresInARowLimit: 3)
 _ = policy.failed(.unclassified, sent: 0, now: 1); _ = policy.failed(.unclassified, sent: 6, now: 7)
 assert(policy.failed(.unclassified, sent: 600, now: 601) == .retry(after: 5), "Expired counts do not carry over")
+assert(policy.inStreak(now: 61) && !policy.inStreak(now: 662), "A streak reads as expired a minute after its last failure")
 print("Gaps between failed requests and streak expiry passed")
 
 // October 27: timeouts for at least three minutes, across a restart, would keep retrying.
@@ -70,6 +71,9 @@ policy = GeminiRecovery(failuresInARowLimit: 3)
 _ = policy.failed(.temporary, sent: 0, now: 20); _ = policy.failed(.temporary, sent: 25, now: 45)
 policy.succeeded()
 assert(policy.failed(.temporary, sent: 600, now: 620) == .retry(after: 5), "An answer from Gemini clears the count")
+policy = GeminiRecovery(failuresInARowLimit: 3)
+for sent in [0.0, 6] { _ = policy.failed(.unclassified, sent: sent, now: sent + 1) }
+assert(policy.failed(.unclassified, sent: 22, now: 23) == .stopUnclassified, "Unclassified failures keep their own reason off the TV")
 print("Off-TV failures-in-a-row limit passed")
 
 assert(GeminiRecovery.failure(error: "request-failed", httpStatus: nil) == .unclassified)
