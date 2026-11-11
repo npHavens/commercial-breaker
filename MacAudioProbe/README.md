@@ -1,3 +1,40 @@
+# Detection rides out Gemini outages of up to five minutes — v0.2.51
+
+Detection used to stop after three temporary Gemini failures in a row, which ended
+automatic mode (and, in AirPlay mode, sent playback back to the TV). Session logs since
+October 27 show 11 such stops, each a run of 20-second timeouts with no HTTP error.
+Shorter runs recover on their own: two failed requests in a row, mostly timeouts,
+recovered in the same worker 19 times, about a minute after the first was sent. On
+October 27 timeouts lasted at least three minutes, continuing across a restart.
+
+On the TV and in Mac playback, a streak of timeouts and temporary failures (HTTP 408, 429,
+5xx, allowlisted transport errors, which now include the codes a dropped network gives:
+`ENOTFOUND`, `ECONNREFUSED`, `EHOSTUNREACH`, `ENETDOWN`) now stops detection once it has spent five minutes
+failing: the time its failed requests were outstanding plus the waits before each retry.
+Continuous 20-second timeouts stop at the tenth, about 5 minutes 20 seconds in. Failures
+the worker could not classify may be permanent, such as missing credentials, so the third
+of those still stops detection. HTTP 4xx other than 408 and 429 and malformed or
+incomplete responses still stop at once. Retries use fresh audio, one request at a time,
+after 5, 10 and then every 15 seconds, so the request cadence changes only while requests
+fail.
+
+Streaks run from Gemini's last answer. The worker's local digital-silence answers never
+reach Gemini, so they neither reset a streak nor count toward it, and the status then
+reads "Audio is silent · Gemini not reached since a failed request". A streak expires when
+its next failed request goes out more than a minute after the previous failure, since
+retries follow within 15 seconds. `request-recovery`
+events log `failingSeconds`, and stop messages name the limit that was hit.
+
+In AirPlay mode, retrying for minutes would leave the TV without picture during a break.
+The Gemini session that runs while playback is on the Mac (muted, or audible after the
+three-minute limit) therefore stops at its third failed request with no answer from Gemini
+in between, and automatic mode stops and returns playback to the TV.
+
+While a streak lasts there is no detection: a break can be missed on the TV, and on the
+Mac the three-minute mute limit still restores sound. Prompts, sample length,
+confirmation thresholds, the 20-second request timeout and the 25-second
+unresponsive-worker stop are unchanged.
+
 # App icon — v0.2.50
 
 The app has its icon: Scoreboard CB from the Figma design, amber bulbs on a dark plate

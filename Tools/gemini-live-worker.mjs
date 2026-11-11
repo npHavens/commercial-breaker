@@ -47,7 +47,9 @@ export function classifyFailure(error) {
   const status = Number.isInteger(error?.status) && error.status >= 100 && error.status <= 599 ? error.status : null;
   const code = error?.code ?? error?.cause?.code;
   const transient = status === 408 || status === 429 || (status !== null && status >= 500)
-    || ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENETUNREACH', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET'].includes(code);
+    // Including the codes a dropped network gives (ENOTFOUND while DNS is unreachable, ENETDOWN, …).
+    || ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENETUNREACH', 'ENETDOWN', 'EHOSTUNREACH', 'ECONNREFUSED', 'ENOTFOUND',
+        'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET'].includes(code);
   return { error: transient ? 'temporary-failure' : 'request-failed', ...(status === null ? {} : { httpStatus: status }) };
 }
 

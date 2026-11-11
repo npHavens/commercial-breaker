@@ -32,6 +32,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   which a Mac playback start or a break exercises, a break/return cycle, and System
   Settings listing Commercial Breaker.
   The title-version change after cf46103 has not run live.
+- v0.2.51 (PR #25) keeps detection running through up to five minutes of Gemini
+  timeouts instead of stopping at the third failure in a row, which happened 11 times
+  since October 27. In AirPlay mode a break still returns to the TV at the third
+  failed request with no Gemini answer in between (see the v0.2.51 changelog). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
