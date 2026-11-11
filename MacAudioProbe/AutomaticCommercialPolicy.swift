@@ -51,15 +51,6 @@ struct AutomaticCommercialPolicy {
         complete(from: .mutedMac, to: .audibleMacAwaitingTV)
     }
 
-    /// Failed Gemini requests in a row after which AirPlay mode ends a break early and returns
-    /// playback to the TV, as every streak did before v0.2.51. Detection otherwise keeps retrying
-    /// for minutes, which would leave the TV without picture.
-    static let offTVFailureLimit = 3
-
-    func endsOnGeminiFailures(consecutive failures: Int) -> Bool {
-        [.mutedMac, .audibleMacAwaitingTV].contains(phase) && failures >= Self.offTVFailureLimit
-    }
-
     mutating func confirmed(_ state: GeminiConfirmation.State) -> Action {
         switch (phase, state) {
         case (.awaitingLocalProgram, .program):

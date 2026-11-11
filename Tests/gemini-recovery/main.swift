@@ -54,6 +54,15 @@ policy.succeeded()
 assert(policy.failed(.unclassified, sent: 10, now: 11) == .retry(after: 5), "A success clears the unclassified count")
 print("Unclassified failure limit passed")
 
+// While AirPlay playback is on the Mac, the old stop at three failures in a row still applies.
+policy = GeminiRecovery(failuresInARowLimit: GeminiRecovery.offTVFailureLimit)
+assert(outage(&policy, from: 0, upTo: 5) == [.retry(after: 5), .retry(after: 10), .stopAfterFailuresInARow])
+policy = GeminiRecovery(failuresInARowLimit: 3)
+_ = policy.failed(.temporary, sent: 0, now: 20); _ = policy.failed(.temporary, sent: 25, now: 45)
+policy.succeeded()
+assert(policy.failed(.temporary, sent: 600, now: 620) == .retry(after: 5), "An answer from Gemini clears the count")
+print("Off-TV failures-in-a-row limit passed")
+
 assert(GeminiRecovery.failure(error: "request-failed", httpStatus: nil) == .unclassified)
 assert(GeminiRecovery.failure(error: "request-failed", httpStatus: 0) == .unclassified)
 assert(GeminiRecovery.failure(error: "temporary-failure", httpStatus: 503) == .temporary)
