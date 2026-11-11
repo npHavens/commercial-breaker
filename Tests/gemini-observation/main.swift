@@ -143,6 +143,19 @@ import Foundation
         assert(malformed?["promptSHA256"] == nil, "A prompt hash that is not lowercase hex must not be logged")
         assert(malformed?["model"] as? String == "invalid", "A malformed model must not be logged")
         observer.stop()
+        // A session started with a failures-in-a-row limit (AirPlay's Mac leg) stops at it.
+        try """
+        import json, sys
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
+        for line in sys.stdin:
+            print(json.dumps({'id':json.loads(line)['id'],'error':'timeout'}), flush=True)
+        """.write(to: script, atomically: true, encoding: .utf8)
+        let limitedReady = events("worker-ready").count
+        observer.start(directory: directory, failuresInARowLimit: 1)
+        try await waitUntil("the fake worker to start") { events("worker-ready").count > limitedReady }
+        feed()
+        try await waitUntil("the stop at the failure limit") { !observer.enabled }
+        assert(observer.status.contains("1 failed request in a row"), "The limit must stop Gemini and say why")
         let zeros = String(repeating: "0", count: 64)
         for (hash, valid) in [(zeros, true), (String(repeating: "A", count: 64), false), (String(zeros.dropLast()) + "\u{FF10}", false), (zeros + "0", false)] {
             assert(GeminiObservation.isPromptHash(hash) == valid, "\(hash) must \(valid ? "" : "not ")be logged as a prompt hash")

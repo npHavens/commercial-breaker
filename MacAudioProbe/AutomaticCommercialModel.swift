@@ -207,8 +207,10 @@ final class AutomaticCommercialModel: ObservableObject {
         }
         try check(id)
         guard let folder = recorder.folder else { throw RoutingFailure(message: "Capture folder unavailable") }
-        recorder.gemini.start(directory: folder, retainProgramAudio: source == .system, sport: sport,
-                              returnDetection: source == .system && playback == .airPlay)
+        // System capture in AirPlay mode means playback is on the Mac, away from the TV.
+        let offTV = source == .system && playback == .airPlay
+        recorder.gemini.start(directory: folder, retainProgramAudio: source == .system, sport: sport, returnDetection: offTV,
+                              failuresInARowLimit: offTV ? GeminiRecovery.offTVFailureLimit : nil)
         guard recorder.gemini.enabled else { throw RoutingFailure(message: recorder.gemini.status) }
         record("Capture source: \(source.rawValue); session: \(folder.lastPathComponent)")
     }
@@ -251,8 +253,6 @@ final class AutomaticCommercialModel: ObservableObject {
         guard task == nil, [.watchingTV, .mutedMac, .watchingMac, .mutedLocalMac, .awaitingLocalProgram, .audibleMacAwaitingTV].contains(phase) else { return }
         if !recorder.running || !recorder.ready || !recorder.gemini.enabled {
             stopAndRecover(reason: "Detection stopped: \(recorder.gemini.status)")
-        } else if policy.endsOnGeminiFailures(consecutive: recorder.gemini.consecutiveFailures) {
-            stopAndRecover(reason: "Detection stopped: Gemini kept failing while playback was off the TV")
         }
     }
 

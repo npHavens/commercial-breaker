@@ -13,16 +13,16 @@ requests were outstanding plus the waits before each retry. Time spent waiting f
 on the worker's local digital-silence answers does not count, and those answers do not
 reset the streak either, since they never reached Gemini. Continuous 20-second timeouts
 stop at the tenth, about 5 minutes 20 seconds in. Failures the worker could not classify
-may be permanent, such as missing credentials, so a streak still stops at the third of
-those. HTTP 4xx other than 408 and 429 and malformed or incomplete responses still stop at
+may be permanent, such as missing credentials, so the third of those still stops detection.
+Counts run from Gemini's last answer: local silence answers neither reset nor add to them. HTTP 4xx other than 408 and 429 and malformed or incomplete responses still stop at
 once. Retries use fresh audio, one request at a time, after 5, 10 and then every 15
 seconds, so the request cadence changes only while requests fail. `request-recovery`
 events log `failingSeconds`, and stop messages name the limit that was hit.
 
 In AirPlay mode, waiting minutes would leave the TV without picture during a break, so
-while playback is on the Mac (muted, or audible after the three-minute limit) the third
-failed request in a row ends automation and returns playback to the TV, as every streak did
-before. On the TV and in Mac playback, detection keeps retrying. A local silence answer
+the Gemini session that runs while playback is on the Mac (muted, or audible after the
+three-minute limit) stops at the third failed request in a row, as every streak did before,
+and automation then returns playback to the TV. On the TV and in Mac playback, detection keeps retrying. A local silence answer
 mid-streak shows "Audio is silent · Gemini not reached since a failed request". While a streak lasts there is no detection: a break can be missed on the
 TV, and on the Mac the three-minute mute limit still restores sound. Prompts, sample
 length, confirmation thresholds, the 20-second request timeout and the 25-second

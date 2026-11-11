@@ -10,12 +10,22 @@ struct GeminiRecovery {
     /// endpoint), so a streak stops at this many of them, as every streak did before v0.2.51.
     static let unclassifiedLimit = 3
     static let longestDelay = 15.0
+    /// Failed requests in a row that stop a session while AirPlay playback is on the Mac. Minutes
+    /// of retries there would leave the TV without picture, so the pre-v0.2.51 rule still applies.
+    static let offTVFailureLimit = 3
 
     enum Failure { case temporary, unclassified }
-    enum Outcome: Equatable { case retry(after: Double), stopAfterTime, stopUnclassified }
+    enum Outcome: Equatable { case retry(after: Double), stopAfterTime, stopUnclassified, stopAfterFailuresInARow }
+
+    /// Counts here run from Gemini's last answer: the worker's local silence answers neither reset
+    /// nor add to them, since they never reached Gemini.
+    let failuresInARowLimit: Int?
+    init(failuresInARowLimit: Int? = nil) { self.failuresInARowLimit = failuresInARowLimit }
 
     /// How a failed request may be recovered, or nil when it stops detection at once.
     static func failure(error: String, httpStatus: Int?) -> Failure? {
+        // The worker already sends 4xx other than 408 and 429 as request-failed; this keeps them
+        // terminal if it ever reports one with another error name.
         if let httpStatus, (400...499).contains(httpStatus), ![408, 429].contains(httpStatus) { return nil }
         if ["timeout", "temporary-failure"].contains(error) { return .temporary }
         return error == "request-failed" && (httpStatus == nil || httpStatus == 0) ? .unclassified : nil
@@ -36,6 +46,7 @@ struct GeminiRecovery {
         failingSeconds += Self.delay(after: consecutiveFailures) + (now - sent)
         consecutiveFailures += 1
         if failure == .unclassified { unclassifiedFailures += 1 }
+        if let failuresInARowLimit, consecutiveFailures >= failuresInARowLimit { return .stopAfterFailuresInARow }
         if unclassifiedFailures >= Self.unclassifiedLimit { return .stopUnclassified }
         if failingSeconds >= Self.giveUpAfter { return .stopAfterTime }
         let delay = Self.delay(after: consecutiveFailures)
