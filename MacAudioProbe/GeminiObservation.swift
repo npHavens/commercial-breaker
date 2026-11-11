@@ -214,11 +214,10 @@ final class GeminiObservation: ObservableObject {
                          "failingSeconds": recovery.failingSeconds.rounded()])
                     continue
                 case .stopAfterTime:
-                    let limit = Duration.seconds(GeminiRecovery.giveUpAfter).formatted(.units(allowed: [.minutes, .seconds], width: .wide))
-                    message = "Gemini requests kept failing for over \(limit) · recording continues"
+                    message = "Gemini stopped after over \(Int(GeminiRecovery.giveUpAfter / 60)) minutes of failed requests · recording continues"
                 case .stopAfterFailuresInARow:
                     let count = recovery.consecutiveFailures
-                    message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") in a row · recording continues"
+                    message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") with no answer · recording continues"
                 case .stopUnclassified:
                     message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) unexplained request failures · recording continues"
                 case nil:

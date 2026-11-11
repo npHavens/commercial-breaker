@@ -155,7 +155,7 @@ import Foundation
         try await waitUntil("the fake worker to start") { events("worker-ready").count > limitedReady }
         feed()
         try await waitUntil("the stop at the failure limit") { !observer.enabled }
-        assert(observer.status.contains("1 failed request in a row"), "The limit must stop Gemini and say why")
+        assert(observer.status.contains("1 failed request with no answer"), "The limit must stop Gemini and say why")
         let zeros = String(repeating: "0", count: 64)
         for (hash, valid) in [(zeros, true), (String(repeating: "A", count: 64), false), (String(zeros.dropLast()) + "\u{FF10}", false), (zeros + "0", false)] {
             assert(GeminiObservation.isPromptHash(hash) == valid, "\(hash) must \(valid ? "" : "not ")be logged as a prompt hash")
