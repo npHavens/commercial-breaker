@@ -5,21 +5,22 @@
 # component in the Scoreboard CB design: its 16, 32 and 64 px hand-drawn sizes and the 1024 art,
 # saved as watching-<size>.svg. Figma paints backdrops behind a component it exports (the page
 # background and the component set's white panel), as rects before the "Size=…, State=Watching"
-# group; this script drops every rect before that group, so a new export can replace a file as
-# is. Do not use Figma's PNG export, which keeps the white panel, or its icon_*.png frames,
+# group; this script drops every rect before that group and fails unless the group's size
+# matches the file name, so a new export can replace a file as is. Do not use Figma's PNG export, which keeps the white panel, or its icon_*.png frames,
 # which show the lit bulb. Tests/test_app_icon.py checks the results.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 out="$here/../../MacAudioProbe/Assets.xcassets/AppIcon.appiconset"
-work=$(mktemp -d)
+# Beside the catalog, so the final mv is a rename on the same volume.
+work=$(mktemp -d "$out/../.render.XXXXXX")
 trap 'rm -rf "$work"' EXIT
 xcrun swiftc -O -o "$work/render" "$here/render.swift"
 mkdir "$work/slots"
 
 render() { # <svg size> <pixels> <slot file>
-    awk '/<g id="Size=[0-9]+, State=Watching">/ { art = 1 } art || !/^[[:space:]]*<rect / { print }
-         END { if (!art) { print FILENAME ": no Size=…, State=Watching group" > "/dev/stderr"; exit 1 } }' \
-        "$here/watching-$1.svg" > "$work/$1.svg"
+    awk -v group="<g id=\"Size=$1, State=Watching\"" 'index($0, group) == 1 { art = 1 } art || !/^[[:space:]]*<rect / { print }
+         END { if (!art) { print FILENAME ": no Size=" size ", State=Watching group" > "/dev/stderr"; exit 1 } }' \
+        size="$1" "$here/watching-$1.svg" > "$work/$1.svg"
     "$work/render" "$work/$1.svg" "$2" "$work/slots/$3"
 }
 
