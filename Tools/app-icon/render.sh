@@ -11,14 +11,14 @@
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 out="$here/../../MacAudioProbe/Assets.xcassets/AppIcon.appiconset"
-# Beside the catalog, so the final mv is a rename on the same volume.
-work=$(mktemp -d "$out/../.render.XXXXXX")
+# In the checkout but outside the Xcode-synced folder, so the final mv is a same-volume rename.
+work=$(mktemp -d "$here/.render.XXXXXX")
 trap 'rm -rf "$work"' EXIT
 xcrun swiftc -O -o "$work/render" "$here/render.swift"
 mkdir "$work/slots"
 
 render() { # <svg size> <pixels> <slot file>
-    awk -v group="<g id=\"Size=$1, State=Watching\"" 'index($0, group) == 1 { art = 1 } art || !/^[[:space:]]*<rect / { print }
+    awk -v group="<g id=\"Size=$1, State=Watching\"" 'index($0, group) { art = 1 } art || !/^[[:space:]]*<rect / { print }
          END { if (!art) { print FILENAME ": no Size=" size ", State=Watching group" > "/dev/stderr"; exit 1 } }' \
         size="$1" "$here/watching-$1.svg" > "$work/$1.svg"
     "$work/render" "$work/$1.svg" "$2" "$work/slots/$3"
