@@ -202,18 +202,22 @@ final class GeminiObservation: ObservableObject {
                      "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0])
                 prediction = ""
                 resetConfirmation()
-                let retryable = GeminiRecovery.allowsRetry(error: error, httpStatus: value["httpStatus"] as? Int)
-                if retryable, let delay = recovery.failed(now: ProcessInfo.processInfo.systemUptime) {
+                let now = ProcessInfo.processInfo.systemUptime
+                let failure = GeminiRecovery.failure(error: error, httpStatus: value["httpStatus"] as? Int)
+                if let failure, let delay = recovery.failed(failure, sent: pending.sent, now: now) {
                     status = "Gemini request failed · checking fresh audio in \(Int(delay)) seconds"
                     log(["event": "request-recovery", "delaySeconds": delay,
-                         "consecutiveFailures": recovery.consecutiveFailures])
+                         "consecutiveFailures": recovery.consecutiveFailures,
+                         "streakSeconds": recovery.streakSeconds(now: now).rounded()])
                     continue
                 }
-                stop(message: retryable
-                     ? "Gemini stopped after three consecutive request failures · recording continues"
-                     : "Gemini request failed · recording continues. See the session log."); return
+                stop(message: failure == nil ? "Gemini request failed · recording continues. See the session log."
+                     : recovery.streakSeconds(now: now) >= GeminiRecovery.giveUpAfter
+                     ? "Gemini kept failing for \(Int(GeminiRecovery.giveUpAfter / 60)) minutes · recording continues"
+                     : "Gemini stopped after three unexplained request failures · recording continues"); return
             }
-            recovery.succeeded()
+            // The worker answers digital silence itself, which says nothing about whether Gemini is back.
+            if value["source"] as? String != "local-digital-silence" { recovery.succeeded() }
             guard pending.generation == generation else {
                 log(["event": "discarded-stale-response", "id": pending.id]); continue
             }
