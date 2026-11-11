@@ -10,6 +10,10 @@ struct GeminiRecovery {
     /// endpoint), so a streak stops at this many of them, as every streak did before v0.2.51.
     static let unclassifiedLimit = 3
     static let longestDelay = 15.0
+    /// A failed request sent this long after the previous failure starts a new streak: retries
+    /// follow within `longestDelay`, so a longer gap means requests got other answers, such as
+    /// the worker's local silence answers, or no audio was sent.
+    static let streakExpiresAfter = 60.0
     /// Failed requests in a row that stop a session while AirPlay playback is on the Mac. Minutes
     /// of retries there would leave the TV without picture, so the pre-v0.2.51 rule still applies.
     static let offTVFailureLimit = 3
@@ -18,7 +22,8 @@ struct GeminiRecovery {
     enum Outcome: Equatable { case retry(after: Double), stopAfterTime, stopUnclassified, stopAfterFailuresInARow }
 
     /// Counts here run from Gemini's last answer: the worker's local silence answers neither reset
-    /// nor add to them, since they never reached Gemini.
+    /// nor add to them, since they never reached Gemini, but a streak expires after
+    /// `streakExpiresAfter` without a failure.
     let failuresInARowLimit: Int?
     init(failuresInARowLimit: Int? = nil) { self.failuresInARowLimit = failuresInARowLimit }
 
@@ -37,12 +42,15 @@ struct GeminiRecovery {
     /// Time spent otherwise, such as waiting for audio or on local silence answers, is not counted.
     private(set) var failingSeconds = 0.0
     private var unclassifiedFailures = 0
+    private var lastFailure = 0.0
 
     /// The wait before retrying after the `n`th failure in a row; 0 before any failure.
     private static func delay(after n: Int) -> Double { min(Double(n * 5), longestDelay) }
 
     /// `sent` is when the failed request went out, so a 20-second timeout counts in full.
     mutating func failed(_ failure: Failure, sent: Double, now: Double) -> Outcome {
+        if consecutiveFailures > 0, sent - lastFailure > Self.streakExpiresAfter { succeeded() }
+        lastFailure = now
         failingSeconds += Self.delay(after: consecutiveFailures) + (now - sent)
         consecutiveFailures += 1
         if failure == .unclassified { unclassifiedFailures += 1 }
