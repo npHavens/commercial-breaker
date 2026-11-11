@@ -24,6 +24,8 @@ final class GeminiObservation: ObservableObject {
     private var diagnosticSlot = 0
     private var workerReady = false
     private var recovery = GeminiRecovery()
+    /// Seconds the current failure streak has spent failing; 0 while Gemini answers.
+    var failingSeconds: Double { recovery.failingSeconds }
     private var directory: URL?
     private var lastPredictionTime = 0.0
     private static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
@@ -202,19 +204,25 @@ final class GeminiObservation: ObservableObject {
                      "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0])
                 prediction = ""
                 resetConfirmation()
-                let now = ProcessInfo.processInfo.systemUptime
-                let failure = GeminiRecovery.failure(error: error, httpStatus: value["httpStatus"] as? Int)
-                if let failure, let delay = recovery.failed(failure, sent: pending.sent, now: now) {
+                let outcome = GeminiRecovery.failure(error: error, httpStatus: value["httpStatus"] as? Int)
+                    .map { recovery.failed($0, sent: pending.sent, now: ProcessInfo.processInfo.systemUptime) }
+                let message: String
+                switch outcome {
+                case .retry(let delay):
                     status = "Gemini request failed · checking fresh audio in \(Int(delay)) seconds"
                     log(["event": "request-recovery", "delaySeconds": delay,
                          "consecutiveFailures": recovery.consecutiveFailures,
-                         "streakSeconds": recovery.streakSeconds(now: now).rounded()])
+                         "failingSeconds": recovery.failingSeconds.rounded()])
                     continue
+                case .stopAfterTime:
+                    let limit = Duration.seconds(GeminiRecovery.giveUpAfter).formatted(.units(allowed: [.minutes, .seconds], width: .wide))
+                    message = "Gemini kept failing for \(limit) · recording continues"
+                case .stopUnclassified:
+                    message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) unexplained request failures · recording continues"
+                case nil:
+                    message = "Gemini request failed · recording continues. See the session log."
                 }
-                stop(message: failure == nil ? "Gemini request failed · recording continues. See the session log."
-                     : recovery.streakSeconds(now: now) >= GeminiRecovery.giveUpAfter
-                     ? "Gemini kept failing for \(Int(GeminiRecovery.giveUpAfter / 60)) minutes · recording continues"
-                     : "Gemini stopped after three unexplained request failures · recording continues"); return
+                stop(message: message); return
             }
             // The worker answers digital silence itself, which says nothing about whether Gemini is back.
             if value["source"] as? String != "local-digital-silence" { recovery.succeeded() }
@@ -240,7 +248,9 @@ final class GeminiObservation: ObservableObject {
             prediction = "\(label) · \(Date().formatted(date: .omitted, time: .standard)) · \(String(format: "%.1f", elapsed / 1000))s response"
             let changed = confirmer.accept(state, end: pending.end)
             confirmation = confirmer.display
-            status = "Gemini observation only · playback unchanged"
+            // A local silence answer leaves a failure streak running, so keep saying so.
+            status = recovery.consecutiveFailures > 0 ? "Gemini request failed · checking fresh audio"
+                : "Gemini observation only · playback unchanged"
             log(["event": "confirmation", "id": pending.id,
                  "candidate": confirmer.candidate?.rawValue ?? "unclear", "count": confirmer.count,
                  "confirmed": confirmer.confirmed?.rawValue ?? "unknown", "changed": changed,

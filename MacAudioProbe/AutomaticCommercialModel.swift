@@ -251,6 +251,8 @@ final class AutomaticCommercialModel: ObservableObject {
         guard task == nil, [.watchingTV, .mutedMac, .watchingMac, .mutedLocalMac, .awaitingLocalProgram, .audibleMacAwaitingTV].contains(phase) else { return }
         if !recorder.running || !recorder.ready || !recorder.gemini.enabled {
             stopAndRecover(reason: "Detection stopped: \(recorder.gemini.status)")
+        } else if policy.endsOnGeminiFailures(failingSeconds: recorder.gemini.failingSeconds) {
+            stopAndRecover(reason: "Detection stopped: Gemini kept failing while playback was off the TV")
         }
     }
 
