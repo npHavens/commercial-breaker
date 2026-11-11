@@ -1,5 +1,5 @@
-"""The app icon asset catalog: every macOS slot is filled at its pixel size on a transparent
-canvas, and the ad bulb is dark."""
+"""The app icon asset catalog: every macOS slot is filled at its pixel size, the plate sits inside a
+transparent margin, and the ad bulb is dark. Tools/app-icon/render.sh makes the images."""
 
 from functools import lru_cache
 import json
@@ -17,8 +17,9 @@ LIT_BULB = (0xF0, 0x5A, 0x3C)
 
 @lru_cache(maxsize=None)
 def read_png(path):
-    """Width, height and rows of RGBA pixels. Reads only the 8-bit, non-interlaced RGBA PNGs
-    the icons are exported as; anything else is this reader's limit, not a broken icon."""
+    """Width, height and one bytes object of RGBA values per row. Reads only the 8-bit,
+    non-interlaced RGBA PNGs render.sh writes; anything else is this reader's limit, not a
+    broken icon, so re-render rather than optimize the files."""
     data = path.read_bytes()
     # The header chunk always comes first.
     if data[:8] != b'\x89PNG\r\n\x1a\n' or data[12:16] != b'IHDR':
@@ -26,19 +27,19 @@ def read_png(path):
     width, height, depth, color, _, _, interlace = struct.unpack('>IIBBBBB', data[16:29])
     if depth != 8 or color != 6 or interlace:
         raise ValueError(f'{path.name}: this test reads only 8-bit, non-interlaced RGBA PNGs')
-    offset, idat = 8, b''
+    offset, chunks = 8, []
     while offset < len(data):
         length, kind = struct.unpack('>I4s', data[offset:offset + 8])
         if kind == b'IDAT':
-            idat += data[offset + 8:offset + 8 + length]
+            chunks.append(data[offset + 8:offset + 8 + length])
         offset += 12 + length
-    raw, stride, rows, previous = zlib.decompress(idat), width * 4, [], bytes(width * 4)
+    raw, stride, rows, previous = zlib.decompress(b''.join(chunks)), width * 4, [], bytes(width * 4)
     for y in range(height):
         start = y * (stride + 1)
         kind, line = raw[start], bytearray(raw[start + 1:start + 1 + stride])
         if kind > 4:
             raise ValueError(f'{path.name}: unknown filter type {kind} on row {y}')
-        for i in range(stride):
+        for i in range(stride if kind else 0):
             left = line[i - 4] if i >= 4 else 0
             up, corner = previous[i], previous[i - 4] if i >= 4 else 0
             if kind == 1:
@@ -47,12 +48,12 @@ def read_png(path):
                 line[i] = (line[i] + up) & 0xFF
             elif kind == 3:
                 line[i] = (line[i] + (left + up) // 2) & 0xFF
-            elif kind == 4:
+            else:
                 p = left + up - corner
                 pa, pb, pc = abs(p - left), abs(p - up), abs(p - corner)
                 line[i] = (line[i] + (left if pa <= pb and pa <= pc else up if pb <= pc else corner)) & 0xFF
-        rows.append([tuple(line[x:x + 4]) for x in range(0, stride, 4)])
         previous = bytes(line)
+        rows.append(previous)
     return width, height, rows
 
 
@@ -71,25 +72,29 @@ class AppIconTests(unittest.TestCase):
                 width, height, _ = read_png(iconset / image['filename'])
                 self.assertEqual((width, height), (points * scale, points * scale))
 
-    def test_canvas_around_the_plate_is_transparent(self):
-        # The plate sits inside macOS's icon-grid margin. Figma's PNG export of a component in
-        # a component set paints the set's white panel behind it, which would show as a white
-        # square in the Dock, so the icons are rendered from SVG exports with that panel removed.
+    def test_plate_sits_inside_a_transparent_margin(self):
+        # macOS draws app icons inside a margin of about 10% (the 1024 art's plate is 824 px), so
+        # a full-bleed icon looks oversized next to others. Figma's PNG export of a component in
+        # a component set also paints the set's white panel across the whole canvas. Either
+        # fills this band, which is 5/64 of the width (1 px at 16 px, 80 px at 1024 px).
         for path in self.files:
             with self.subTest(path.name):
                 width, height, rows = read_png(path)
-                corners = [rows[0][0], rows[0][width - 1], rows[height - 1][0], rows[height - 1][width - 1]]
-                self.assertEqual([pixel[3] for pixel in corners], [0] * 4)
+                band = max(1, width * 5 // 64)
+                opaque = [(x, y) for y in range(height) for x in range(width)
+                          if (min(x, y, width - 1 - x, height - 1 - y) < band) and rows[y][x * 4 + 3]]
+                self.assertEqual(opaque[:5], [], f'the outer {band} px are not transparent')
 
     def test_static_icon_shows_the_ad_bulb_dark(self):
         # Lit means blocking, so only the runtime Dock icon may show it. Figma's frames named
-        # icon_*.png use the lit Blocking state; export the Watching state instead.
+        # icon_*.png use the lit Blocking state; render.sh uses the Watching state instead. The
+        # small sizes are pixel-snapped, so even at 16 px a lit bulb is one exact #F05A3C pixel.
         for path in self.files:
             with self.subTest(path.name):
                 _, _, rows = read_png(path)
-                lit = [pixel for row in rows for pixel in row
-                       if pixel[3] > 128 and all(abs(a - b) <= 40 for a, b in zip(pixel, LIT_BULB))]
-                self.assertEqual(lit, [], 'the ad bulb is lit')
+                lit = [row[x:x + 4] for row in rows for x in range(0, len(row), 4)
+                       if row[x + 3] > 128 and all(abs(row[x + i] - LIT_BULB[i]) <= 40 for i in range(3))]
+                self.assertEqual(lit[:5], [], 'the ad bulb is lit')
 
 
 if __name__ == '__main__':
