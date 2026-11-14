@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- PRs #1–#24 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
+- PRs #1–#25 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
   not yet seen live; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
@@ -35,7 +35,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - v0.2.51 (PR #25) keeps detection running through up to five minutes of Gemini
   timeouts instead of stopping at the third failure in a row, which happened 11 times
   since October 27. In AirPlay mode a break still returns to the TV at the third
-  failed request with no Gemini answer in between (see the v0.2.51 changelog). Not yet run live.
+  failed request with no Gemini answer in between (see the v0.2.51 changelog). Built signed
+  from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
+  with the same designated requirement as v0.2.49; 172 JavaScript, 70 Python and 12 native
+  tests pass there. Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
@@ -47,16 +50,17 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- Every PR gets a Codex review (Smart detect) and the offline suites plus an unsigned
-  app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get a Claude
+- Every PR gets a Codex review (Smart detect; paused at its usage limit since November 14
+  until Nick restarts it) and the offline suites plus an unsigned
+  app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
   `claude-review.yml`; other repos call it at `@main`) when they
-  open or are marked ready; fork PRs never do. To review later pushes, mark the PR draft,
-  then ready. A comment starting `@claude review` also starts a review, but it reports on the
-  default branch's commit, not the required check on the PR's head. Here, that run uses main's
-  caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
+  open or are marked ready; fork PRs never do. Later pushes are re-reviewed only on request,
+  by a comment starting `@claude review`. That run reports on the default branch's commit,
+  not the PR's head, and here uses main's caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
   once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
-  `main` requires a PR, passing CI and `claude-review / review`, blocks force pushes and deletion,
+  `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
+  `claude-review / review` stopped being required on November 14), blocks force pushes and deletion,
   and applies those rules to admins. The merge gate is in `AGENTS.md`.
 - Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
