@@ -1,4 +1,4 @@
-# Commercial Breaker handoff to Claude — November 8, 2026
+# Commercial Breaker handoff to Claude — November 14, 2026
 
 ## Start here
 
@@ -37,7 +37,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   since October 27. In AirPlay mode a break still returns to the TV at the third
   failed request with no Gemini answer in between (see the v0.2.51 changelog). Built signed
   from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
-  with the same designated requirement as v0.2.49; 172 JavaScript, 70 Python and 12 native
+  with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 12 native
   tests pass there. Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
@@ -50,13 +50,13 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- Every PR gets a Codex review (Smart detect; paused at its usage limit since November 14
-  until Nick restarts it) and the offline suites plus an unsigned
+- PRs get a Codex review (Smart detect) when it runs; it has been paused at its usage limit
+  since November 14. Every PR gets the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
   `claude-review.yml`; other repos call it at `@main`) when they
-  open or are marked ready; fork PRs never do. Later pushes are re-reviewed only on request,
-  by a comment starting `@claude review`. That run reports on the default branch's commit,
+  open or are marked ready; fork PRs never do. When later pushes need a re-review is in the
+  merge gate in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
   not the PR's head, and here uses main's caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
   once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
   `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
