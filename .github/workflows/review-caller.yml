@@ -1,0 +1,32 @@
+name: Review caller
+
+# CB's review caller is copied unchanged from npHavens/.github's review/claude-review.yml,
+# which it runs at @main. This checks the copy when a PR edits it and daily on main, so a
+# shared change is noticed without failing unrelated PRs. It isn't a required check.
+on:
+  pull_request:
+    paths:
+      - .github/workflows/claude-review.yml
+      - .github/workflows/review-caller.yml
+  schedule:
+    - cron: '17 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  match:
+    name: Review caller matches the shared copy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      # Downloaded first, so a failed download fails here instead of reading as drift.
+      - shell: bash
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/shared-caller.yml" \
+            https://raw.githubusercontent.com/npHavens/.github/main/review/claude-review.yml
+          diff -u "$RUNNER_TEMP/shared-caller.yml" .github/workflows/claude-review.yml

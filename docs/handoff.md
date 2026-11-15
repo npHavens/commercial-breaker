@@ -99,6 +99,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
   icon and identity tests to 70 Python tests in total; CI runs it on pull requests and pushes to main. No new audio was uploaded.
+  On November 15 the 23 review workflow tests left with CB's copy of that workflow, leaving 47
+  Python tests; npHavens/.github tests the shared workflow.
 
 ## Behavior and important code
 
@@ -175,13 +177,17 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
-9. Moved to npHavens/.github with the shared workflow: confirm `Read(//proc/**)` also stops
-   `Grep` on a runner; project skills under `--setting-sources user` are untested.
-10. Moved likewise: the rules-restore step's limits from PR #17 (hand-matched file names,
-   no symlink or case checks, recreated folders).
+9. For the shared workflow in npHavens/.github, coordinated by the No Hands Stack HQ
+   session: confirm `Read(//proc/**)` also stops `Grep` on a runner; project skills under
+   `--setting-sources user` are untested.
+10. Also for the shared workflow: the rules-restore step's limits from PR #17. It matches
+   file names by hand and repeats the list in two `find` commands, does not check for
+   symlinked parent folders or differently cased names, and recreates folders a PR deleted.
+   Reading rules from a kept `.review-base` would remove the name list. The case where a PR
+   tampers with a rules file has only been tested locally, never on a runner.
 11. Done November 15: all four repos run the shared review from npHavens/.github, and CB's
-   copy, its tests and the `AGENTS.md` text about it are removed. Whether PR #21's severity
-   rule fixed the other repos' labels is tracked there too, by the No Hands Stack HQ session.
+   copy, its tests and the `AGENTS.md` text about it are removed. Still open, for HQ: whether
+   PR #21's user-level `CLAUDE.md` rule fixed the missing severity labels in the other repos.
 
 12. Focus bounce, from PR #27: find what returns focus to Commercial Breaker after Safari
     activates (both cases start from a click in its window), for example by waiting for
