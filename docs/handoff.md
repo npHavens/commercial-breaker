@@ -1,11 +1,11 @@
-# Commercial Breaker handoff to Claude — November 14, 2026
+# Commercial Breaker handoff to Claude — November 15, 2026
 
 ## Start here
 
 Repo: https://github.com/npHavens/commercial-breaker (public, MIT, No Hands Stack LLC;
 renamed from `skybox` on October 26, and the old URLs redirect).
 Local checkout: `/Users/nickhavens/Projects/commercial-breaker` (moved from `skybox` on November 7).
-Baseline PR #1 merged into main on October 18 (20e5b4e); Codex reviewed the
+Baseline PR #1 merged into main on October 18 (6cd427c); Codex reviewed the
 final commit with no findings. Start focused branches from updated main. Read
 README, CONTRIBUTING and `docs/roadmap.md`. Project notes: https://app.notion.com/p/3e04004d3caa810b915fc3f95af2235b.
 
@@ -17,11 +17,20 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- PRs #1–#26 are merged. v0.2.50 (PR #24) adds the app icon, which v0.2.51 carries into
+- On November 15 main's history was rewritten to remove references to other local
+  projects, and every commit SHA changed: the old main head e652806 is now 2c3280c. The
+  final tree did not change. SHAs in older PR threads, review comments and notes refer to
+  the old history; this file cites the new ones. The old-to-new map is in Nick's checkout
+  at `.git/history-rewrite-2026-11-15-commit-map.txt`. Every other branch on GitHub was
+  deleted, but GitHub keeps the refs of PRs #1–#30, so old-history commits stay reachable by
+  SHA and through those PRs' Commits and Files tabs; Nick chose not to request a GitHub
+  Support purge. PR titles, descriptions and review comments that named the other projects
+  were edited, but #2's timeline still shows its old title, which owners cannot remove.
+- PRs #1–#30 are merged except #29, which was closed. v0.2.50 (PR #24) adds the app icon, which v0.2.51 carries into
   its November 14 live run; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
-- Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
+- Native v0.2.48 built signed from 2125a21 (the offline suites and all 12 native tests
   pass there) after the rename, at
   `build/v0.2.48/Build/Products/Debug/Commercial Breaker.app`, with the same bundle
   ID and designated requirement as before. On November 8 Nick watched football with
@@ -31,12 +40,12 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   in one burst early on, all recovered. Not yet checked: the system-audio grant,
   which a Mac playback start or a break exercises, a break/return cycle, and System
   Settings listing Commercial Breaker.
-  The title-version change after cf46103 has not run live.
+  The title-version change after 2125a21 ships in v0.2.51, which ran live on November 14.
 - v0.2.51 (PR #25) keeps detection running through up to five minutes of Gemini
   timeouts instead of stopping at the third failure in a row, which happened 11 times
   since October 27. In AirPlay mode a break still returns to the TV at the third
   failed request with no Gemini answer in between (see the v0.2.51 changelog). Built signed
-  from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
+  from 8501e44 on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 12 native
   tests pass there. On November 14 Nick watched UFC on Paramount+ through the manual
   relay with it in TV via AirPlay mode, using a wireless microphone in front of the TV
@@ -53,10 +62,14 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - v0.2.52 retries startup and Stop's return to TV once when focus bounces back to Commercial
   Breaker before the selection (see its changelog). Not yet run live.
 - v0.2.53 stops promos alone from confirming a break: on November 14 every promo-only
-  break was in-broadcast UFC content (see its changelog for the log replay). Not yet run live.
-- v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
-  completes a break/return cycle.
-- The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
+  break was in-broadcast UFC content (see its changelog for the log replay). Built signed
+  from a8247a9 on November 15 at `build/v0.2.53/Build/Products/Debug/Commercial Breaker.app`,
+  with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 13 native
+  tests pass there. It was built just before the rewrite, from 7f86b57, whose tree a8247a9 keeps.
+  v0.2.53's promo rule has not run live yet.
+- v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
+  break/return cycles on November 14, is the fallback build.
+- The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
   verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
   Accessibility, and an AirPlay break moved to the Mac and returned to TV.
@@ -76,8 +89,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
   `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
   `claude-review / review` stopped being required on November 14), blocks force pushes and deletion,
-  and applies those rules to admins. The merge gate is in `AGENTS.md`.
-- Offline suites on cf46103 (November 8): 172 JavaScript tests, 37 Python tests and
+  and applies those rules to admins. For the November 15 rewrite, force pushes were allowed and
+  admin enforcement was off for one push; both were restored right after it. The merge gate is
+  in `AGENTS.md`.
+- Offline suites on 2125a21 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
   icon and identity tests to 70 Python tests in total; CI runs it on pull requests and pushes to main. No new audio was uploaded.
@@ -213,8 +228,8 @@ room voices, tokens or session URLs. Offline tests do not authorize new uploads.
 There are intentional untracked `.vscode/`, audio-cue/evaluation results and live
 artifacts under Experiments. They are not part of the public history. Do not
 `git add .`, `git clean`, or delete them blindly. Build output and stream URL files
-are ignored. Original main baseline is 2b07370; startup fix 4344491; community docs
-ed3600d. This handoff is a subsequent documentation-only commit.
+are ignored. Original main baseline is 6e738c9; startup fix ce94934; community docs
+3870502.
 
 ## Commands
 

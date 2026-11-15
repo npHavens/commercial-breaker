@@ -1,6 +1,6 @@
 # Crowd detection branch trial
 
-Branch: `experiment/crowd-detection`. Local `main` at `2b07370` preserves the
+Branch: `experiment/crowd-detection`. Local `main` at `6e738c9` preserves the
 pre-trial source, including the digital-silence guard. No remote was created.
 Existing raw experiment artifacts remain local; this is a source baseline,
 not the later productization/cleanup milestone.
