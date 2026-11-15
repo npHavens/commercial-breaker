@@ -85,7 +85,7 @@ final class AutomaticCommercialModel: ObservableObject {
                     return
                 }
                 // Requires TV already selected; arming never silently changes the initial route.
-                try await routing.verifyTVForAutomation(tv)
+                try await routing.routeForAutomation(from: tv, to: tv, retryFocusBounce: true)
                 try check(id)
                 try await listen(source: .microphone, muted: false, id: id)
                 try check(id)
@@ -291,7 +291,7 @@ final class AutomaticCommercialModel: ObservableObject {
                 return
             }
             do {
-                try await routing.routeForAutomation(from: nil, to: tv)
+                try await routing.routeForAutomation(from: nil, to: tv, retryFocusBounce: true)
                 guard generation == id else { return }
                 record("Automatic mode off · TV route confirmed. Verify picture and sound.")
             } catch {

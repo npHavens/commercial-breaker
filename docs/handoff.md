@@ -17,8 +17,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- PRs #1–#25 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
-  not yet seen live; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
+- PRs #1–#26 are merged. v0.2.50 (PR #24) adds the app icon, which v0.2.51 carries into
+  its November 14 live run; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -38,7 +38,20 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   failed request with no Gemini answer in between (see the v0.2.51 changelog). Built signed
   from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 12 native
-  tests pass there. Ran live for UFC on November 14 (see the v0.2.53 changelog).
+  tests pass there. On November 14 Nick watched UFC on Paramount+ through the manual
+  relay with it in TV via AirPlay mode, using a wireless microphone in front of the TV
+  speaker (00:41–02:47 UTC, two sessions). All 29 confirmed breaks moved to the Mac and 28
+  returned on their own; 28 Gemini requests failed and none stopped detection; 1,278
+  predictions at a 2.3 s median. No permission prompt; the system-audio grant worked.
+  Issues: 17 of the second session's 23 breaks lasted under 45 seconds. The microphone
+  side called walkout music and similar program audio commercial or promo, and the Mac
+  side's system audio called it program within 15–30 seconds. One break stayed on the Mac
+  for 23 minutes: its system capture was exact digital silence for 21 minutes (all 235
+  answers local), so program never confirmed (see Remaining issues). Stop from the
+  Commercial Breaker window then failed to return to TV (fixed in v0.2.52). Both handoffs
+  with VS Code frontmost succeeded, through the mouse fallback.
+- v0.2.52 retries startup and Stop's return to TV once when focus bounces back to Commercial
+  Breaker before the selection (see its changelog). Not yet run live.
 - v0.2.53 stops promos alone from confirming a break: on November 14 every promo-only
   break was in-broadcast UFC content (see its changelog for the log replay). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
@@ -83,10 +96,11 @@ can affect detection; isolation is not implemented. Both modes release mute afte
 three minutes and continue detection. AirPlay waits for confirmed program before
 returning TV; local mode waits for program before rearming for another break.
 
-`RoutingModel.verifyTVForAutomation` retries once only when a startup focus failure
-returns to this Commercial Breaker process and it remains foreground after a short wait.
-Startup verifies an already-selected TV and does not choose a destination. Normal
-handoffs still stop on focus loss. Missing picker rows before selection have a
+`RoutingModel.routeForAutomation(retryFocusBounce: true)`, used only by startup and Stop's
+TV recovery, retries its pre-selection steps once when the route began with this Commercial
+Breaker process frontmost, focus returned to it, and it remains foreground after a short
+wait (`FocusBounceRetry`, v0.2.52). Handoffs still stop on any focus loss. Startup
+verifies an already-selected TV and does not choose a destination. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 
@@ -158,6 +172,12 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    so that case was only tested locally. Severity labels were still missing in some of those
    repos before PR #21, so check whether its user-level `CLAUDE.md` rule fixed them.
 
+12. Focus bounce, from PR #27: find what returns focus to Commercial Breaker after Safari
+    activates (both cases start from a click in its window), for example by waiting for
+    mouse-up or a short settle before yielding activation, so the v0.2.52 retry stops being
+    the fix. Also test `routeForAutomation`'s use of `FocusBounceRetry` by putting the AX
+    calls behind injectable closures, so a fake can show a selection is never retried.
+
 Do not combine all of this into one rewrite.
 
 ## Remaining issues / limits
@@ -165,8 +185,9 @@ Do not combine all of this into one rewrite.
 - Sports betting ads can cause false program returns. Future commercial learning
   should avoid manual labeling burden. No fingerprint library implemented.
 - ViewingActivity refresh exists, but screen saver/lock prevention is not proven.
-- Earlier all-zero system capture stalled TV return; no verified root-cause fix.
-  Recent success does not erase that intermittent observation.
+- All-zero system capture stalls the TV return; no verified root-cause fix. It recurred on
+  November 14 (21 minutes during a UFC break, after which Stop and a restart recovered).
+  Whether the Mac stopped playing or the tap delivered zeros is not yet known.
 - Cost is not the current constraint: Nick reports Gemini usage costs only a few
   dollars. Prioritize accuracy/speed; retain one in-flight request for freshness.
 - Paramount/UFC relay workflow is preserved but not newly validated this session.
