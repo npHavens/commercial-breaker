@@ -22,7 +22,10 @@ func run(_ outcomes: [RoutingFailure?], eligible: Bool = true, ownAppFrontmost: 
                 if cancelDuringPause { throw CancellationError() }
             },
             ownAppFrontmost: { ownAppFrontmost },
-            beforeRetry: { run.retryNotes += 1 },
+            beforeRetry: { failure in
+                assert(failure.focusReturnedToCommercialBreaker)
+                run.retryNotes += 1
+            },
             attempt: {
                 defer { run.attempts += 1 }
                 if let failure = outcomes[run.attempts] { throw failure }

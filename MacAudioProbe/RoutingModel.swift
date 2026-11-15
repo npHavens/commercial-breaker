@@ -62,9 +62,10 @@ final class RoutingModel: ObservableObject {
     /// The caller owns this task and cancellation. Picker selection is verified;
     /// it does not establish that the destination is actually producing sound.
     /// Opening the picker from our own window can return focus to it (see
-    /// `FocusBounceRetry`). When this route began with Commercial Breaker in front, the
-    /// steps before the selection run at most twice; the selection itself runs once.
-    func routeForAutomation(from expected: String?, to target: String) async throws {
+    /// `FocusBounceRetry`). With `retryFocusBounce`, used by startup and Stop's TV
+    /// recovery, a route that began with Commercial Breaker in front runs its steps before
+    /// the selection at most twice; the selection itself runs once. Handoffs never retry.
+    func routeForAutomation(from expected: String?, to target: String, retryFocusBounce: Bool = false) async throws {
         try Task.checkCancellation()
         guard !busy else {
             throw RoutingFailure(message: "Another routing operation is already running.")
@@ -78,18 +79,19 @@ final class RoutingModel: ObservableObject {
         beginLog()
         defer { busy = false }
         var selectionAttempted = false
-        // Only a bounce back to where the route began is retried: a switch to this
-        // window during a handoff that began elsewhere still stops the route.
+        // Only a bounce back to where the route began is retried, and only for callers
+        // that just handled a click in this window; a handoff stops on any focus loss.
         let startedFromOwnApp = ownAppFrontmost()
         var retrying = false
         mouseFallbackUsed = false
         do {
             let (pid, alreadySelected) = try await FocusBounceRetry.run(
-                eligible: startedFromOwnApp,
+                eligible: retryFocusBounce && startedFromOwnApp,
                 pause: { try await self.wait(0.5) },
                 ownAppFrontmost: { self.ownAppFrontmost() },
-                beforeRetry: {
+                beforeRetry: { failure in
                     await self.recordDiagnostics("Picker diagnostic")
+                    self.record("First attempt stopped: \(failure.message)")
                     self.record("Focus returned to Commercial Breaker before any selection; retrying once.")
                     retrying = true
                 },
@@ -154,7 +156,6 @@ final class RoutingModel: ObservableObject {
         if controls.isEmpty && mouseFallback {
             await recordDiagnostics("First picker wait")
             record("No picker controls appeared after the accessibility press. Trying verified mouse activation once.")
-            mouseFallbackUsed = true
             try await openPicker(pid: pid, mouse: true)
             if try await waitForPickerControls(pid: pid, requiredNames: requiredNames) { return controls }
         }
@@ -256,6 +257,7 @@ final class RoutingModel: ObservableObject {
         try Task.checkCancellation()
         try requireSafariFrontmost(pid)
         try await accessibility.openPicker(pid: pid, mouse: mouse)
+        if mouse { mouseFallbackUsed = true }
         await recordDiagnostics("Page button")
         try await wait(0.8)
         try requireSafariFrontmost(pid)

@@ -50,8 +50,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   answers local), so program never confirmed (see Remaining issues). Stop from the
   Commercial Breaker window then failed to return to TV (fixed in v0.2.52). Both handoffs
   with VS Code frontmost succeeded, through the mouse fallback.
-- v0.2.52 retries an automatic route started from Commercial Breaker once when focus bounces
-  back to it before the selection, which fixes Stop's return to TV (see its changelog). Not yet run live.
+- v0.2.52 retries startup and Stop's return to TV once when focus bounces back to Commercial
+  Breaker before the selection (see its changelog). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
@@ -94,10 +94,10 @@ can affect detection; isolation is not implemented. Both modes release mute afte
 three minutes and continue detection. AirPlay waits for confirmed program before
 returning TV; local mode waits for program before rearming for another break.
 
-`RoutingModel.routeForAutomation` retries its pre-selection steps once only when the route
-began with this Commercial Breaker process frontmost, focus returned to it, and it remains
-foreground after a short wait (`FocusBounceRetry`, v0.2.52). That covers startup and Stop's
-TV recovery; a handoff that began in another app still stops on any focus loss. Startup
+`RoutingModel.routeForAutomation(retryFocusBounce: true)`, used only by startup and Stop's
+TV recovery, retries its pre-selection steps once when the route began with this Commercial
+Breaker process frontmost, focus returned to it, and it remains foreground after a short
+wait (`FocusBounceRetry`, v0.2.52). Handoffs still stop on any focus loss. Startup
 verifies an already-selected TV and does not choose a destination. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
