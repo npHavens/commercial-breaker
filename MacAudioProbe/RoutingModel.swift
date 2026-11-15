@@ -57,31 +57,10 @@ final class RoutingModel: ObservableObject {
         }
     }
 
-    /// Startup only verifies an existing route. Retry once if opening the picker
-    /// returns focus to our own window; never retry a destination selection.
-    func verifyTVForAutomation(_ tv: String) async throws {
-        if try await retryingFocusBounce({ try await self.routeForAutomation(from: tv, to: tv) }) {
-            record("Startup route verified after one retry for focus returning to Commercial Breaker.")
-        }
-    }
-
-    /// Stop is usually clicked in our own window, so its return to TV meets the same
-    /// focus bounce as startup and gets the same single retry before any selection.
-    func recoverTVForAutomation(_ tv: String) async throws {
-        if try await retryingFocusBounce({ try await self.routeForAutomation(from: nil, to: tv) }) {
-            record("TV route confirmed after one retry for focus returning to Commercial Breaker.")
-        }
-    }
-
-    private func retryingFocusBounce(_ attempt: () async throws -> Void) async throws -> Bool {
-        try await FocusBounceRetry.run(
-            pause: { try await self.wait(0.5) },
-            ownAppFrontmost: { NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier },
-            attempt: attempt)
-    }
-
     /// The caller owns this task and cancellation. Picker selection is verified;
     /// it does not establish that the destination is actually producing sound.
+    /// Opening the picker from our own window can return focus to it (see
+    /// `FocusBounceRetry`), so the steps before any selection run at most twice.
     func routeForAutomation(from expected: String?, to target: String) async throws {
         try Task.checkCancellation()
         guard !busy else {
@@ -97,8 +76,17 @@ final class RoutingModel: ObservableObject {
         defer { busy = false }
         var selectionAttempted = false
         do {
-            let pid = try await prepareSafari()
-            let initial = try await availablePickerControls(pid: pid, requiredNames: [source, destination].compactMap { $0 })
+            let (pid, initial) = try await FocusBounceRetry.run(
+                pause: { try await self.wait(0.5) },
+                ownAppFrontmost: ownAppFrontmost,
+                beforeRetry: {
+                    for note in await self.accessibility.diagnostics() { self.record("Picker diagnostic: \(note)") }
+                    self.record("Focus returned to Commercial Breaker before any selection; retrying once.")
+                },
+                attempt: {
+                    let pid = try await self.prepareSafari()
+                    return (pid, try await self.availablePickerControls(pid: pid, requiredNames: [source, destination].compactMap { $0 }))
+                })
             if let source {
                 guard initial.filter({ $0.name == source && $0.selected == true }).count == 1 else {
                     throw RoutingFailure(message: "Expected route ‘\(source)’ is not uniquely selected. Automatic routing stopped without selecting a destination.")
@@ -261,8 +249,12 @@ final class RoutingModel: ObservableObject {
         guard NSWorkspace.shared.frontmostApplication?.processIdentifier == pid else {
             throw RoutingFailure(
                 message: "Focus moved away from Safari (frontmost: \(frontmostIdentity())). Stopped to avoid acting in another app.",
-                focusReturnedToCommercialBreaker: NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier)
+                focusReturnedToCommercialBreaker: ownAppFrontmost())
         }
+    }
+
+    private func ownAppFrontmost() -> Bool {
+        NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier
     }
 
     private func wait(_ seconds: Double) async throws {
