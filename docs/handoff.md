@@ -17,7 +17,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- PRs #1–#25 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
+- PRs #1–#26 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
   not yet seen live; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
@@ -38,7 +38,20 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   failed request with no Gemini answer in between (see the v0.2.51 changelog). Built signed
   from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 12 native
-  tests pass there. Not yet run live.
+  tests pass there. On November 14 Nick watched UFC on Paramount+ through the manual
+  relay with it in TV via AirPlay mode, using a wireless microphone in front of the TV
+  speaker (00:41–02:47 UTC, two sessions). All 29 confirmed breaks moved to the Mac and 28
+  returned on their own; 28 Gemini requests failed and none stopped detection; 1,278
+  predictions at a 2.3 s median. No permission prompt; the system-audio grant worked.
+  Issues: 17 of the second session's 23 breaks lasted under 45 seconds. The microphone
+  side called walkout music and similar program audio commercial or promo, and the Mac
+  side's system audio called it program within 15–30 seconds. One break stayed on the Mac
+  for 23 minutes: its system capture was exact digital silence for 21 minutes (all 235
+  answers local), so program never confirmed (see Remaining issues). Stop from the
+  Commercial Breaker window then failed to return to TV (fixed in v0.2.52). Both handoffs
+  with VS Code frontmost succeeded, through the mouse fallback.
+- v0.2.52 retries Stop's return to TV once when focus bounces back to Commercial Breaker
+  before any selection (see its changelog). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
@@ -163,8 +176,9 @@ Do not combine all of this into one rewrite.
 - Sports betting ads can cause false program returns. Future commercial learning
   should avoid manual labeling burden. No fingerprint library implemented.
 - ViewingActivity refresh exists, but screen saver/lock prevention is not proven.
-- Earlier all-zero system capture stalled TV return; no verified root-cause fix.
-  Recent success does not erase that intermittent observation.
+- All-zero system capture stalls the TV return; no verified root-cause fix. It recurred on
+  November 14 (21 minutes during a UFC break, after which Stop and a restart recovered).
+  Whether the Mac stopped playing or the tap delivered zeros is not yet known.
 - Cost is not the current constraint: Nick reports Gemini usage costs only a few
   dollars. Prioritize accuracy/speed; retain one in-flight request for freshness.
 - Paramount/UFC relay workflow is preserved but not newly validated this session.

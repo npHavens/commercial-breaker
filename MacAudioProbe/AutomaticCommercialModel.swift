@@ -291,7 +291,7 @@ final class AutomaticCommercialModel: ObservableObject {
                 return
             }
             do {
-                try await routing.routeForAutomation(from: nil, to: tv)
+                try await routing.recoverTVForAutomation(tv)
                 guard generation == id else { return }
                 record("Automatic mode off · TV route confirmed. Verify picture and sound.")
             } catch {
