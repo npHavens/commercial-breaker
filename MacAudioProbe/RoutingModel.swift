@@ -60,7 +60,8 @@ final class RoutingModel: ObservableObject {
     /// The caller owns this task and cancellation. Picker selection is verified;
     /// it does not establish that the destination is actually producing sound.
     /// Opening the picker from our own window can return focus to it (see
-    /// `FocusBounceRetry`), so the steps before any selection run at most twice.
+    /// `FocusBounceRetry`). When this route began with Commercial Breaker in front, the
+    /// steps before the selection run at most twice; the selection itself runs once.
     func routeForAutomation(from expected: String?, to target: String) async throws {
         try Task.checkCancellation()
         guard !busy else {
@@ -75,28 +76,38 @@ final class RoutingModel: ObservableObject {
         beginLog()
         defer { busy = false }
         var selectionAttempted = false
+        // Only a bounce back to where the route began is retried: a switch to this
+        // window during a handoff that began elsewhere still stops the route.
+        let startedFromOwnApp = ownAppFrontmost()
+        var retrying = false
         do {
-            let (pid, initial) = try await FocusBounceRetry.run(
+            let (pid, alreadySelected) = try await FocusBounceRetry.run(
                 pause: { try await self.wait(0.5) },
-                ownAppFrontmost: ownAppFrontmost,
+                ownAppFrontmost: { startedFromOwnApp && self.ownAppFrontmost() },
                 beforeRetry: {
-                    for note in await self.accessibility.diagnostics() { self.record("Picker diagnostic: \(note)") }
+                    await self.recordDiagnostics("Picker diagnostic")
                     self.record("Focus returned to Commercial Breaker before any selection; retrying once.")
+                    retrying = true
                 },
                 attempt: {
                     let pid = try await self.prepareSafari()
-                    return (pid, try await self.availablePickerControls(pid: pid, requiredNames: [source, destination].compactMap { $0 }))
+                    // The first attempt may already have pressed the page button twice.
+                    let initial = try await self.availablePickerControls(
+                        pid: pid, requiredNames: [source, destination].compactMap { $0 }, mouseFallback: !retrying)
+                    if let source {
+                        guard initial.filter({ $0.name == source && $0.selected == true }).count == 1 else {
+                            throw RoutingFailure(message: "Expected route ‘\(source)’ is not uniquely selected. Automatic routing stopped without selecting a destination.")
+                        }
+                    }
+                    let alreadySelected = initial.filter({ $0.name == destination && $0.selected == true }).count == 1
+                    if !alreadySelected { try self.requireSafariFrontmost(pid) }
+                    return (pid, alreadySelected)
                 })
-            if let source {
-                guard initial.filter({ $0.name == source && $0.selected == true }).count == 1 else {
-                    throw RoutingFailure(message: "Expected route ‘\(source)’ is not uniquely selected. Automatic routing stopped without selecting a destination.")
-                }
-            }
-            if initial.filter({ $0.name == destination && $0.selected == true }).count == 1 {
+            if retrying { record("Picker ready after one retry for focus returning to Commercial Breaker.") }
+            if alreadySelected {
                 record("Automatic route already selected: \(destination).")
                 return
             }
-            try requireSafariFrontmost(pid)
             selectionAttempted = true
             try await accessibility.choose(named: destination, pid: pid)
             record("Automatic route requested: \(destination). Waiting for picker confirmation.")
@@ -108,9 +119,7 @@ final class RoutingModel: ObservableObject {
             try Task.checkCancellation()
             record("Automatic route selection confirmed: \(destination).")
         } catch {
-            if !(error is CancellationError) {
-                for note in await accessibility.diagnostics() { record("Picker diagnostic: \(note)") }
-            }
+            if !(error is CancellationError) { await recordDiagnostics("Picker diagnostic") }
             record(error is CancellationError ? "Automatic routing canceled." : "Automatic routing stopped: \(error.localizedDescription)")
             if selectionAttempted, let failure = error as? RoutingFailure {
                 // A later missing picker does not prove that selection failed.
@@ -122,8 +131,9 @@ final class RoutingModel: ObservableObject {
 
     /// Destination rows arrive asynchronously. Do not toggle an already visible
     /// picker while waiting for them; retry the page button at most once, and
-    /// only when repeated scans still expose no picker controls at all.
-    private func availablePickerControls(pid: pid_t, requiredNames: [String]) async throws -> [RouteControl] {
+    /// only when repeated scans still expose no picker controls at all. A focus-bounce
+    /// retry passes `mouseFallback: false`, so one route presses the button at most three times.
+    private func availablePickerControls(pid: pid_t, requiredNames: [String], mouseFallback: Bool = true) async throws -> [RouteControl] {
         try requireSafariFrontmost(pid)
         controls = try await accessibility.inspectPicker(pid: pid)
         try requireSafariFrontmost(pid)
@@ -135,8 +145,8 @@ final class RoutingModel: ObservableObject {
             record("AirPlay picker controls are visible; waiting for destination rows without toggling it.")
         }
         if try await waitForPickerControls(pid: pid, requiredNames: requiredNames) { return controls }
-        if controls.isEmpty {
-            for note in await accessibility.diagnostics() { record("First picker wait: \(note)") }
+        if controls.isEmpty && mouseFallback {
+            await recordDiagnostics("First picker wait")
             record("No picker controls appeared after the accessibility press. Trying verified mouse activation once.")
             try await openPicker(pid: pid, mouse: true)
             if try await waitForPickerControls(pid: pid, requiredNames: requiredNames) { return controls }
@@ -181,7 +191,7 @@ final class RoutingModel: ObservableObject {
             do { try await operation() }
             catch is CancellationError { record("Routing task stopped.") }
             catch {
-                for note in await accessibility.diagnostics() { record("Picker diagnostic: \(note)") }
+                await recordDiagnostics("Picker diagnostic")
                 record("Stopped: \(error.localizedDescription)")
             }
         }
@@ -239,7 +249,7 @@ final class RoutingModel: ObservableObject {
         try Task.checkCancellation()
         try requireSafariFrontmost(pid)
         try await accessibility.openPicker(pid: pid, mouse: mouse)
-        for note in await accessibility.diagnostics() { record("Page button: \(note)") }
+        await recordDiagnostics("Page button")
         try await wait(0.8)
         try requireSafariFrontmost(pid)
     }
@@ -251,6 +261,10 @@ final class RoutingModel: ObservableObject {
                 message: "Focus moved away from Safari (frontmost: \(frontmostIdentity())). Stopped to avoid acting in another app.",
                 focusReturnedToCommercialBreaker: ownAppFrontmost())
         }
+    }
+
+    private func recordDiagnostics(_ prefix: String) async {
+        for note in await accessibility.diagnostics() { record("\(prefix): \(note)") }
     }
 
     private func ownAppFrontmost() -> Bool {

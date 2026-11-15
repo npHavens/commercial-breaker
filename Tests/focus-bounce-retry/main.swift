@@ -50,7 +50,7 @@ struct FocusBounceRetryTests {
         r = await run([bounce, bounce]); assert(r == Run(result: bounce.message, attempts: 2, pauses: 1, retryNotes: 1))
         // If another app took the front during the pause, stop instead of acting there.
         r = await run([bounce, nil], ownAppFrontmost: false); assert(r == Run(result: bounce.message, attempts: 1, pauses: 1))
-        // Stop pressed again or app shutdown during the pause: no second attempt.
+        // Cancellation during the pause (Stop again, shutdown): this call makes no second attempt.
         r = await run([bounce, nil], cancelDuringPause: true); assert(r == Run(result: "canceled", attempts: 1, pauses: 1))
         // Focus lost to another app, or missing picker rows, are not this retry's to handle.
         r = await run([otherApp, nil]); assert(r == Run(result: otherApp.message, attempts: 1))
