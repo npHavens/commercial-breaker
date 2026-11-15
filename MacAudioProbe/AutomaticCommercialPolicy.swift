@@ -6,12 +6,14 @@ struct AutomaticCommercialPolicy {
     enum Phase: Equatable {
         case idle, starting, watchingTV, movingToMac, mutedMac, movingToTV, recovering
         case watchingMac, mutingLocalMac, mutedLocalMac, unmutingLocalMac
-        case releasingLocalLimit, awaitingLocalProgram, audibleMacAwaitingTV
+        case releasingLocalLimit, awaitingLocalProgram, audibleMacAwaitingTV, awaitingTVProgram
     }
 
     enum Action: Equatable { case none, toMac, toTV, muteLocal, unmuteLocal }
 
     private(set) var phase: Phase = .idle
+    /// Set by a silent return, so the rest of that break stays on the TV.
+    private var returningFromSilence = false
 
     @discardableResult
     mutating func begin() -> Bool {
@@ -68,6 +70,9 @@ struct AutomaticCommercialPolicy {
         case (.mutedMac, .program), (.audibleMacAwaitingTV, .program):
             transition(to: .movingToTV)
             return .toTV
+        case (.awaitingTVProgram, .program):
+            transition(to: .watchingTV)
+            return .none
         default:
             return .none
         }
@@ -75,13 +80,15 @@ struct AutomaticCommercialPolicy {
 
     /// The Mac's capture has heard only exact digital silence during an AirPlay break, so
     /// playback there has stalled or the capture is delivering zeros. Neither confirms
-    /// program, so return to the TV, where the user can hear it. A break that is still
-    /// playing moves back to the Mac with a new capture. In Mac playback mode silence
-    /// only means nothing is playing, so it never moves playback.
+    /// program, so return to the TV, where the user can hear it, and keep the rest of that
+    /// break there: moving it back would likely stall again. Program on the TV rearms the
+    /// next break. In Mac playback mode silence only means nothing is playing, so it never
+    /// moves playback.
     @discardableResult
     mutating func macCaptureSilent() -> Bool {
         guard phase == .mutedMac || phase == .audibleMacAwaitingTV else { return false }
         transition(to: .movingToTV)
+        returningFromSilence = true
         return true
     }
 
@@ -92,7 +99,7 @@ struct AutomaticCommercialPolicy {
 
     @discardableResult
     mutating func reachedTV() -> Bool {
-        complete(from: .movingToTV, to: .watchingTV)
+        complete(from: .movingToTV, to: returningFromSilence ? .awaitingTVProgram : .watchingTV)
     }
 
     /// Only use when routing certifies that no destination press was attempted.
@@ -124,5 +131,6 @@ struct AutomaticCommercialPolicy {
 
     private mutating func transition(to next: Phase) {
         phase = next
+        returningFromSilence = false
     }
 }

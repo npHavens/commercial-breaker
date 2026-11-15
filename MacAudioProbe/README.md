@@ -11,19 +11,24 @@ over, points to a stall.
 
 Now six of the worker's local silence answers in a row, about 30 seconds, during an AirPlay
 break return playback to the TV through the same path as a confirmed program: release the
-capture, start the microphone, request the TV, then reset classifier context. A failed
-request or any answer from Gemini ends the run. If a commercial is still playing, the
-microphone confirms the break again and moves it back to the Mac with a new capture. Mac
-playback mode is unchanged, because silence there only means nothing is playing.
+capture, start the microphone, request the TV, then reset classifier context. The rest of
+that break stays on the TV, ads included, because moving it back would likely stall again;
+a confirmed program on the TV rearms the next break. Any answer from Gemini, or a failed
+request that reached Gemini, ends the run. If the limit is reached while a handoff is
+running or a picker retry is waiting, the signal repeats every six silent answers. The
+watchdog runs only on AirPlay break captures: in Mac playback mode silence only means
+nothing is playing.
 
 Silence is still never treated as program or commercial. Prompts, sample length, cadence,
 the one-request limit and the confirmation thresholds are unchanged, so every prompt hash
-is unchanged. Observation logs add a `silent-audio` event.
+is unchanged. Observation logs add a `silent-audio` event, and the automatic log names the
+number of silent answers.
 
 The limit comes from 321 AirPlay break captures from October 11 to November 14: a normal
 break never had more than 3 silent answers in a row, and every capture that stalled had 8
-or more. Known limit: if the Mac keeps stalling while the TV plays, each confirmed break
-can bounce, spending about 30 seconds on a silent Mac before returning to the TV.
+or more. Known limits: a Mac that stalls on every break spends about 30 silent seconds on
+each before returning, and a capture that stops delivering audio altogether, rather than
+delivering zeros, still isn't caught. Neither appears in the logs.
 
 Live verification pending.
 

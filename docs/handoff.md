@@ -68,9 +68,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   tests pass there. It was built just before the rewrite, from 7f86b57, whose tree a8247a9 keeps.
   v0.2.53's promo rule has not run live yet.
 - v0.2.54 returns an AirPlay break to the TV after six silent answers in a row (about 30
-  seconds) from the Mac's capture, through the same path as a confirmed program (see its
-  changelog). It fixes the November 14 stall that left a break on the Mac for 23 minutes.
-  Not yet built signed or run live.
+  seconds) from the Mac's capture, through the same path as a confirmed program, and keeps
+  the rest of that break on the TV until program is confirmed there (see its changelog). It
+  fixes the November 14 stall that left a break on the Mac for 23 minutes. Not yet built
+  signed or run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was

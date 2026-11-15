@@ -71,7 +71,7 @@ final class AutomaticCommercialModel: ObservableObject {
         refreshViewingActivity()
         record(playback == .mac ? "Starting local automatic mode · system audio; no session time limit" : "Starting automatic mode · no session time limit; verifying TV playback route")
         recorder.gemini.onConfirmed = { [weak self] state in self?.confirmed(state) }
-        recorder.gemini.onSilentAudio = { [weak self] in self?.silentAudio() }
+        recorder.gemini.onSilentAudio = { [weak self] answers in self?.silentAudio(answers: answers) }
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkHealth() }
         }
@@ -97,8 +97,11 @@ final class AutomaticCommercialModel: ObservableObject {
         }
     }
 
+    /// Predictions may start a handoff only between handoffs and outside a picker retry wait.
+    private var canAct: Bool { enabled && task == nil && pickerRetryAfter == nil }
+
     private func confirmed(_ state: GeminiConfirmation.State) {
-        guard enabled, task == nil, pickerRetryAfter == nil else { return }
+        guard canAct else { return }
         let previousPhase = policy.phase
         let action = policy.confirmed(state)
         phase = policy.phase
@@ -107,6 +110,8 @@ final class AutomaticCommercialModel: ObservableObject {
         case .none:
             if previousPhase == .awaitingLocalProgram && phase == .watchingMac {
                 record("Program confirmed · automatic muting rearmed for the next break")
+            } else if previousPhase == .awaitingTVProgram && phase == .watchingTV {
+                record("Program confirmed on TV · Mac handoff rearmed for the next break")
             }
             return
         case .muteLocal, .unmuteLocal:
@@ -141,10 +146,10 @@ final class AutomaticCommercialModel: ObservableObject {
     }
 
     /// Playback on the Mac stalled or its capture delivers zeros; see `macCaptureSilent`.
-    private func silentAudio() {
-        guard enabled, task == nil, pickerRetryAfter == nil, policy.macCaptureSilent() else { return }
+    private func silentAudio(answers: Int) {
+        guard canAct, policy.macCaptureSilent() else { return }
         phase = policy.phase
-        record("Mac capture silent for about 30 seconds · removing mute and returning playback to TV")
+        record("Mac capture silent for \(answers) answers in a row · removing mute and returning playback to TV; this break stays there")
         returnToTV(id: generation)
     }
 
@@ -169,7 +174,9 @@ final class AutomaticCommercialModel: ObservableObject {
                 // This resets classification only, not the audio device.
                 recorder.gemini.resetContext()
                 policy.reachedTV(); phase = policy.phase
-                record("TV route confirmed · existing microphone capture continues")
+                record(phase == .awaitingTVProgram
+                       ? "TV route confirmed · microphone capture continues; waiting for confirmed program before the next break"
+                       : "TV route confirmed · existing microphone capture continues")
                 task = nil
             } catch {
                 guard generation == id, enabled else { return }
@@ -206,7 +213,7 @@ final class AutomaticCommercialModel: ObservableObject {
         task = nil
         record("Picker unavailable before destination selection · playback left on " +
                (phase == .watchingTV ? "TV" : "Mac with sound on") +
-               ". Detection continues; retry eligible in 30 seconds after fresh confirmation")
+               ". Detection continues; retry eligible in 30 seconds after fresh confirmation or, on a silent Mac, a new silent run")
     }
 
     private func listen(source: AudioRecorderModel.Source, muted: Bool, id: UUID) async throws {
@@ -226,7 +233,8 @@ final class AutomaticCommercialModel: ObservableObject {
         // System capture in AirPlay mode means playback is on the Mac, away from the TV.
         let offTV = source == .system && playback == .airPlay
         recorder.gemini.start(directory: folder, retainProgramAudio: source == .system, sport: sport, returnDetection: offTV,
-                              failuresInARowLimit: offTV ? GeminiRecovery.offTVFailureLimit : nil)
+                              failuresInARowLimit: offTV ? GeminiRecovery.offTVFailureLimit : nil,
+                              silentAnswersLimit: offTV ? SilenceRun.defaultLimit : nil)
         guard recorder.gemini.enabled else { throw RoutingFailure(message: recorder.gemini.status) }
         record("Capture source: \(source.rawValue); session: \(folder.lastPathComponent)")
     }
@@ -243,7 +251,7 @@ final class AutomaticCommercialModel: ObservableObject {
         if let pickerRetryAfter, now >= pickerRetryAfter, task == nil {
             self.pickerRetryAfter = nil
             recorder.gemini.resetContext()
-            record("Picker retry ready · waiting for fresh program/break confirmation")
+            record("Picker retry ready · waiting for fresh confirmation or a new silent run")
         }
         if task == nil, let mutedSince, now - mutedSince >= 180 {
             if policy.localMuteLimitReached() {
@@ -266,7 +274,7 @@ final class AutomaticCommercialModel: ObservableObject {
             }
             return
         }
-        guard task == nil, [.watchingTV, .mutedMac, .watchingMac, .mutedLocalMac, .awaitingLocalProgram, .audibleMacAwaitingTV].contains(phase) else { return }
+        guard task == nil, [.watchingTV, .awaitingTVProgram, .mutedMac, .watchingMac, .mutedLocalMac, .awaitingLocalProgram, .audibleMacAwaitingTV].contains(phase) else { return }
         if !recorder.running || !recorder.ready || !recorder.gemini.enabled {
             stopAndRecover(reason: "Detection stopped: \(recorder.gemini.status)")
         }

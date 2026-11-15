@@ -136,7 +136,8 @@ longBreak.stop()
 assert(!longBreak.airPlayLimitReleased())
 print("AirPlay long-break checks passed: audible waiting, no repeated mute, program return, next break, stale completions")
 
-// A Mac capture that hears only exact digital silence during an AirPlay break returns to the TV.
+// A Mac capture that hears only exact digital silence during an AirPlay break returns to the TV,
+// and the rest of that break stays there until program is confirmed.
 var silentMac = AutomaticCommercialPolicy()
 assert(!silentMac.macCaptureSilent())
 silentMac.begin(); silentMac.startedOnTV()
@@ -149,12 +150,31 @@ assert(silentMac.phase == .movingToTV)
 assert(!silentMac.macCaptureSilent())
 assert(silentMac.confirmed(.program) == .none) // Already returning.
 assert(silentMac.reachedTV())
-assert(silentMac.confirmed(.commercialBreak) == .toMac) // A break still playing moves back with a new capture.
+assert(silentMac.phase == .awaitingTVProgram)
+for _ in 0..<5 { assert(silentMac.confirmed(.commercialBreak) == .none) } // The same break stays on the TV.
+assert(!silentMac.macCaptureSilent())
+assert(silentMac.confirmed(.program) == .none)
+assert(silentMac.phase == .watchingTV)
+assert(silentMac.confirmed(.commercialBreak) == .toMac) // The next break is handed off again.
 silentMac.reachedMac()
 assert(silentMac.airPlayLimitReleased())
 assert(silentMac.macCaptureSilent()) // Also once the mute limit has restored sound.
-assert(silentMac.phase == .movingToTV)
+// A picker that never opened leaves playback on the Mac, and the hold waits for the next return.
+assert(silentMac.pickerUnavailable())
+assert(silentMac.phase == .audibleMacAwaitingTV)
+assert(silentMac.confirmed(.program) == .toTV) // Program came back on the Mac.
+assert(silentMac.reachedTV())
+assert(silentMac.phase == .watchingTV) // A program return doesn't hold the next break.
+assert(silentMac.confirmed(.commercialBreak) == .toMac)
+silentMac.reachedMac()
+assert(silentMac.confirmed(.program) == .toTV)
+assert(silentMac.reachedTV())
+assert(silentMac.phase == .watchingTV)
+assert(silentMac.confirmed(.commercialBreak) == .toMac)
+silentMac.reachedMac()
+assert(silentMac.macCaptureSilent())
 silentMac.recover()
+assert(!silentMac.reachedTV())
 assert(!silentMac.macCaptureSilent())
 silentMac.stop()
 // In Mac playback mode silence means nothing is playing, so it never moves playback.
@@ -164,4 +184,4 @@ assert(silentMac.confirmed(.commercialBreak) == .muteLocal)
 silentMac.mutedLocally()
 assert(!silentMac.macCaptureSilent())
 assert(silentMac.phase == .mutedLocalMac)
-print("Silent Mac capture checks passed: AirPlay break legs only, muted or audible, single return, next break, recovery")
+print("Silent Mac capture checks passed: AirPlay break legs only, same-break TV hold, program rearm, picker failure, recovery")
