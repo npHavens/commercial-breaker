@@ -1,3 +1,31 @@
+# Promos alone no longer confirm a break — v0.2.53
+
+On November 14 (UFC on Paramount+, TV via AirPlay), 17 of 23 breaks in the second session
+lasted under 45 seconds: the microphone side called in-broadcast content a promo, playback
+moved to the Mac, and the Mac's system audio called it program within 15–30 seconds. The
+triggers were fighter hype packages, card previews for later events, a contest promo and a
+simulcast notice: content the broadcast runs between fights, not ad breaks.
+
+A break candidate now confirms only when one of its matching predictions is `commercial`.
+Two promos hold the candidate ("Promo only · waiting for a commercial"), which may bridge
+one unclear sample; the next commercial confirms it, so `promo` then `commercial` and
+`commercial` then `promo` still confirm at the second prediction. The rule is shared, so it
+applies in Mac playback mode too: in-broadcast promos no longer mute the Mac there, and a
+real break that opens with promos mutes at its first commercial. Program confirmation, the fast follow-up after the
+first break prediction, unclear bridging, prompts, sample length, cadence and the
+one-request limit are unchanged, so every prompt hash is unchanged. Confirmation log
+events add `commercialHeard`.
+
+Replaying every logged prediction since October 26 through a port of the rule (the old
+rule reproduces each logged confirmation exactly in those sessions) gives 206 of 227
+break confirmations unchanged, at the same prediction, and 21 removed. All 21 were promo
+only and all were in-broadcast UFC content; none of the November 8–10 football sessions
+change. The cost: a real break made only of promos would no longer be caught until a
+commercial plays. No such break appears in the logs.
+
+Live verification pending: a UFC night should show far fewer short false breaks and no
+missed ad breaks.
+
 # Stop returns to the TV when focus bounces back — v0.2.52
 
 On November 14 Nick clicked Stop in Commercial Breaker during a UFC break. Safari
