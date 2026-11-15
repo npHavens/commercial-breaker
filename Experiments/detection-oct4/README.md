@@ -47,12 +47,11 @@ node Tools/compare-detection.mjs
 node --test Tests/gemini-audio/*.test.mjs
 ```
 
-Authorized upload command:
+Authorized upload command. The October 4 runs loaded tsx and the `.env` from a separate
+local checkout; that dependency is obsolete since v0.2.45, and the current command is:
 
 ```sh
-node --import <other-checkout>/app/node_modules/tsx/dist/loader.mjs \
-  --env-file=<other-checkout>/app/.env \
-  Tools/compare-detection.mjs --live
+node --env-file=.env Tools/compare-detection.mjs --live
 ```
 
 Results are marker agreement, not validated accuracy. There is only one marked
