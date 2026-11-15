@@ -1,12 +1,17 @@
 import Foundation
 
 /// Temporal smoothing only: two overlapping samples are not independent proof.
+/// A break also needs one `commercial` among its matching predictions. The 21 breaks
+/// confirmed on promos alone from October 26 to November 14 were all in-broadcast UFC
+/// content (fighter hype packages, card previews, simulcast notices), not ad breaks.
 struct GeminiConfirmation {
     enum State: String { case program = "Program", commercialBreak = "Break (commercial / promo)" }
     private(set) var confirmed: State?
     private(set) var candidate: State?
     private(set) var count = 0
     private(set) var lastEnd: Double?
+    /// Whether the current break candidate includes a `commercial` prediction.
+    private(set) var commercialHeard = false
 
     private var lastEvidenceEnd: Double?
     private var unclearCount = 0
@@ -20,6 +25,7 @@ struct GeminiConfirmation {
         guard let candidate else { return previous + (latestRaw == "not_program" ? "No sport coverage · waiting for return" : latestRaw == "unusable" ? "Audio unusable · waiting for usable audio" : "Current audio unclear · waiting for two matching predictions") }
         if unclearCount > 0 { return previous + "Current audio unclear · holding recent \(candidate.rawValue) candidate" }
         if count < 2 { return previous + "\(candidate.rawValue) · 1/2 predictions" }
+        if candidate == .commercialBreak && !commercialHeard { return previous + "Promo only · waiting for a commercial before confirming a break" }
         return "Confirmed: \(candidate.rawValue) · 2/2 predictions"
     }
 
@@ -52,11 +58,13 @@ struct GeminiConfirmation {
         if candidate != next || count == 0 {
             candidateStart = end
             count = 1
+            commercialHeard = false
         } else if next == .commercialBreak || end - (candidateStart ?? end) >= 5 {
             count = min(2, count + 1)
         }
+        if raw == "commercial" { commercialHeard = true }
         candidate = next
-        guard count == 2 else { return false }
+        guard count == 2, next == .program || commercialHeard else { return false }
         let changed = confirmed != next
         confirmed = next
         return changed

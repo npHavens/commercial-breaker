@@ -58,3 +58,31 @@ for negative in ["not_program", "unusable"] {
     assert(rule.confirmed == .program)
 }
 print("Binary negatives and unusable audio reset return evidence without confirming a break")
+
+// A break needs one commercial among its matching predictions; promos alone hold the candidate.
+rule.reset()
+assert(!rule.accept("promo", end: 1) && rule.needsFastFollowUp)
+assert(!rule.accept("promo", end: 2) && rule.count == 2 && rule.confirmed == nil)
+assert(rule.display.contains("Promo only"))
+assert(!rule.accept("promo", end: 6) && rule.confirmed == nil)
+assert(rule.accept("commercial", end: 9) && rule.confirmed == .commercialBreak)
+assert(rule.display.hasPrefix("Confirmed"))
+// Either order confirms at the second prediction, as before.
+for pair in [["promo", "commercial"], ["commercial", "promo"]] {
+    rule.reset()
+    assert(!rule.accept(pair[0], end: 1))
+    assert(rule.accept(pair[1], end: 2) && rule.confirmed == .commercialBreak)
+}
+// A commercial from an earlier candidate does not carry over to a new one.
+rule.reset()
+assert(!rule.accept("commercial", end: 1))
+assert(!rule.accept("program", end: 2))
+assert(!rule.accept("promo", end: 3))
+assert(!rule.accept("promo", end: 4) && rule.confirmed == nil && !rule.commercialHeard)
+// Promos alone never end a confirmed program, and program returns are unchanged.
+rule.reset()
+assert(!rule.accept("program", end: 1))
+assert(rule.accept("program", end: 6) && rule.confirmed == .program)
+assert(!rule.accept("promo", end: 7))
+assert(!rule.accept("promo", end: 8) && rule.confirmed == .program)
+print("Promo-only candidates wait for a commercial before confirming a break")
