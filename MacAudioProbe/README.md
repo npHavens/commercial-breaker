@@ -7,18 +7,20 @@ triggers were fighter hype packages, card previews for later events, a contest p
 simulcast notice: content the broadcast runs between fights, not ad breaks.
 
 A break candidate now confirms only when one of its matching predictions is `commercial`.
-Two promos hold the candidate ("Promo only · waiting for a commercial"); the next
-commercial confirms it, so `promo` then `commercial` and `commercial` then `promo` still
-confirm at the second prediction. Program confirmation, the fast follow-up after the
+Two promos hold the candidate ("Promo only · waiting for a commercial"), which may bridge
+one unclear sample; the next commercial confirms it, so `promo` then `commercial` and
+`commercial` then `promo` still confirm at the second prediction. The rule is shared, so it
+applies in Mac playback mode too: in-broadcast promos no longer mute the Mac there, and a
+real break that opens with promos mutes at its first commercial. Program confirmation, the fast follow-up after the
 first break prediction, unclear bridging, prompts, sample length, cadence and the
 one-request limit are unchanged, so every prompt hash is unchanged. Confirmation log
 events add `commercialHeard`.
 
 Replaying every logged prediction since October 26 through a port of the rule (the old
-rule reproduces each logged confirmation exactly in those sessions) gives 204 of 225
+rule reproduces each logged confirmation exactly in those sessions) gives 206 of 227
 break confirmations unchanged, at the same prediction, and 21 removed. All 21 were promo
-only and all were in-broadcast UFC content; none came from the November 8–10 football
-sessions. The cost: a real break made only of promos would no longer be caught until a
+only and all were in-broadcast UFC content; none of the November 8–10 football sessions
+change. The cost: a real break made only of promos would no longer be caught until a
 commercial plays. No such break appears in the logs.
 
 Live verification pending: a UFC night should show far fewer short false breaks and no

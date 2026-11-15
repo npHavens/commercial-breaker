@@ -25,7 +25,9 @@ struct GeminiConfirmation {
         guard let candidate else { return previous + (latestRaw == "not_program" ? "No sport coverage · waiting for return" : latestRaw == "unusable" ? "Audio unusable · waiting for usable audio" : "Current audio unclear · waiting for two matching predictions") }
         if unclearCount > 0 { return previous + "Current audio unclear · holding recent \(candidate.rawValue) candidate" }
         if count < 2 { return previous + "\(candidate.rawValue) · 1/2 predictions" }
-        if candidate == .commercialBreak && !commercialHeard { return previous + "Promo only · waiting for a commercial before confirming a break" }
+        if candidate == .commercialBreak && !commercialHeard && confirmed != .commercialBreak {
+            return previous + "Promo only · waiting for a commercial before confirming a break"
+        }
         return "Confirmed: \(candidate.rawValue) · 2/2 predictions"
     }
 
@@ -40,17 +42,20 @@ struct GeminiConfirmation {
         lastEnd = end
         latestRaw = raw
         let next: State?
+        var isCommercial = false
         switch raw {
         case "program": next = .program
-        case "commercial", "promo": next = .commercialBreak
+        case "commercial": next = .commercialBreak; isCommercial = true
+        case "promo": next = .commercialBreak
         default: next = nil
         }
-        if let lastEvidenceEnd, end - lastEvidenceEnd > 15 {
-            candidate = nil; count = 0
-        }
+        if let lastEvidenceEnd, end - lastEvidenceEnd > 15 { clearCandidate() }
         guard let next else {
             unclearCount += 1
-            if candidate != .commercialBreak || unclearCount > 1 || count != 1 { candidate = nil; count = 0 }
+            // An unconfirmed break candidate (one prediction, or promos held for a
+            // commercial) may bridge one unclear sample.
+            let unconfirmedBreak = candidate == .commercialBreak && (count == 1 || !commercialHeard)
+            if !unconfirmedBreak || unclearCount > 1 { clearCandidate() }
             return false
         }
         unclearCount = 0
@@ -62,11 +67,15 @@ struct GeminiConfirmation {
         } else if next == .commercialBreak || end - (candidateStart ?? end) >= 5 {
             count = min(2, count + 1)
         }
-        if raw == "commercial" { commercialHeard = true }
+        if isCommercial { commercialHeard = true }
         candidate = next
         guard count == 2, next == .program || commercialHeard else { return false }
         let changed = confirmed != next
         confirmed = next
         return changed
+    }
+
+    private mutating func clearCandidate() {
+        candidate = nil; count = 0; commercialHeard = false
     }
 }
