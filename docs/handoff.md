@@ -39,6 +39,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   from 5273fde on November 14 at `build/v0.2.51/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 12 native
   tests pass there. Not yet run live.
+- v0.2.53 stops promos alone from confirming a break: on November 14 every promo-only
+  break was in-broadcast UFC content (see its changelog for the log replay). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was

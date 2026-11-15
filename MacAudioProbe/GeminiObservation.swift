@@ -255,6 +255,7 @@ final class GeminiObservation: ObservableObject {
                 : "Gemini observation only · playback unchanged"
             log(["event": "confirmation", "id": pending.id,
                  "candidate": confirmer.candidate?.rawValue ?? "unclear", "count": confirmer.count,
+                 "commercialHeard": confirmer.commercialHeard,
                  "confirmed": confirmer.confirmed?.rawValue ?? "unknown", "changed": changed,
                  "endUptime": pending.end])
             log(["event": "prediction", "id": pending.id, "startUptime": pending.start, "endUptime": pending.end,
