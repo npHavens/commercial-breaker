@@ -171,6 +171,11 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    repos before PR #21, so check whether its user-level `CLAUDE.md` rule fixed them.
 
 Do not combine all of this into one rewrite.
+12. Focus bounce, from PR #27: find what returns focus to Commercial Breaker after Safari
+    activates (both cases start from a click in its window), for example by waiting for
+    mouse-up or a short settle before yielding activation, so the v0.2.52 retry stops being
+    the fix. Also test `routeForAutomation`'s use of `FocusBounceRetry` by putting the AX
+    calls behind injectable closures, so a fake can show a selection is never retried.
 
 ## Remaining issues / limits
 
