@@ -687,9 +687,9 @@ and actual fake-worker recovery path are covered by tests.
 # Live Gemini observation — v0.2.13
 
 The Recorder now offers an explicitly enabled Gemini observation mode. It uses
-the Node 24/tsx/Google SDK install and Vertex credentials of a separate local checkout,
-without modifying that project. This development bridge requires both source directories
-to remain in their current locations.
+the Node 24/tsx/Google SDK install and Vertex credentials of a separate local
+checkout, without modifying that project. This development bridge (superseded
+by v0.2.45 above) required both checkouts to stay where they were.
 It discovers Node 24 under `~/.nvm/versions/node`. Worker startup fails if the
 shared configuration is not Vertex, matching the destination named in the UI.
 
