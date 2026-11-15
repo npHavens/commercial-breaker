@@ -55,7 +55,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
   `claude-review.yml`; other repos call it at `@main`) when they
-  open or are marked ready; fork PRs never do. When later pushes need a re-review is in the
+  open or are marked ready; fork PRs never do. When later pushes need a re-review, and the limit of one per PR, is in the
   merge gate in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
   not the PR's head, and here uses main's caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
   once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
