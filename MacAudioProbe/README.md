@@ -11,8 +11,8 @@ handoff that began in another app still stops if focus moves, including to Comme
 Breaker. Only the steps before the destination selection (Safari activation, reading the
 picker, the source and already-selected checks) run a second time: after 0.5 seconds,
 only when the failure names this Commercial Breaker process and it is still frontmost.
-The retry presses the page button once at most (no mouse fallback), so a route presses it
-at most three times. A focus loss to another app, a second bounce, cancellation and any
+The mouse fallback runs at most once per route, so the steps before the selection press
+the page button at most three times. A focus loss to another app, a second bounce, cancellation and any
 failure after the selection still stop without retrying, so a selection is never
 repeated. Both attempts share one routing log: it records the first attempt's picker
 diagnostics, "retrying once" and "Picker ready after one retry". `FocusBounceRetry` holds
