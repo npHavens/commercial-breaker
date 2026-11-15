@@ -1,22 +1,23 @@
-# Routes started from Commercial Breaker retry a focus bounce once — v0.2.52
+# Stop returns to the TV when focus bounces back — v0.2.52
 
 On November 14 Nick clicked Stop in Commercial Breaker during a UFC break. Safari
 activated and the AirPlay picker opened, then focus returned to Commercial Breaker
 and the focus guard stopped the return to TV, leaving playback on the Mac. That is the
-same bounce the v0.2.44 startup retry handled. That retry wrapped only startup; it now
-lives inside `RoutingModel.routeForAutomation`, so any automatic route that begins with
-Commercial Breaker frontmost gets it: startup, Stop's return to TV (also used when
-detection or a handoff fails), and a handoff that starts while Nick is in its window. A
-handoff that began in another app still stops if focus moves, including to Commercial
-Breaker. Only the steps before the destination selection (Safari activation, reading the
-picker, the source and already-selected checks) run a second time: after 0.5 seconds,
-only when the failure names this Commercial Breaker process and it is still frontmost.
-The mouse fallback runs at most once per route, so the steps before the selection press
-the page button at most three times. A focus loss to another app, a second bounce, cancellation and any
-failure after the selection still stop without retrying, so a selection is never
-repeated. Both attempts share one routing log: it records the first attempt's picker
-diagnostics, "retrying once" and "Picker ready after one retry". `FocusBounceRetry` holds
-the rule and `Tests/focus-bounce-retry` covers it with fakes.
+same bounce the v0.2.44 startup retry handled. The retry now lives inside
+`RoutingModel.routeForAutomation`, and startup and Stop's return to TV (also used when
+detection or a handoff fails) opt in with `retryFocusBounce`. Break and return handoffs
+do not: they still stop on any focus loss, including a switch to Commercial Breaker.
+
+A retry happens only when the route began with Commercial Breaker frontmost, the failure
+names this process, and it is still frontmost 0.5 seconds later. Only the steps before the
+destination selection (Safari activation, reading the picker, the source and
+already-selected checks) run a second time. The mouse fallback runs at most once across
+both attempts, so those steps press the page button at most three times. A focus loss to
+another app, a second bounce, cancellation and any failure after the selection still stop
+without retrying, so a selection is never repeated. Both attempts share one routing log:
+it records the first attempt's failure and picker diagnostics, "retrying once" and
+"Picker ready after one retry". `FocusBounceRetry` holds the rule and
+`Tests/focus-bounce-retry` covers it with fakes.
 
 Live verification pending: Stop from the Commercial Breaker window during an AirPlay
 break should return playback to the TV, and the routing log should note the retry.
