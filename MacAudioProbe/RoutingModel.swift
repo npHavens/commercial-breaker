@@ -60,17 +60,24 @@ final class RoutingModel: ObservableObject {
     /// Startup only verifies an existing route. Retry once if opening the picker
     /// returns focus to our own window; never retry a destination selection.
     func verifyTVForAutomation(_ tv: String) async throws {
-        do {
-            try await routeForAutomation(from: tv, to: tv)
-        } catch let failure as RoutingFailure where failure.focusReturnedToCommercialBreaker {
-            try await wait(0.5)
-            try Task.checkCancellation()
-            guard NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier else {
-                throw failure
-            }
-            try await routeForAutomation(from: tv, to: tv)
+        if try await retryingFocusBounce({ try await self.routeForAutomation(from: tv, to: tv) }) {
             record("Startup route verified after one retry for focus returning to Commercial Breaker.")
         }
+    }
+
+    /// Stop is usually clicked in our own window, so its return to TV meets the same
+    /// focus bounce as startup and gets the same single retry before any selection.
+    func recoverTVForAutomation(_ tv: String) async throws {
+        if try await retryingFocusBounce({ try await self.routeForAutomation(from: nil, to: tv) }) {
+            record("TV route confirmed after one retry for focus returning to Commercial Breaker.")
+        }
+    }
+
+    private func retryingFocusBounce(_ attempt: () async throws -> Void) async throws -> Bool {
+        try await FocusBounceRetry.run(
+            pause: { try await self.wait(0.5) },
+            ownAppFrontmost: { NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier },
+            attempt: attempt)
     }
 
     /// The caller owns this task and cancellation. Picker selection is verified;

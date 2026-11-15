@@ -16,6 +16,7 @@ sources=(
   gemini-recovery             "GeminiRecovery"
   mac-audio                   "AudioLevels"
   commercial-breaker-panel    "AirPlayRouteChoice SafariAccessibility"
+  focus-bounce-retry          "AirPlayRouteChoice SafariAccessibility FocusBounceRetry"
   tap-conversion              "AudioLevels AudioSampleClock AudioTap"
   viewing-activity            "ViewingActivity"
 )
