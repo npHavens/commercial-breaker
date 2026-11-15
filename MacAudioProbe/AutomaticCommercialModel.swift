@@ -2,6 +2,33 @@ import Foundation
 import Combine
 import CoreGraphics
 
+/// The capture members automatic mode uses, so tests can drive it with a fake.
+@MainActor
+protocol AutomaticCapture: AnyObject {
+    var running: Bool { get }
+    var ready: Bool { get }
+    var status: String { get }
+    var folder: URL? { get }
+    var lastStopErrors: [String] { get }
+    var source: AudioRecorderModel.Source { get set }
+    var gemini: GeminiObservation { get }
+    func start(initiallyMuted: Bool)
+    func stop(reason: String)
+    func setSystemMuted(_ muted: Bool) throws
+}
+
+/// The routing members automatic mode uses, so tests can drive it with a fake.
+@MainActor
+protocol AutomaticRouting: AnyObject {
+    var busy: Bool { get }
+    var tvName: String { get }
+    var localName: String { get }
+    func routeForAutomation(from expected: String?, to target: String, retryFocusBounce: Bool) async throws
+}
+
+extension AudioRecorderModel: AutomaticCapture {}
+extension RoutingModel: AutomaticRouting {}
+
 /// Coordinates the tested route and capture components. No raw model output can
 /// request an action; only the two-result confirmer enters this state machine.
 @MainActor
@@ -15,13 +42,14 @@ final class AutomaticCommercialModel: ObservableObject {
     @Published private(set) var history = ""
     @Published private(set) var phase = AutomaticCommercialPolicy.Phase.idle
     var busy: Bool { enabled || recovering }
-    private let recorder: AudioRecorderModel
-    private let routing: RoutingModel
+    private let recorder: any AutomaticCapture
+    private let routing: any AutomaticRouting
+    private let logDirectory: URL?
     private var policy = AutomaticCommercialPolicy()
     private var task: Task<Void, Never>?
     private var timer: Timer?
     private var awakeActivity: NSObjectProtocol?
-    private let viewingActivity = ViewingActivity()
+    private let viewingActivity: ViewingActivity
     private var viewingActivityFailed = false
     private var generation = UUID()
     private var pickerRetryAfter: Double?
@@ -31,9 +59,13 @@ final class AutomaticCommercialModel: ObservableObject {
     private var tv = ""
     private var local = ""
 
-    init(recorder: AudioRecorderModel, routing: RoutingModel) {
+    /// `logDirectory` defaults to the app's Application Support folder; tests pass their own.
+    init(recorder: any AutomaticCapture, routing: any AutomaticRouting, logDirectory: URL? = nil,
+         viewingActivity: ViewingActivity = ViewingActivity()) {
         self.recorder = recorder
         self.routing = routing
+        self.logDirectory = logDirectory
+        self.viewingActivity = viewingActivity
     }
 
     func start() {
@@ -52,9 +84,14 @@ final class AutomaticCommercialModel: ObservableObject {
         pickerRetryAfter = nil
         policy.begin(); phase = policy.phase
         do {
-            let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
+            let base: URL
+            if let logDirectory {
+                base = logDirectory
+            } else {
+                base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                                                    appropriateFor: nil, create: true)
-                .appendingPathComponent(applicationSupportDirectoryName)
+                    .appendingPathComponent(applicationSupportDirectoryName)
+            }
             try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
             logURL = base.appendingPathComponent("automatic-\(id.uuidString).jsonl")
         } catch {
@@ -128,7 +165,7 @@ final class AutomaticCommercialModel: ObservableObject {
             task = Task {
                 do {
                     mayHaveChangedRoute = true
-                    try await routing.routeForAutomation(from: tv, to: local)
+                    try await routing.routeForAutomation(from: tv, to: local, retryFocusBounce: false)
                     try check(id)
                     recorder.stop(reason: "Automatic break handoff")
                     try await listen(source: .system, muted: true, id: id)
@@ -170,7 +207,7 @@ final class AutomaticCommercialModel: ObservableObject {
                 try await listen(source: .microphone, muted: false, id: id)
                 try check(id)
                 record("Microphone ready · requesting TV route with audio setup complete")
-                try await routing.routeForAutomation(from: local, to: tv)
+                try await routing.routeForAutomation(from: local, to: tv, retryFocusBounce: false)
                 try check(id)
                 // Discard Mac-room audio accumulated while the picker was open.
                 // This resets classification only, not the audio device.
