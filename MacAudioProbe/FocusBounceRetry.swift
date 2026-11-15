@@ -3,12 +3,14 @@
 /// (November 14). `RoutingModel.routeForAutomation` wraps only its steps before any
 /// destination selection in this rule, so a retry can never repeat a selection.
 enum FocusBounceRetry {
-    /// Runs `attempt`, retrying once if it failed because focus returned to Commercial
-    /// Breaker and Commercial Breaker is still frontmost after `pause`. `beforeRetry`
+    /// Runs `attempt`, retrying once if the route is `eligible`, it failed because focus
+    /// returned to Commercial Breaker, and Commercial Breaker is still frontmost after
+    /// `pause`. An ineligible bounce is rethrown at once, without the pause. `beforeRetry`
     /// runs just before the second attempt. Every other failure, including focus moving
     /// to another app and cancellation during the pause, is rethrown unchanged.
     @MainActor
     static func run<T>(
+        eligible: Bool,
         pause: () async throws -> Void,
         ownAppFrontmost: () -> Bool,
         beforeRetry: () async -> Void,
@@ -16,7 +18,7 @@ enum FocusBounceRetry {
     ) async throws -> T {
         do {
             return try await attempt()
-        } catch let failure as RoutingFailure where failure.focusReturnedToCommercialBreaker {
+        } catch let failure as RoutingFailure where eligible && failure.focusReturnedToCommercialBreaker {
             try await pause()
             guard ownAppFrontmost() else { throw failure }
             await beforeRetry()

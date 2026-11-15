@@ -12,10 +12,11 @@ struct Run: Equatable {
 /// Runs the retry with scripted attempt outcomes. `result` is the value returned by
 /// the attempt that succeeded, or the message of the failure that was thrown.
 @MainActor
-func run(_ outcomes: [RoutingFailure?], ownAppFrontmost: Bool = true, cancelDuringPause: Bool = false) async -> Run {
+func run(_ outcomes: [RoutingFailure?], eligible: Bool = true, ownAppFrontmost: Bool = true, cancelDuringPause: Bool = false) async -> Run {
     var run = Run(result: "")
     do {
         run.result = try await FocusBounceRetry.run(
+            eligible: eligible,
             pause: {
                 run.pauses += 1
                 if cancelDuringPause { throw CancellationError() }
@@ -52,6 +53,8 @@ struct FocusBounceRetryTests {
         r = await run([bounce, nil], ownAppFrontmost: false); assert(r == Run(result: bounce.message, attempts: 1, pauses: 1))
         // Cancellation during the pause (Stop again, shutdown): this call makes no second attempt.
         r = await run([bounce, nil], cancelDuringPause: true); assert(r == Run(result: "canceled", attempts: 1, pauses: 1))
+        // A route that began in another app stops on a bounce at once, without pausing.
+        r = await run([bounce, nil], eligible: false); assert(r == Run(result: bounce.message, attempts: 1))
         // Focus lost to another app, or missing picker rows, are not this retry's to handle.
         r = await run([otherApp, nil]); assert(r == Run(result: otherApp.message, attempts: 1))
         r = await run([missingRows, nil]); assert(r == Run(result: missingRows.message, attempts: 1))
