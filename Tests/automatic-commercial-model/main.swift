@@ -21,7 +21,9 @@ import IOKit
 
     init(events: Events, root: URL) { self.events = events; self.root = root }
 
+    /// Mirrors `AudioRecorderModel`: a running capture or a muted microphone doesn't start.
     func start(initiallyMuted: Bool) {
+        guard !running, !initiallyMuted || source == .system else { return }
         let folder = root.appendingPathComponent("recordings/\(UUID().uuidString)")
         try! FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         self.folder = folder
@@ -35,7 +37,13 @@ import IOKit
         events.list.append("stop capture")
     }
 
-    func setSystemMuted(_ muted: Bool) throws { events.list.append(muted ? "mute" : "unmute") }
+    /// Mirrors `AudioRecorderModel`: only a ready system capture can change the mute.
+    func setSystemMuted(_ muted: Bool) throws {
+        guard running, ready, source == .system else {
+            throw RoutingFailure(message: "System capture is not ready; mute was not changed.")
+        }
+        events.list.append(muted ? "mute" : "unmute")
+    }
 }
 
 @MainActor final class FakeRouting: AutomaticRouting {
@@ -49,7 +57,8 @@ import IOKit
     init(events: Events) { self.events = events }
 
     func routeForAutomation(from expected: String?, to target: String, retryFocusBounce: Bool) async throws {
-        events.list.append("route \(target == tvName ? "TV" : "Mac")")
+        // The focus-bounce retry is only for startup and Stop, never a break or return handoff.
+        events.list.append("route \(target == tvName ? "TV" : "Mac")\(retryFocusBounce ? " retry" : "")")
         if holdNext {
             holdNext = false
             await withCheckedContinuation { held = $0 }
@@ -63,8 +72,9 @@ import IOKit
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("commercial-breaker-model-\(UUID())")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
-        func waitUntil(_ what: String, _ condition: () -> Bool) async throws {
-            let deadline = ProcessInfo.processInfo.systemUptime + 10
+        // Each capture leg starts a real /bin/sh worker, which a loaded CI runner can be slow to run.
+        func waitUntil(_ what: String, within seconds: Double = 15, _ condition: () -> Bool) async throws {
+            let deadline = ProcessInfo.processInfo.systemUptime + seconds
             while !condition() {
                 precondition(ProcessInfo.processInfo.systemUptime < deadline, "Timed out waiting for \(what)")
                 try await Task.sleep(for: .milliseconds(20))
@@ -84,7 +94,7 @@ import IOKit
         let (model, capture, routing, events) = makeModel(.airPlay)
         model.start()
         try await waitUntil("watching TV") { model.phase == .watchingTV }
-        assert(events.list == ["route TV", "capture microphone"], "\(events.list)")
+        assert(events.list == ["route TV retry", "capture microphone"], "\(events.list)")
         events.list.removeAll()
         capture.gemini.onConfirmed?(.commercialBreak)
         try await waitUntil("the muted Mac") { model.phase == .mutedMac }
@@ -112,13 +122,15 @@ import IOKit
         assert(model.phase == .watchingTV && model.history.contains("Mac handoff rearmed"), "Program on the TV rearms the next break")
         print("Silent return and same-break hold passed")
 
-        // Nothing else starts while a handoff is in flight.
+        // Nothing else starts while a handoff is in flight. The policy rejects these signals
+        // while moving to the Mac, and the model's task guard backs it up.
         routing.holdNext = true
         capture.gemini.onConfirmed?(.commercialBreak)
         try await waitUntil("the held Mac route") { routing.held != nil }
         capture.gemini.onSilentAudio?(6)
         capture.gemini.onConfirmed?(.program)
-        assert(events.list == ["route Mac"], "\(events.list)")
+        try await Task.sleep(for: .milliseconds(200))
+        assert(events.list == ["route Mac"] && model.phase == .movingToMac, "\(events.list)")
         routing.held?.resume(); routing.held = nil
         try await waitUntil("the muted Mac") { model.phase == .mutedMac }
 
@@ -131,6 +143,7 @@ import IOKit
         assert(model.history.contains("retry eligible in 30 seconds after fresh confirmation or a new silent run"))
         events.list.removeAll()
         capture.gemini.onSilentAudio?(12)
+        try await Task.sleep(for: .milliseconds(200))
         assert(events.list.isEmpty && model.phase == .audibleMacAwaitingTV, "No retry before the picker wait ends")
         print("Handoff and picker-retry guards passed")
 
@@ -138,7 +151,7 @@ import IOKit
         model.stopAndRecover()
         assert(capture.gemini.onConfirmed == nil && capture.gemini.onSilentAudio == nil, "Stop must disconnect detection")
         try await waitUntil("recovery") { !model.busy }
-        assert(events.list == ["stop capture", "route TV"], "\(events.list)")
+        assert(events.list == ["stop capture", "route TV retry"], "\(events.list)")
         print("Stop and recovery passed")
 
         // In Mac playback mode silence only means nothing is playing.
@@ -147,9 +160,10 @@ import IOKit
         try await waitUntil("watching on the Mac") { local.phase == .watchingMac }
         assert(localEvents.list == ["capture system"], "\(localEvents.list)")
         localCapture.gemini.onSilentAudio?(6)
+        try await Task.sleep(for: .milliseconds(200))
         assert(localEvents.list == ["capture system"] && local.phase == .watchingMac, "Silence must not move Mac playback")
         local.stopAndRecover()
         try await waitUntil("stop") { !local.busy }
-        print("Automatic model checks passed · fake capture and routing, no audio or AirPlay")
+        print("Automatic model checks passed · fake capture and routing; no audio is captured and no AirPlay route changes")
     }
 }

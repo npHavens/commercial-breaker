@@ -65,7 +65,7 @@ final class RoutingModel: ObservableObject {
     /// `FocusBounceRetry`). With `retryFocusBounce`, used by startup and Stop's TV
     /// recovery, a route that began with Commercial Breaker in front runs its steps before
     /// the selection at most twice; the selection itself runs once. Handoffs never retry.
-    func routeForAutomation(from expected: String?, to target: String, retryFocusBounce: Bool = false) async throws {
+    func routeForAutomation(from expected: String?, to target: String, retryFocusBounce: Bool) async throws {
         try Task.checkCancellation()
         guard !busy else {
             throw RoutingFailure(message: "Another routing operation is already running.")
