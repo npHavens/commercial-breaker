@@ -7,6 +7,7 @@ struct AutomaticCommercialPolicy {
         case idle, starting, watchingTV, movingToMac, mutedMac, movingToTV, recovering
         case watchingMac, mutingLocalMac, mutedLocalMac, unmutingLocalMac
         case releasingLocalLimit, awaitingLocalProgram, audibleMacAwaitingTV
+        case movingToTVAfterSilence, awaitingTVProgram
     }
 
     enum Action: Equatable { case none, toMac, toTV, muteLocal, unmuteLocal }
@@ -68,9 +69,25 @@ struct AutomaticCommercialPolicy {
         case (.mutedMac, .program), (.audibleMacAwaitingTV, .program):
             transition(to: .movingToTV)
             return .toTV
+        case (.awaitingTVProgram, .program):
+            transition(to: .watchingTV)
+            return .none
         default:
             return .none
         }
+    }
+
+    /// The Mac's capture has heard only exact digital silence during an AirPlay break, so
+    /// playback there has stalled or the capture is delivering zeros. Neither confirms
+    /// program, so return to the TV, where the user can hear it, and keep the rest of that
+    /// break there: moving it back would likely stall again. Program on the TV rearms the
+    /// next break. In Mac playback mode silence only means nothing is playing, so it never
+    /// moves playback.
+    @discardableResult
+    mutating func macCaptureSilent() -> Bool {
+        guard phase == .mutedMac || phase == .audibleMacAwaitingTV else { return false }
+        transition(to: .movingToTVAfterSilence)
+        return true
     }
 
     @discardableResult
@@ -80,7 +97,12 @@ struct AutomaticCommercialPolicy {
 
     @discardableResult
     mutating func reachedTV() -> Bool {
-        complete(from: .movingToTV, to: .watchingTV)
+        switch phase {
+        case .movingToTV: transition(to: .watchingTV)
+        case .movingToTVAfterSilence: transition(to: .awaitingTVProgram)
+        default: return false
+        }
+        return true
     }
 
     /// Only use when routing certifies that no destination press was attempted.
@@ -88,7 +110,7 @@ struct AutomaticCommercialPolicy {
     mutating func pickerUnavailable() -> Bool {
         switch phase {
         case .movingToMac: transition(to: .watchingTV)
-        case .movingToTV: transition(to: .audibleMacAwaitingTV)
+        case .movingToTV, .movingToTVAfterSilence: transition(to: .audibleMacAwaitingTV)
         default: return false
         }
         return true

@@ -1,3 +1,38 @@
+# A silent Mac capture returns the break to the TV — v0.2.54
+
+On November 14 (UFC on Paramount+ through the HLS relay, TV via AirPlay) one break stayed
+on the Mac for 23 minutes. Its system capture heard program commentary about a minute after
+the handoff, then only exact digital silence: 235 samples in a row, all answered locally by
+the worker. Program could never confirm, the three-minute limit restored sound with nothing
+to hear, and playback stayed on the Mac until Nick pressed Stop. The logs can't tell
+whether the Mac's playback stalled or the tap delivered zeros: the relay keeps no log, and
+unmuting brought no sound back. The timing, about one buffer of audio after the Mac took
+over, points to a stall.
+
+Now six of the worker's local silence answers in a row, about 30 seconds, during an AirPlay
+break return playback to the TV through the same path as a confirmed program: release the
+capture, start the microphone, request the TV, then reset classifier context. The rest of
+that break stays on the TV, ads included, because moving it back would likely stall again;
+a confirmed program on the TV rearms the next break. Any answer from Gemini, or a failed
+request that reached Gemini, ends the run; a classifier context reset doesn't. If the model
+can't act when the limit is reached, the signal repeats every six silent answers while the
+silence lasts. A silent return whose picker never opens falls back to the existing
+30-second picker retry, with a new silent run as its evidence. The watchdog runs only on
+AirPlay break captures: in Mac playback mode silence only means nothing is playing.
+
+Silence is still never treated as program or commercial. Prompts, sample length, cadence,
+the one-request limit and the confirmation thresholds are unchanged, so every prompt hash
+is unchanged. Observation logs add a `silent-audio` event, and the automatic log names the
+number of silent answers.
+
+The limit comes from 321 AirPlay break captures from October 11 to November 14: a normal
+break never had more than 3 silent answers in a row, and every capture that stalled had 8
+or more. Known limits: a Mac that stalls on every break spends about 30 silent seconds on
+each before returning, and a capture that stops delivering audio altogether, rather than
+delivering zeros, still isn't caught. Neither appears in the logs.
+
+Live verification pending.
+
 # Promos alone no longer confirm a break — v0.2.53
 
 On November 14 (UFC on Paramount+, TV via AirPlay), 17 of 23 breaks in the second session

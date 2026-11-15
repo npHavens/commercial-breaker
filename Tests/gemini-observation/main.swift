@@ -156,6 +156,52 @@ import Foundation
         feed()
         try await waitUntil("the stop at the failure limit") { !observer.enabled }
         assert(observer.status.contains("1 failed request with no answer"), "The limit must stop Gemini and say why")
+        var run = SilenceRun(limit: 3)
+        assert(!run.silent() && !run.silent())
+        assert(run.silent(), "The third silent answer in a row reaches the limit")
+        assert(!run.silent() && !run.silent())
+        assert(run.silent() && run.count == 6, "A signal that couldn't be acted on is sent again at each multiple")
+        run.reset()
+        assert(!run.silent() && run.count == 1, "Reset starts a new run")
+        assert(SilenceRun.defaultLimit == 6, "About 30 seconds at the regular five-second cadence")
+        // Silent answers in a row report at the limit, and a failed request from Gemini ends
+        // the run, because only audio that isn't silent reaches Gemini.
+        try """
+        import json, sys
+        print(json.dumps({'ready':True,'promptSHA256':'0'*64}), flush=True)
+        for i,line in enumerate(sys.stdin):
+            request=json.loads(line)
+            if i==1:
+                print(json.dumps({'id':request['id'],'error':'timeout'}), flush=True)
+            else:
+                print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable','audio_usable':False},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
+        """.write(to: script, atomically: true, encoding: .utf8)
+        assert(events("silent-audio").isEmpty, "Sessions started without a limit never count silence")
+        var silentCalls: [Int] = []
+        observer.onSilentAudio = { silentCalls.append($0) }
+        let silentRuns = events("silent-audio").count, silentReady = events("worker-ready").count
+        observer.start(directory: directory, silentAnswersLimit: 2)
+        try await waitUntil("the fake worker to start") { events("worker-ready").count > silentReady }
+        func answer(_ what: String, after delay: () async throws -> Void, done: @escaping () -> Bool) async throws {
+            try await delay()
+            feed()
+            try await waitUntil(what, done)
+        }
+        func regularInterval() async throws {
+            let sent = uptime(events("request").last)
+            try await waitUntil("the regular interval") { ProcessInfo.processInfo.systemUptime >= sent + 5 }
+        }
+        let silences = events("prediction").count, failures = events("request-recovery").count
+        try await answer("the first silence answer", after: {}) { events("prediction").count > silences }
+        try await answer("the timeout", after: regularInterval) { events("request-recovery").count > failures }
+        try await answer("a silence answer after the timeout", after: awaitRecoveryDelay) { events("prediction").count > silences + 1 }
+        assert(silentCalls.isEmpty && events("silent-audio").count == silentRuns, "A failed request must end the silent run")
+        // A new classifier context doesn't change whether the capture delivers zeros.
+        observer.resetContext()
+        try await answer("the second silence answer in a row", after: regularInterval) { events("silent-audio").count > silentRuns }
+        assert(silentCalls == [2] && events("silent-audio").last?["answersInARow"] as? Int == 2, "The limit must be reported with the run's length and logged")
+        observer.stop()
+        observer.onSilentAudio = nil
         let zeros = String(repeating: "0", count: 64)
         for (hash, valid) in [(zeros, true), (String(repeating: "A", count: 64), false), (String(zeros.dropLast()) + "\u{FF10}", false), (zeros + "0", false)] {
             assert(GeminiObservation.isPromptHash(hash) == valid, "\(hash) must \(valid ? "" : "not ")be logged as a prompt hash")
