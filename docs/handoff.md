@@ -84,9 +84,9 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   review running `/code-review high` when they open or are marked ready; fork PRs never do.
   Since November 15, `claude-review.yml` calls the shared `claude-review-reusable.yml` in the
   public npHavens/.github repo at `@main`, which also gives the reviewer that repo's
-  `review/review-standard.md`. That repo doesn't review its own PRs. CB's own
-  `claude-review-reusable.yml` stays only for the other repos that still call it at `@main`,
-  until they switch (Next work 11). A run that never reaches the model now reads "did not
+  `review/review-standard.md`. That repo doesn't review its own PRs. All four repos call it,
+  so CB's own copy and its tests were removed; the "Review caller matches the shared copy"
+  CI job checks that CB's caller is still an unchanged copy. A run that never reaches the model now reads "did not
   complete", not "finished" (npHavens/.github#3). When later pushes need a re-review is in the
   merge gate in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
   not the PR's head, and uses main's caller. Review comments come from `github-actions[bot]`.
@@ -175,22 +175,13 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    their own `generateContent` config from `REQUEST`; export one builder from
    `Tools/gemini-live-worker.mjs` and use it in both. Also export the worker's
    `safeUsage` to replace compare-detection's copy, and show `REQUEST` in its dry run.
-9. Confirm `Read(//proc/**)` also stops `Grep` on a runner. Project skills under
-   `--setting-sources user` are untested too.
-10. Restore-step limits left from PR #17: it matches file names by hand and repeats the list in
-   two `find` commands, does not check for symlinked parent folders or differently cased names,
-   and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
-   the name list.
-11. Move the other three repos to the shared review: each copies npHavens/.github's
-   `review/claude-review.yml` unchanged as its caller and shows a successful live run. A
-   switch PR's `@claude review` comment would run the old caller, so the new caller's
-   comment path is first tested by the next `@claude review` comment in that repo. The
-   No Hands Stack HQ session coordinates this. Once all three have switched, remove CB's
-   `claude-review-reusable.yml`, its tests in `Tests/test_review_workflow.py` and the
-   `AGENTS.md` text about other repos calling it. On November 8 each repo's run log showed its
-   own repo checked out for the rules restore; none of those PRs tampered with a rules file,
-   so that case was only tested locally. Severity labels were still missing in some of those
-   repos before PR #21, so check whether its user-level `CLAUDE.md` rule fixed them.
+9. Moved to npHavens/.github with the shared workflow: confirm `Read(//proc/**)` also stops
+   `Grep` on a runner; project skills under `--setting-sources user` are untested.
+10. Moved likewise: the rules-restore step's limits from PR #17 (hand-matched file names,
+   no symlink or case checks, recreated folders).
+11. Done November 15: all four repos run the shared review from npHavens/.github, and CB's
+   copy, its tests and the `AGENTS.md` text about it are removed. Whether PR #21's severity
+   rule fixed the other repos' labels is tracked there too, by the No Hands Stack HQ session.
 
 12. Focus bounce, from PR #27: find what returns focus to Commercial Breaker after Safari
     activates (both cases start from a click in its window), for example by waiting for

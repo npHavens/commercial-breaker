@@ -47,3 +47,18 @@ jobs:
           -configuration Debug -destination 'platform=macOS'
           -derivedDataPath build/ci CODE_SIGNING_ALLOWED=NO build
       - run: Tests/run-native-tests.sh
+
+  # The review caller is copied unchanged from npHavens/.github, which it runs at @main.
+  # Not a required check, so a shared change shows here without blocking merges until the
+  # caller is copied again.
+  review-caller:
+    name: Review caller matches the shared copy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: >-
+          curl -fsSL https://raw.githubusercontent.com/npHavens/.github/main/review/claude-review.yml
+          | diff -u - .github/workflows/claude-review.yml
