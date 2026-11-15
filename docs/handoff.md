@@ -182,7 +182,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
 11. Move the other three repos to the shared review: each copies npHavens/.github's
-   `review/claude-review.yml` unchanged as its caller and shows a successful live run. The
+   `review/claude-review.yml` unchanged as its caller and shows a successful live run. A
+   switch PR's `@claude review` comment run still uses the old caller, so the new caller's
+   comment path is first tested by the next `@claude review` comment in that repo. The
    No Hands Stack HQ session coordinates this. Once all three have switched, remove CB's
    `claude-review-reusable.yml`, its tests in `Tests/test_review_workflow.py` and the
    `AGENTS.md` text about other repos calling it. On November 8 each repo's run log showed its
