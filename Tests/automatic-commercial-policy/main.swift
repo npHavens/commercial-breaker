@@ -146,7 +146,7 @@ assert(silentMac.confirmed(.commercialBreak) == .toMac)
 assert(!silentMac.macCaptureSilent()) // Still routing to the Mac.
 silentMac.reachedMac()
 assert(silentMac.macCaptureSilent())
-assert(silentMac.phase == .movingToTV)
+assert(silentMac.phase == .movingToTVAfterSilence)
 assert(!silentMac.macCaptureSilent())
 assert(silentMac.confirmed(.program) == .none) // Already returning.
 assert(silentMac.reachedTV())

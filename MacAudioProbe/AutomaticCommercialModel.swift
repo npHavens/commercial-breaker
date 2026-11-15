@@ -147,9 +147,11 @@ final class AutomaticCommercialModel: ObservableObject {
 
     /// Playback on the Mac stalled or its capture delivers zeros; see `macCaptureSilent`.
     private func silentAudio(answers: Int) {
+        let wasMuted = phase == .mutedMac
         guard canAct, policy.macCaptureSilent() else { return }
         phase = policy.phase
-        record("Mac capture silent for \(answers) answers in a row · removing mute and returning playback to TV; this break stays there")
+        record("Mac capture silent for \(answers) answers in a row · " + (wasMuted ? "removing mute and " : "")
+               + "returning playback to TV; this break stays there")
         returnToTV(id: generation)
     }
 
@@ -213,7 +215,8 @@ final class AutomaticCommercialModel: ObservableObject {
         task = nil
         record("Picker unavailable before destination selection · playback left on " +
                (phase == .watchingTV ? "TV" : "Mac with sound on") +
-               ". Detection continues; retry eligible in 30 seconds after fresh confirmation or, on a silent Mac, a new silent run")
+               ". Detection continues; retry eligible in 30 seconds after fresh confirmation" +
+               (phase == .audibleMacAwaitingTV ? " or a new silent run" : ""))
     }
 
     private func listen(source: AudioRecorderModel.Source, muted: Bool, id: UUID) async throws {

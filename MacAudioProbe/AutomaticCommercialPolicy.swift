@@ -6,14 +6,13 @@ struct AutomaticCommercialPolicy {
     enum Phase: Equatable {
         case idle, starting, watchingTV, movingToMac, mutedMac, movingToTV, recovering
         case watchingMac, mutingLocalMac, mutedLocalMac, unmutingLocalMac
-        case releasingLocalLimit, awaitingLocalProgram, audibleMacAwaitingTV, awaitingTVProgram
+        case releasingLocalLimit, awaitingLocalProgram, audibleMacAwaitingTV
+        case movingToTVAfterSilence, awaitingTVProgram
     }
 
     enum Action: Equatable { case none, toMac, toTV, muteLocal, unmuteLocal }
 
     private(set) var phase: Phase = .idle
-    /// Set by a silent return, so the rest of that break stays on the TV.
-    private var returningFromSilence = false
 
     @discardableResult
     mutating func begin() -> Bool {
@@ -87,8 +86,7 @@ struct AutomaticCommercialPolicy {
     @discardableResult
     mutating func macCaptureSilent() -> Bool {
         guard phase == .mutedMac || phase == .audibleMacAwaitingTV else { return false }
-        transition(to: .movingToTV)
-        returningFromSilence = true
+        transition(to: .movingToTVAfterSilence)
         return true
     }
 
@@ -99,7 +97,12 @@ struct AutomaticCommercialPolicy {
 
     @discardableResult
     mutating func reachedTV() -> Bool {
-        complete(from: .movingToTV, to: returningFromSilence ? .awaitingTVProgram : .watchingTV)
+        switch phase {
+        case .movingToTV: transition(to: .watchingTV)
+        case .movingToTVAfterSilence: transition(to: .awaitingTVProgram)
+        default: return false
+        }
+        return true
     }
 
     /// Only use when routing certifies that no destination press was attempted.
@@ -107,7 +110,7 @@ struct AutomaticCommercialPolicy {
     mutating func pickerUnavailable() -> Bool {
         switch phase {
         case .movingToMac: transition(to: .watchingTV)
-        case .movingToTV: transition(to: .audibleMacAwaitingTV)
+        case .movingToTV, .movingToTVAfterSilence: transition(to: .audibleMacAwaitingTV)
         default: return false
         }
         return true
@@ -131,6 +134,5 @@ struct AutomaticCommercialPolicy {
 
     private mutating func transition(to next: Phase) {
         phase = next
-        returningFromSilence = false
     }
 }

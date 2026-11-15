@@ -9,10 +9,13 @@ struct SilenceRun {
     let limit: Int
     private(set) var count = 0
 
-    init(limit: Int) { self.limit = limit }
+    init(limit: Int) {
+        precondition(limit > 0, "A silence limit must be positive")
+        self.limit = limit
+    }
 
-    /// True on every `limit`th silent answer in a row, so a signal that couldn't be acted on
-    /// is sent again.
+    /// True on every `limit`th silent answer in a row, so a signal the model couldn't act on
+    /// is sent again if the silence continues.
     mutating func silent() -> Bool {
         count += 1
         return count % limit == 0
@@ -117,8 +120,8 @@ final class GeminiObservation: ObservableObject {
         generation = UUID()
         buffer.reset()
         prediction = ""
+        // The silent run survives: a new context doesn't change whether the capture delivers zeros.
         resetConfirmation()
-        silenceRun?.reset()
         if enabled {
             status = "Game changed · waiting for eight seconds of new audio"
             log(["event": "context-reset"])

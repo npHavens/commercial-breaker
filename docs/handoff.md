@@ -70,8 +70,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - v0.2.54 returns an AirPlay break to the TV after six silent answers in a row (about 30
   seconds) from the Mac's capture, through the same path as a confirmed program, and keeps
   the rest of that break on the TV until program is confirmed there (see its changelog). It
-  fixes the November 14 stall that left a break on the Mac for 23 minutes. Not yet built
-  signed or run live.
+  limits a stall like November 14's, which left a break on the Mac for 23 minutes, to about
+  30 seconds; the cause is still unknown. Not yet built signed or run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
@@ -210,8 +210,8 @@ Do not combine all of this into one rewrite.
 - Sports betting ads can cause false program returns. Future commercial learning
   should avoid manual labeling burden. No fingerprint library implemented.
 - ViewingActivity refresh exists, but screen saver/lock prevention is not proven.
-- All-zero system capture used to stall the TV return. It recurred on November 14 (21
-  minutes during a UFC break, after which Stop and a restart recovered). Since v0.2.54 the
+- All-zero system capture used to stall the TV return. It recurred on November 14 (23
+  minutes on the Mac during a UFC break, 21 of them silent, until Stop and a restart). Since v0.2.54 the
   break returns to the TV after about 30 seconds of it. The root cause is still unknown: the
   capture heard program for about a minute after the handoff, then only zeros, which
   points to the Mac's relay playback stalling rather than the tap. The relay keeps no log.

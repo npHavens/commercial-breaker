@@ -176,6 +176,7 @@ import Foundation
             else:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable','audio_usable':False},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
+        assert(events("silent-audio").isEmpty, "Sessions started without a limit never count silence")
         var silentCalls: [Int] = []
         observer.onSilentAudio = { silentCalls.append($0) }
         let silentRuns = events("silent-audio").count, silentReady = events("worker-ready").count
@@ -195,6 +196,8 @@ import Foundation
         try await answer("the timeout", after: regularInterval) { events("request-recovery").count > failures }
         try await answer("a silence answer after the timeout", after: awaitRecoveryDelay) { events("prediction").count > silences + 1 }
         assert(silentCalls.isEmpty && events("silent-audio").count == silentRuns, "A failed request must end the silent run")
+        // A new classifier context doesn't change whether the capture delivers zeros.
+        observer.resetContext()
         try await answer("the second silence answer in a row", after: regularInterval) { events("silent-audio").count > silentRuns }
         assert(silentCalls == [2] && events("silent-audio").last?["answersInARow"] as? Int == 2, "The limit must be reported with the run's length and logged")
         observer.stop()

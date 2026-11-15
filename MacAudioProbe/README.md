@@ -14,10 +14,11 @@ break return playback to the TV through the same path as a confirmed program: re
 capture, start the microphone, request the TV, then reset classifier context. The rest of
 that break stays on the TV, ads included, because moving it back would likely stall again;
 a confirmed program on the TV rearms the next break. Any answer from Gemini, or a failed
-request that reached Gemini, ends the run. If the limit is reached while a handoff is
-running or a picker retry is waiting, the signal repeats every six silent answers. The
-watchdog runs only on AirPlay break captures: in Mac playback mode silence only means
-nothing is playing.
+request that reached Gemini, ends the run; a classifier context reset doesn't. If the model
+can't act when the limit is reached, the signal repeats every six silent answers while the
+silence lasts. A silent return whose picker never opens falls back to the existing
+30-second picker retry, with a new silent run as its evidence. The watchdog runs only on
+AirPlay break captures: in Mac playback mode silence only means nothing is playing.
 
 Silence is still never treated as program or commercial. Prompts, sample length, cadence,
 the one-request limit and the confirmation thresholds are unchanged, so every prompt hash
