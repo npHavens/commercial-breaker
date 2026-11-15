@@ -17,8 +17,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 
 ## Current checkpoint
 
-- PRs #1–#26 are merged. v0.2.50 (PR #24) adds the app icon, built unsigned in CI and
-  not yet seen live; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
+- PRs #1–#26 are merged. v0.2.50 (PR #24) adds the app icon, which v0.2.51 carries into
+  its November 14 live run; `Tools/app-icon/render.sh` makes it. The Skybox → Commercial Breaker
   rename (plan PR #6, code PR #7) is in; the Xcode project, target and app name
   follow in the v0.2.48 rename (see Commands).
 - Native v0.2.48 built signed from cf46103 (the offline suites and all 12 native tests
@@ -50,8 +50,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   answers local), so program never confirmed (see Remaining issues). Stop from the
   Commercial Breaker window then failed to return to TV (fixed in v0.2.52). Both handoffs
   with VS Code frontmost succeeded, through the mouse fallback.
-- v0.2.52 retries Stop's return to TV once when focus bounces back to Commercial Breaker
-  before any selection (see its changelog). Not yet run live.
+- v0.2.52 retries every automatic route once when focus bounces back to Commercial Breaker
+  before any selection, which fixes Stop's return to TV (see its changelog). Not yet run live.
 - v0.2.47 (`build/v0.2.47/…/SkyboxAudioProbe.app`) is the fallback build until v0.2.48
   completes a break/return cycle.
 - The previous v0.2.46 build (from d079dec, `build/mac-audio-oct26-rename/`) was
@@ -94,10 +94,11 @@ can affect detection; isolation is not implemented. Both modes release mute afte
 three minutes and continue detection. AirPlay waits for confirmed program before
 returning TV; local mode waits for program before rearming for another break.
 
-`RoutingModel.verifyTVForAutomation` retries once only when a startup focus failure
-returns to this Commercial Breaker process and it remains foreground after a short wait.
-Startup verifies an already-selected TV and does not choose a destination. Normal
-handoffs still stop on focus loss. Missing picker rows before selection have a
+`RoutingModel.routeForAutomation` (startup, handoffs and Stop's TV recovery) retries its
+pre-selection steps once only when focus returned to this Commercial Breaker process and it
+remains foreground after a short wait (`FocusBounceRetry`, v0.2.52). Startup verifies an
+already-selected TV and does not choose a destination. Focus moving to any other app still
+stops a handoff. Missing picker rows before selection have a
 separate bounded retry policy; never treat an unknown post-selection result as
 safe to repeat.
 

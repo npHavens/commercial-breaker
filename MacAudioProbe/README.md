@@ -1,15 +1,18 @@
-# Stop returns to the TV when focus bounces back — v0.2.52
+# Every automatic route retries a focus bounce once — v0.2.52
 
 On November 14 Nick clicked Stop in Commercial Breaker during a UFC break. Safari
 activated and the AirPlay picker opened, then focus returned to Commercial Breaker
 and the focus guard stopped the return to TV, leaving playback on the Mac. That is the
-same bounce the v0.2.44 startup retry handles. Stop's return to TV (also used when
-detection or a handoff fails) now gets the same single retry: after 0.5 seconds, only
-when the failure names this Commercial Breaker process, it is still frontmost, and no
-destination has been selected yet. A focus loss to another app, a second bounce,
-cancellation, and any failure after a selection still stop without retrying. Break and
-return handoffs keep their existing focus rules. `FocusBounceRetry` holds the shared
-rule and `Tests/focus-bounce-retry` covers it with fakes.
+same bounce the v0.2.44 startup retry handled. That retry wrapped only startup; it now
+lives inside `RoutingModel.routeForAutomation`, so startup, the break and return
+handoffs, and Stop's return to TV (also used when detection or a handoff fails) all get
+it. Only the steps before any destination selection (Safari activation and reading the
+picker) run a second time: after 0.5 seconds, only when the failure names this Commercial
+Breaker process and it is still frontmost. A focus loss to another app, a second bounce,
+cancellation and any failure after a selection still stop without retrying, so a
+selection is never repeated. Both attempts share one routing log; it records the first
+attempt's picker diagnostics and "retrying once". `FocusBounceRetry` holds the rule and
+`Tests/focus-bounce-retry` covers it with fakes.
 
 Live verification pending: Stop from the Commercial Breaker window during an AirPlay
 break should return playback to the TV, and the routing log should note the retry.

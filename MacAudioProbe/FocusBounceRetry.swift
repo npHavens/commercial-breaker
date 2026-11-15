@@ -1,27 +1,26 @@
 /// Opening the AirPlay picker while Commercial Breaker is in front can return focus
 /// to it right after Safari activates: at startup (October 18) and after Stop
-/// (November 14). The routing model marks that failure only before it selects a
-/// destination, so retrying it cannot repeat a selection.
+/// (November 14). `RoutingModel.routeForAutomation` wraps only its steps before any
+/// destination selection in this rule, so a retry can never repeat a selection.
 enum FocusBounceRetry {
     /// Runs `attempt`, retrying once if it failed because focus returned to Commercial
-    /// Breaker and Commercial Breaker is still frontmost after `pause`. Every other
-    /// failure, including focus moving to another app, is rethrown unchanged.
-    /// Returns true when the retry is the attempt that succeeded.
+    /// Breaker and Commercial Breaker is still frontmost after `pause`. `beforeRetry`
+    /// runs just before the second attempt. Every other failure, including focus moving
+    /// to another app and cancellation during the pause, is rethrown unchanged.
     @MainActor
-    static func run(
+    static func run<T>(
         pause: () async throws -> Void,
         ownAppFrontmost: () -> Bool,
-        attempt: () async throws -> Void
-    ) async throws -> Bool {
+        beforeRetry: () async -> Void,
+        attempt: () async throws -> T
+    ) async throws -> T {
         do {
-            try await attempt()
-            return false
+            return try await attempt()
         } catch let failure as RoutingFailure where failure.focusReturnedToCommercialBreaker {
             try await pause()
-            try Task.checkCancellation()
             guard ownAppFrontmost() else { throw failure }
-            try await attempt()
-            return true
+            await beforeRetry()
+            return try await attempt()
         }
     }
 }
