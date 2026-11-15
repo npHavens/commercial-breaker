@@ -71,6 +71,7 @@ final class AutomaticCommercialModel: ObservableObject {
         refreshViewingActivity()
         record(playback == .mac ? "Starting local automatic mode · system audio; no session time limit" : "Starting automatic mode · no session time limit; verifying TV playback route")
         recorder.gemini.onConfirmed = { [weak self] state in self?.confirmed(state) }
+        recorder.gemini.onSilentAudio = { [weak self] in self?.silentAudio() }
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkHealth() }
         }
@@ -135,42 +136,57 @@ final class AutomaticCommercialModel: ObservableObject {
             }
         case .toTV:
             record("Program confirmed · removing mute and returning playback to TV")
-            task = Task {
-                do {
-                    try recorder.setSystemMuted(false)
-                    mutedSince = nil
-                    recorder.stop(reason: "Preparing microphone before TV handoff")
-                    guard recorder.lastStopErrors.isEmpty else {
-                        throw RoutingFailure(message: "System capture cleanup failed before TV handoff: " + recorder.lastStopErrors.joined(separator: "; "))
-                    }
-                    try await listen(source: .microphone, muted: false, id: id)
-                    try check(id)
-                    record("Microphone ready · requesting TV route with audio setup complete")
-                    try await routing.routeForAutomation(from: local, to: tv)
-                    try check(id)
-                    // Discard Mac-room audio accumulated while the picker was open.
-                    // This resets classification only, not the audio device.
-                    recorder.gemini.resetContext()
-                    policy.reachedTV(); phase = policy.phase
-                    record("TV route confirmed · existing microphone capture continues")
-                    task = nil
-                } catch {
-                    guard generation == id, enabled else { return }
-                    if let failure = error as? RoutingFailure, failure.retryableBeforeSelection {
-                        // No destination was pressed: playback is still on the Mac.
-                        // Restore audible system capture for the existing retry policy.
-                        recorder.stop(reason: "TV picker unavailable; restoring audible Mac capture")
-                        do {
-                            guard recorder.lastStopErrors.isEmpty else {
-                                throw RoutingFailure(message: "Microphone cleanup failed during TV retry recovery")
-                            }
-                            try await listen(source: .system, muted: false, id: id)
-                            try check(id)
-                            handoffFailed(error, id: id)
-                        } catch { failed(error, id: id) }
-                    } else {
-                        failed(error, id: id)
-                    }
+            returnToTV(id: id)
+        }
+    }
+
+    /// Playback on the Mac stalled or its capture delivers zeros; see `macCaptureSilent`.
+    private func silentAudio() {
+        guard enabled, task == nil, pickerRetryAfter == nil, policy.macCaptureSilent() else { return }
+        phase = policy.phase
+        record("Mac capture silent for about 30 seconds · removing mute and returning playback to TV")
+        returnToTV(id: generation)
+    }
+
+    /// Releases the muted system capture and starts the microphone before requesting the TV,
+    /// then resets classifier context. Requesting the TV first would leave a stretch with
+    /// no detection, and a capture left in place would keep the Mac muted.
+    private func returnToTV(id: UUID) {
+        task = Task {
+            do {
+                try recorder.setSystemMuted(false)
+                mutedSince = nil
+                recorder.stop(reason: "Preparing microphone before TV handoff")
+                guard recorder.lastStopErrors.isEmpty else {
+                    throw RoutingFailure(message: "System capture cleanup failed before TV handoff: " + recorder.lastStopErrors.joined(separator: "; "))
+                }
+                try await listen(source: .microphone, muted: false, id: id)
+                try check(id)
+                record("Microphone ready · requesting TV route with audio setup complete")
+                try await routing.routeForAutomation(from: local, to: tv)
+                try check(id)
+                // Discard Mac-room audio accumulated while the picker was open.
+                // This resets classification only, not the audio device.
+                recorder.gemini.resetContext()
+                policy.reachedTV(); phase = policy.phase
+                record("TV route confirmed · existing microphone capture continues")
+                task = nil
+            } catch {
+                guard generation == id, enabled else { return }
+                if let failure = error as? RoutingFailure, failure.retryableBeforeSelection {
+                    // No destination was pressed: playback is still on the Mac.
+                    // Restore audible system capture for the existing retry policy.
+                    recorder.stop(reason: "TV picker unavailable; restoring audible Mac capture")
+                    do {
+                        guard recorder.lastStopErrors.isEmpty else {
+                            throw RoutingFailure(message: "Microphone cleanup failed during TV retry recovery")
+                        }
+                        try await listen(source: .system, muted: false, id: id)
+                        try check(id)
+                        handoffFailed(error, id: id)
+                    } catch { failed(error, id: id) }
+                } else {
+                    failed(error, id: id)
                 }
             }
         }
@@ -272,6 +288,7 @@ final class AutomaticCommercialModel: ObservableObject {
         recovering = true
         policy.recover(); phase = policy.phase
         recorder.gemini.onConfirmed = nil
+        recorder.gemini.onSilentAudio = nil
         timer?.invalidate(); timer = nil
         let previous = task
         previous?.cancel()
@@ -313,6 +330,7 @@ final class AutomaticCommercialModel: ObservableObject {
         timer?.invalidate(); timer = nil
         task?.cancel(); task = nil
         recorder.gemini.onConfirmed = nil
+        recorder.gemini.onSilentAudio = nil
         recorder.stop(reason: "App closed; automatic mute removed")
         policy.stop(); phase = policy.phase
     }

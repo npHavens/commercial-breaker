@@ -1,6 +1,25 @@
 import Foundation
 import Combine
 
+/// Counts the worker's local digital-silence answers in a row. Any other answer ends the
+/// run. The default limit comes from the logs: in 321 AirPlay break captures from
+/// October 11 to November 14, a normal break never had more than 3 silent answers in a
+/// row, and every capture that stalled had 8 or more.
+struct SilenceRun {
+    let limit: Int
+    private(set) var count = 0
+
+    init(limit: Int = 6) { self.limit = limit }
+
+    /// True once per run, on the answer that reaches the limit.
+    mutating func answered(silent: Bool) -> Bool {
+        count = silent ? count + 1 : 0
+        return count == limit
+    }
+
+    mutating func reset() { count = 0 }
+}
+
 /// Development-only bridge to the Node worker in this checkout's Tools directory.
 /// Observation has no references to routing or mute controls.
 @MainActor
@@ -12,6 +31,9 @@ final class GeminiObservation: ObservableObject {
     @Published private(set) var confirmation = "Waiting for two matching predictions"
     private var confirmer = GeminiConfirmation()
     var onConfirmed: ((GeminiConfirmation.State) -> Void)?
+    /// Called once when the worker's silence answers in a row reach the session's limit.
+    var onSilentAudio: (() -> Void)?
+    private var silenceRun = SilenceRun()
     let buffer = GeminiAudioBuffer()
     private var process: Process?
     private var input: FileHandle?
@@ -35,13 +57,14 @@ final class GeminiObservation: ObservableObject {
     }
 
     func start(directory: URL, retainProgramAudio: Bool = false, sport: Sport = .football, returnDetection: Bool = false,
-               failuresInARowLimit: Int? = nil) {
+               failuresInARowLimit: Int? = nil, silentAnswersLimit: Int = SilenceRun().limit) {
         guard !enabled else { return }
         self.directory = directory
         self.retainProgramAudio = retainProgramAudio
         generation = UUID()
         buffer.reset()
         recovery = GeminiRecovery(failuresInARowLimit: failuresInARowLimit)
+        silenceRun = SilenceRun(limit: silentAnswersLimit)
         lastAudioEndSent = nil
         lastSent = 0
         preparing = nil
@@ -93,6 +116,7 @@ final class GeminiObservation: ObservableObject {
         buffer.reset()
         prediction = ""
         resetConfirmation()
+        silenceRun.reset()
         if enabled {
             status = "Game changed · waiting for eight seconds of new audio"
             log(["event": "context-reset"])
@@ -203,6 +227,8 @@ final class GeminiObservation: ObservableObject {
                      "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0])
                 prediction = ""
                 resetConfirmation()
+                // Only audio that isn't silent is sent to Gemini, so a failure ends a silent run.
+                silenceRun.reset()
                 let outcome = GeminiRecovery.failure(error: error, httpStatus: value["httpStatus"] as? Int)
                     .map { recovery.failed($0, sent: pending.sent, now: ProcessInfo.processInfo.systemUptime) }
                 let message: String
@@ -261,6 +287,10 @@ final class GeminiObservation: ObservableObject {
             log(["event": "prediction", "id": pending.id, "startUptime": pending.start, "endUptime": pending.end,
                  "result": result, "elapsedMs": elapsed, "usage": value["usage"] ?? NSNull()])
             if changed, let confirmed = confirmer.confirmed { onConfirmed?(confirmed) }
+            if silenceRun.answered(silent: localSilence) {
+                log(["event": "silent-audio", "answersInARow": silenceRun.count])
+                onSilentAudio?()
+            }
             if confirmer.needsFastFollowUp {
                 Task { [weak self] in await self?.tick() }
             }

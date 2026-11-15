@@ -67,6 +67,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 13 native
   tests pass there. It was built just before the rewrite, from 7f86b57, whose tree a8247a9 keeps.
   v0.2.53's promo rule has not run live yet.
+- v0.2.54 returns an AirPlay break to the TV after six silent answers in a row (about 30
+  seconds) from the Mac's capture, through the same path as a confirmed program (see its
+  changelog). It fixes the November 14 stall that left a break on the Mac for 23 minutes.
+  Not yet built signed or run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
@@ -205,9 +209,11 @@ Do not combine all of this into one rewrite.
 - Sports betting ads can cause false program returns. Future commercial learning
   should avoid manual labeling burden. No fingerprint library implemented.
 - ViewingActivity refresh exists, but screen saver/lock prevention is not proven.
-- All-zero system capture stalls the TV return; no verified root-cause fix. It recurred on
-  November 14 (21 minutes during a UFC break, after which Stop and a restart recovered).
-  Whether the Mac stopped playing or the tap delivered zeros is not yet known.
+- All-zero system capture used to stall the TV return. It recurred on November 14 (21
+  minutes during a UFC break, after which Stop and a restart recovered). Since v0.2.54 the
+  break returns to the TV after about 30 seconds of it. The root cause is still unknown: the
+  capture heard program for about a minute after the handoff, then only zeros, which
+  points to the Mac's relay playback stalling rather than the tap. The relay keeps no log.
 - Cost is not the current constraint: Nick reports Gemini usage costs only a few
   dollars. Prioritize accuracy/speed; retain one in-flight request for freshness.
 - Paramount/UFC relay workflow is preserved but not newly validated this session.

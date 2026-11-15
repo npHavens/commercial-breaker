@@ -1,3 +1,32 @@
+# A silent Mac capture returns the break to the TV — v0.2.54
+
+On November 14 (UFC on Paramount+ through the HLS relay, TV via AirPlay) one break stayed
+on the Mac for 23 minutes. Its system capture heard program commentary about a minute after
+the handoff, then only exact digital silence: 235 samples in a row, all answered locally by
+the worker. Program could never confirm, the three-minute limit restored sound with nothing
+to hear, and playback stayed on the Mac until Nick pressed Stop. The logs can't tell
+whether the Mac's playback stalled or the tap delivered zeros: the relay keeps no log, and
+unmuting brought no sound back. The timing, about one buffer of audio after the Mac took
+over, points to a stall.
+
+Now six of the worker's local silence answers in a row, about 30 seconds, during an AirPlay
+break return playback to the TV through the same path as a confirmed program: release the
+capture, start the microphone, request the TV, then reset classifier context. A failed
+request or any answer from Gemini ends the run. If a commercial is still playing, the
+microphone confirms the break again and moves it back to the Mac with a new capture. Mac
+playback mode is unchanged, because silence there only means nothing is playing.
+
+Silence is still never treated as program or commercial. Prompts, sample length, cadence,
+the one-request limit and the confirmation thresholds are unchanged, so every prompt hash
+is unchanged. Observation logs add a `silent-audio` event.
+
+The limit comes from 321 AirPlay break captures from October 11 to November 14: a normal
+break never had more than 3 silent answers in a row, and every capture that stalled had 8
+or more. Known limit: if the Mac keeps stalling while the TV plays, each confirmed break
+can bounce, spending about 30 seconds on a silent Mac before returning to the TV.
+
+Live verification pending.
+
 # Promos alone no longer confirm a break — v0.2.53
 
 On November 14 (UFC on Paramount+, TV via AirPlay), 17 of 23 breaks in the second session

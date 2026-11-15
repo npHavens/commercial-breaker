@@ -73,6 +73,18 @@ struct AutomaticCommercialPolicy {
         }
     }
 
+    /// The Mac's capture has heard only exact digital silence during an AirPlay break, so
+    /// playback there has stalled or the capture is delivering zeros. Neither confirms
+    /// program, so return to the TV, where the user can hear it. A break that is still
+    /// playing moves back to the Mac with a new capture. In Mac playback mode silence
+    /// only means nothing is playing, so it never moves playback.
+    @discardableResult
+    mutating func macCaptureSilent() -> Bool {
+        guard phase == .mutedMac || phase == .audibleMacAwaitingTV else { return false }
+        transition(to: .movingToTV)
+        return true
+    }
+
     @discardableResult
     mutating func reachedMac() -> Bool {
         complete(from: .movingToMac, to: .mutedMac)
