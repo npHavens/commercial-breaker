@@ -9,6 +9,7 @@ sources=(
   airplay-routing             "AirPlayRouteChoice"
   application-support         "SupportDirectory"
   audio-sample-clock          "AudioSampleClock"
+  automatic-commercial-model  "AirPlayRouteChoice AudioLevels AudioRecorderModel AudioSampleClock AudioTap AutomaticCommercialModel AutomaticCommercialPolicy FocusBounceRetry GeminiAudioBuffer GeminiConfirmation GeminiObservation GeminiRecovery MicrophoneInput RoutingModel SafariAccessibility SupportDirectory ViewingActivity"
   automatic-commercial-policy "GeminiConfirmation AutomaticCommercialPolicy"
   gemini-buffer               "GeminiAudioBuffer"
   gemini-confirmation         "GeminiConfirmation"

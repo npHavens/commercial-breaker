@@ -71,7 +71,10 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   seconds) from the Mac's capture, through the same path as a confirmed program, and keeps
   the rest of that break on the TV until program is confirmed there (see its changelog). It
   limits a stall like November 14's, which left a break on the Mac for 23 minutes, to about
-  30 seconds; the cause is still unknown. Not yet built signed or run live.
+  30 seconds; the cause is still unknown. Built signed from 655dad3 on November 15 at
+  `build/v0.2.54/Build/Products/Debug/Commercial Breaker.app`, with the same designated
+  requirement as v0.2.53; 172 JavaScript, 47 Python and 13 native tests pass there. Not yet
+  run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
@@ -199,6 +202,9 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
     mouse-up or a short settle before yielding activation, so the v0.2.52 retry stops being
     the fix. Also test `routeForAutomation`'s use of `FocusBounceRetry` by putting the AX
     calls behind injectable closures, so a fake can show a selection is never retried.
+    `AutomaticCommercialModel` already takes its capture and routing through the
+    `AutomaticCapture` and `AutomaticRouting` protocols, and `Tests/automatic-commercial-model`
+    drives it with fakes; extend that test when changing break and return behavior.
 
 Do not combine all of this into one rewrite.
 
