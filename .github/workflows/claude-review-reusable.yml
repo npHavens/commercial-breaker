@@ -1,8 +1,9 @@
 name: Claude review (reusable)
 
-# The review job shared by this repo and others. Each repo has a small caller with the
-# triggers and permissions; claude-review.yml here is the example. Other repos call this
-# file at @main, so a merge here reaches all of them at once.
+# Kept only for the repos that still call this file at @main, until they switch to the
+# shared copy in npHavens/.github (docs/handoff.md, Next work 11). CB's own review runs that
+# shared copy, so editing this file doesn't change CB's review; a merge here reaches the
+# remaining callers at once.
 # In a called workflow, github.* and github.token belong to the caller's repo and event.
 # Callers should use exactly this filter. The gate below owns the trigger phrase:
 #   (github.event_name == 'pull_request' && !github.event.pull_request.draft)

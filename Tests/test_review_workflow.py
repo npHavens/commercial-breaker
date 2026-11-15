@@ -1,4 +1,10 @@
-"""Runs the shell steps of the Claude review workflow against a stubbed gh."""
+"""Runs the shell steps of CB's copy of the Claude review workflow against a stubbed gh.
+
+CB's own review runs the shared copy in npHavens/.github, which has its own tests. CB's copy
+stays only for the repos that still call it (docs/handoff.md, Next work 11), and these tests
+cover that copy. The caller contract test checks that CB's caller, a copy of the shared one,
+uses the filter CB's copy documents, so the remaining callers can switch without changing it.
+"""
 
 import json
 import os

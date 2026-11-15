@@ -81,12 +81,15 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - PRs get a Codex review (Smart detect) when it runs; it has been paused at its usage limit
   since November 14. Every PR gets the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
-  review running `/code-review high` (`.github/workflows/claude-review-reusable.yml`, called by
-  `claude-review.yml`; other repos call it at `@main`) when they
-  open or are marked ready; fork PRs never do. When later pushes need a re-review is in the
+  review running `/code-review high` when they open or are marked ready; fork PRs never do.
+  Since November 15, `claude-review.yml` calls the shared `claude-review-reusable.yml` in the
+  public npHavens/.github repo at `@main`, which also gives the reviewer that repo's
+  `review/review-standard.md`. That repo doesn't review its own PRs. CB's own
+  `claude-review-reusable.yml` stays only for the other repos that still call it at `@main`,
+  until they switch (Next work 11). A run that never reaches the model now reads "did not
+  complete", not "finished" (npHavens/.github#3). When later pushes need a re-review is in the
   merge gate in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
-  not the PR's head, and here uses main's caller and so main's reusable workflow. In other repos, the caller that runs picks the version:
-  once switched, main's caller uses `@main`. Review comments come from `github-actions[bot]`.
+  not the PR's head, and uses main's caller. Review comments come from `github-actions[bot]`.
   `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
   `claude-review / review` stopped being required on November 14), blocks force pushes and deletion,
   and applies those rules to admins. For the November 15 rewrite, force pushes were allowed and
@@ -178,11 +181,13 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    two `find` commands, does not check for symlinked parent folders or differently cased names,
    and recreates folders a PR deleted. Reading rules from a kept `.review-base` would remove
    the name list.
-11. Switch the other three repos to `@main`: copy CB's `claude-review.yml` except its `uses:` line,
-   which becomes the `@main` path in its header, and show a successful live run in each. After
+11. Move the other three repos to the shared review: each copies npHavens/.github's
+   `review/claude-review.yml` unchanged as its caller and shows a successful live run. After
    each switch merges, confirm the comment path with a real `@claude review` comment there,
-   because comment runs on the switch PR still use the old pin. The
-   No Hands Stack HQ session coordinates this. On November 8 each repo's run log showed its
+   because comment runs on the switch PR still use the old caller. The No Hands Stack HQ
+   session coordinates this. Once all three have switched, remove CB's
+   `claude-review-reusable.yml`, its tests in `Tests/test_review_workflow.py` and the
+   `AGENTS.md` text about other repos calling it. On November 8 each repo's run log showed its
    own repo checked out for the rules restore; none of those PRs tampered with a rules file,
    so that case was only tested locally. Severity labels were still missing in some of those
    repos before PR #21, so check whether its user-level `CLAUDE.md` rule fixed them.
