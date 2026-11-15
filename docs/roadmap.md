@@ -7,7 +7,7 @@ readiness claim.
 1. **Baseline PR:** current detection and AirPlay improvements, startup retry,
    accurate README, contributor workflow and MIT license. Keep live-verification
    gaps explicit. Merge after review; use focused branches for subsequent work.
-2. **Standalone configuration (done October 18, PR #2):** remove the Sibling App dependency;
+2. **Standalone configuration (done October 18, PR #2):** remove the dependency on a separate local checkout;
    declare Node/SDK dependencies, document Vertex authentication and local config,
    and verify a fresh clone can build and start detection without another repo.
 3. **Runtime versus experiments:** move active prompts and runtime helpers out of
