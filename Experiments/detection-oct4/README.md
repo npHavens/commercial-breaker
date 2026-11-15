@@ -50,8 +50,8 @@ node --test Tests/gemini-audio/*.test.mjs
 Authorized upload command:
 
 ```sh
-node --import /Users/nickhavens/Projects/interview-assistant/app/node_modules/tsx/dist/loader.mjs \
-  --env-file=/Users/nickhavens/Projects/interview-assistant/app/.env \
+node --import <other-checkout>/app/node_modules/tsx/dist/loader.mjs \
+  --env-file=<other-checkout>/app/.env \
   Tools/compare-detection.mjs --live
 ```
 

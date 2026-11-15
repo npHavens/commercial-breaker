@@ -154,7 +154,7 @@ Live verification pending: one Mac-mode and one AirPlay break/return cycle.
 
 # Standalone Gemini setup — v0.2.45
 
-Gemini no longer depends on the Interview Assistant checkout; this supersedes
+Gemini no longer depends on a separate local checkout; this supersedes
 the v0.2.13 bridge described below. Commercial Breaker declares `@google/genai` in
 `package.json`, pins Node 24 in `.nvmrc`, and resolves Vertex settings itself
 from `GOOGLE_CLOUD_PROJECT` and optional `GOOGLE_CLOUD_LOCATION` (default
@@ -687,9 +687,9 @@ and actual fake-worker recovery path are covered by tests.
 # Live Gemini observation — v0.2.13
 
 The Recorder now offers an explicitly enabled Gemini observation mode. It uses
-Interview Assistant's installed Node 24/tsx/Google SDK and Vertex credentials,
-without modifying that project. This development bridge requires the Commercial Breaker and
-Interview Assistant source directories to remain in their current locations.
+the Node 24/tsx/Google SDK install and Vertex credentials of a separate local checkout,
+without modifying that project. This development bridge requires both source directories
+to remain in their current locations.
 It discovers Node 24 under `~/.nvm/versions/node`. Worker startup fails if the
 shared configuration is not Vertex, matching the destination named in the UI.
 
