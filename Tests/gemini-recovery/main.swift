@@ -81,9 +81,9 @@ assert(GeminiRecovery.failure(error: "request-failed", httpStatus: 0) == .unclas
 assert(GeminiRecovery.failure(error: "temporary-failure", httpStatus: 503) == .temporary)
 assert(GeminiRecovery.failure(error: "temporary-failure", httpStatus: 429) == .temporary)
 assert(GeminiRecovery.failure(error: "timeout", httpStatus: nil) == .temporary)
-// November 15: one incomplete answer stopped each of two Mac sessions mid-break. Gemini was
-// reachable, and the retry sends fresh audio.
-assert(GeminiRecovery.failure(error: "incomplete-response", httpStatus: nil) == .temporary)
+// November 15: one incomplete answer stopped each of two Mac sessions mid-break. It now retries
+// with fresh audio, but its cause may repeat, so the third in a streak still stops detection.
+assert(GeminiRecovery.failure(error: "incomplete-response", httpStatus: nil) == .unclassified)
 for code in [400, 401, 403] {
     assert(GeminiRecovery.failure(error: "request-failed", httpStatus: code) == nil)
 }

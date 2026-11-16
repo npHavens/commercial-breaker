@@ -230,9 +230,9 @@ final class GeminiObservation: ObservableObject {
                 let allowed = ["invalid-request", "busy", "timeout", "temporary-failure", "incomplete-response", "invalid-response", "request-failed"]
                 var failed: [String: Any] = ["event": "request-failed", "id": pending.id, "error": allowed.contains(error) ? error : "unknown",
                                              "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0]
-                // Gemini's reason for an incomplete answer, such as MAX_TOKENS or SAFETY.
-                if let reason = value["finishReason"] as? String, reason.wholeMatch(of: #/[A-Z_]{1,40}/#) != nil {
-                    failed["finishReason"] = reason
+                // Gemini's reasons for an incomplete answer or a blocked prompt, such as MAX_TOKENS or SAFETY.
+                for key in ["finishReason", "blockReason"] {
+                    if let reason = value[key] as? String, reason.wholeMatch(of: #/[A-Z_]{1,40}/#) != nil { failed[key] = reason }
                 }
                 log(failed)
                 prediction = ""
@@ -254,9 +254,9 @@ final class GeminiObservation: ObservableObject {
                     message = "Gemini stopped after \(Int(GeminiRecovery.giveUpAfter / 60)) minutes of failed requests · recording continues"
                 case .stopAfterFailuresInARow:
                     let count = recovery.consecutiveFailures
-                    message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") with no answer · recording continues"
+                    message = "Gemini stopped after \(count) failed request\(count == 1 ? "" : "s") in a row · recording continues"
                 case .stopUnclassified:
-                    message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) unexplained request failures · recording continues"
+                    message = "Gemini stopped after \(GeminiRecovery.unclassifiedLimit) request failures that may be permanent · recording continues"
                 case nil:
                     message = "Gemini request failed · recording continues. See the session log."
                 }

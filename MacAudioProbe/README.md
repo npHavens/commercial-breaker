@@ -7,13 +7,17 @@ temporary failures retry, but an incomplete answer still stopped at once. The ca
 since September hold four of them, two on November 1 and two on November 15, and each was
 its session's first and last.
 
-An incomplete answer now retries like a timeout: fresh audio after 5, 10, then every 15
-seconds, counted toward the same five-minute limit, and on the AirPlay Mac leg toward the
-three-failures-in-a-row limit. Gemini was reachable and the setup worked, and the retry
-sends different audio. Malformed answers and HTTP 4xx other than 408 and 429 still stop at
-once. The logs can't say why those four answers were incomplete, so the worker now reports
-Gemini's finish reason, a fixed name such as `MAX_TOKENS` or `SAFETY`, and `request-failed`
-records it as `finishReason`. Both sides drop any other value.
+An incomplete answer now retries with fresh audio after 5, 10, then every 15 seconds, but
+it counts like a failure the worker couldn't classify: its cause, such as `MAX_TOKENS` on
+every request, may repeat, so the third in a streak stops detection, within about 30
+seconds, rather than after the five minutes timeouts get. Each logged case was a single
+answer. Malformed answers and HTTP 4xx other than 408 and 429 still stop at once. The logs
+can't say why those four answers were incomplete, so the worker now reports Gemini's
+reason, a fixed name such as `MAX_TOKENS` or `SAFETY`: `finishReason` for an incomplete
+answer, or `blockReason` from the prompt feedback when Gemini blocked the prompt, and
+`request-failed` records both. Both sides drop any other value. The stop messages now say
+"failed requests in a row" and "request failures that may be permanent", since an
+incomplete answer is neither an outage nor unexplained.
 
 A session that stops on its own now names the cause. Two AirPlay sessions left running
 when the Mac was put to sleep, on November 14 and 15, stopped when it woke the next

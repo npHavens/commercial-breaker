@@ -66,7 +66,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   from a8247a9 on November 15 at `build/v0.2.53/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 13 native
   tests pass there. It was built just before the rewrite, from 7f86b57, whose tree a8247a9 keeps.
-  v0.2.53's promo rule has not run live yet.
+  v0.2.53 has been in daily use since November 15, but its logs haven't been checked
+  against the promo rule yet.
 - v0.2.54 returns an AirPlay break to the TV after six silent answers in a row (about 30
   seconds) from the Mac's capture, through the same path as a confirmed program, and keeps
   the rest of that break on the TV until program is confirmed there (see its changelog). It
@@ -75,8 +76,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   `build/v0.2.54/Build/Products/Debug/Commercial Breaker.app`, with the same designated
   requirement as v0.2.53; 172 JavaScript, 47 Python and 13 native tests pass there. Not yet
   run live.
-- v0.2.55 retries an incomplete Gemini answer like a timeout instead of stopping detection,
-  logs Gemini's finish reason, and records a stopped capture's own reason when a session
+- v0.2.55 retries an incomplete Gemini answer instead of stopping detection (the third in a
+  streak still stops), logs Gemini's finish or block reason, and records a stopped capture's own reason when a session
   stops on its own (see its changelog). Not yet built or run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.

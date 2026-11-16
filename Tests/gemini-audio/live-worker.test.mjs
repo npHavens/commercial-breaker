@@ -108,11 +108,14 @@ test('rejects incomplete and malformed provider responses', async () => {
   }
 });
 
-test('an incomplete response reports only a well-formed finish reason', async () => {
-  for (const [candidates, expected] of [[[{ finishReason: 'MAX_TOKENS' }], { finishReason: 'MAX_TOKENS' }],
-    [[{ finishReason: 'Blocked: secret text' }], {}], [[], {}]]) {
+test('an incomplete response reports only well-formed finish and block reasons', async () => {
+  for (const [response, expected] of [[{ candidates: [{ finishReason: 'MAX_TOKENS' }] }, { finishReason: 'MAX_TOKENS' }],
+    // A blocked prompt has no candidates; its reason is in the prompt feedback.
+    [{ promptFeedback: { blockReason: 'PROHIBITED_CONTENT' } }, { blockReason: 'PROHIBITED_CONTENT' }],
+    [{ candidates: [{ finishReason: 'Blocked: secret text' }], promptFeedback: { blockReason: 'A'.repeat(41) } }, {}],
+    [{ candidates: [{ finishReason: ['SAFETY'] }] }, {}], [{ candidates: [] }, {}]]) {
     const output = [];
-    await createWorker({ prompt: '', emit: r => output.push(r), generateContent: async () => ({ candidates }) }).accept(line());
+    await createWorker({ prompt: '', emit: r => output.push(r), generateContent: async () => response }).accept(line());
     assert.deepEqual(output, [{ id: 'abcdef012345', error: 'incomplete-response', ...expected }]);
   }
 });

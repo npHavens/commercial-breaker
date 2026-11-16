@@ -6,8 +6,9 @@ import Foundation
 /// failing.
 struct GeminiRecovery {
     static let giveUpAfter = 300.0
-    /// Failures the worker could not classify may be permanent (missing credentials, a bad
-    /// endpoint), so a streak stops at this many of them, as every streak did before v0.2.51.
+    /// Failures that may be permanent stop a streak at this many, as every streak did before
+    /// v0.2.51: ones the worker could not classify (missing credentials, a bad endpoint) and
+    /// incomplete answers, whose cause, such as MAX_TOKENS, can repeat on every request.
     static let unclassifiedLimit = 3
     static let longestDelay = 15.0
     /// A failed request sent this long after the previous failure starts a new streak: retries
@@ -18,6 +19,7 @@ struct GeminiRecovery {
     /// of retries there would leave the TV without picture, so the pre-v0.2.51 rule still applies.
     static let offTVFailureLimit = 3
 
+    /// `unclassified` covers every failure that may be permanent; see `unclassifiedLimit`.
     enum Failure { case temporary, unclassified }
     enum Outcome: Equatable { case retry(after: Double), stopAfterTime, stopUnclassified, stopAfterFailuresInARow }
 
@@ -32,9 +34,9 @@ struct GeminiRecovery {
         // The worker already sends 4xx other than 408 and 429 as request-failed; this keeps them
         // terminal if it ever reports one with another error name.
         if let httpStatus, (400...499).contains(httpStatus), ![408, 429].contains(httpStatus) { return nil }
-        // An incomplete answer still shows Gemini is reachable and the setup works; the retry
-        // sends different audio.
-        if ["timeout", "temporary-failure", "incomplete-response"].contains(error) { return .temporary }
+        if ["timeout", "temporary-failure"].contains(error) { return .temporary }
+        // Retried with different audio, but limited like a failure the worker couldn't classify.
+        if error == "incomplete-response" { return .unclassified }
         return error == "request-failed" && (httpStatus == nil || httpStatus == 0) ? .unclassified : nil
     }
 
