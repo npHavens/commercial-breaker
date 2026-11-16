@@ -108,6 +108,15 @@ test('rejects incomplete and malformed provider responses', async () => {
   }
 });
 
+test('an incomplete response reports only a well-formed finish reason', async () => {
+  for (const [candidates, expected] of [[[{ finishReason: 'MAX_TOKENS' }], { finishReason: 'MAX_TOKENS' }],
+    [[{ finishReason: 'Blocked: secret text' }], {}], [[], {}]]) {
+    const output = [];
+    await createWorker({ prompt: '', emit: r => output.push(r), generateContent: async () => ({ candidates }) }).accept(line());
+    assert.deepEqual(output, [{ id: 'abcdef012345', error: 'incomplete-response', ...expected }]);
+  }
+});
+
 test('framing recovers after oversized lines and handles fragmented input', () => {
   const lines = []; let invalid = 0;
   const read = createLineReader(s => lines.push(s), () => invalid++);

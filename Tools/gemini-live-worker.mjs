@@ -85,8 +85,11 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = REQUES
           } });
         if (closed) return;
         if (timedOut) { emit({ id: request.id, error: 'timeout' }); return; }
-        if (response.candidates?.[0]?.finishReason !== 'STOP') {
-          emit({ id: request.id, error: 'incomplete-response' }); return;
+        const finishReason = response.candidates?.[0]?.finishReason;
+        if (finishReason !== 'STOP') {
+          // Gemini's reasons are fixed names such as MAX_TOKENS or SAFETY; any other value stays here.
+          const reason = typeof finishReason === 'string' && /^[A-Z_]{1,40}$/.test(finishReason) ? { finishReason } : {};
+          emit({ id: request.id, error: 'incomplete-response', ...reason }); return;
         }
         let result;
         try {

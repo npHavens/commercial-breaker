@@ -228,8 +228,13 @@ final class GeminiObservation: ObservableObject {
             request = nil
             if let error = value["error"] as? String {
                 let allowed = ["invalid-request", "busy", "timeout", "temporary-failure", "incomplete-response", "invalid-response", "request-failed"]
-                log(["event": "request-failed", "id": pending.id, "error": allowed.contains(error) ? error : "unknown",
-                     "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0])
+                var failed: [String: Any] = ["event": "request-failed", "id": pending.id, "error": allowed.contains(error) ? error : "unknown",
+                                             "httpStatus": (value["httpStatus"] as? Int).map { (100...599).contains($0) ? $0 : 0 } ?? 0]
+                // Gemini's reason for an incomplete answer, such as MAX_TOKENS or SAFETY.
+                if let reason = value["finishReason"] as? String, reason.wholeMatch(of: #/[A-Z_]{1,40}/#) != nil {
+                    failed["finishReason"] = reason
+                }
+                log(failed)
                 prediction = ""
                 resetConfirmation()
                 // The worker rejects busy and invalid requests before its silence check. Any other

@@ -32,7 +32,9 @@ struct GeminiRecovery {
         // The worker already sends 4xx other than 408 and 429 as request-failed; this keeps them
         // terminal if it ever reports one with another error name.
         if let httpStatus, (400...499).contains(httpStatus), ![408, 429].contains(httpStatus) { return nil }
-        if ["timeout", "temporary-failure"].contains(error) { return .temporary }
+        // An incomplete answer still shows Gemini is reachable and the setup works; the retry
+        // sends different audio.
+        if ["timeout", "temporary-failure", "incomplete-response"].contains(error) { return .temporary }
         return error == "request-failed" && (httpStatus == nil || httpStatus == 0) ? .unclassified : nil
     }
 

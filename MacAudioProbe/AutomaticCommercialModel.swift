@@ -316,7 +316,8 @@ final class AutomaticCommercialModel: ObservableObject {
         }
         guard task == nil, [.watchingTV, .awaitingTVProgram, .mutedMac, .watchingMac, .mutedLocalMac, .awaitingLocalProgram, .audibleMacAwaitingTV].contains(phase) else { return }
         if !recorder.running || !recorder.ready || !recorder.gemini.enabled {
-            stopAndRecover(reason: "Detection stopped: \(recorder.gemini.status)")
+            // A stopped capture holds the reason; it only switches Gemini off.
+            stopAndRecover(reason: "Detection stopped: \(recorder.running ? recorder.gemini.status : recorder.status)")
         }
     }
 

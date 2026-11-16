@@ -81,10 +81,13 @@ assert(GeminiRecovery.failure(error: "request-failed", httpStatus: 0) == .unclas
 assert(GeminiRecovery.failure(error: "temporary-failure", httpStatus: 503) == .temporary)
 assert(GeminiRecovery.failure(error: "temporary-failure", httpStatus: 429) == .temporary)
 assert(GeminiRecovery.failure(error: "timeout", httpStatus: nil) == .temporary)
+// November 15: one incomplete answer stopped each of two Mac sessions mid-break. Gemini was
+// reachable, and the retry sends fresh audio.
+assert(GeminiRecovery.failure(error: "incomplete-response", httpStatus: nil) == .temporary)
 for code in [400, 401, 403] {
     assert(GeminiRecovery.failure(error: "request-failed", httpStatus: code) == nil)
 }
-for error in ["invalid-request", "busy", "incomplete-response", "invalid-response"] {
+for error in ["invalid-request", "busy", "invalid-response"] {
     assert(GeminiRecovery.failure(error: error, httpStatus: nil) == nil)
 }
 print("Failure classes and terminal authentication checks passed")

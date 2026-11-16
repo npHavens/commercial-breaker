@@ -75,6 +75,9 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   `build/v0.2.54/Build/Products/Debug/Commercial Breaker.app`, with the same designated
   requirement as v0.2.53; 172 JavaScript, 47 Python and 13 native tests pass there. Not yet
   run live.
+- v0.2.55 retries an incomplete Gemini answer like a timeout instead of stopping detection,
+  logs Gemini's finish reason, and records a stopped capture's own reason when a session
+  stops on its own (see its changelog). Not yet built or run live.
 - v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
   break/return cycles on November 14, is the fallback build.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
@@ -218,6 +221,12 @@ Do not combine all of this into one rewrite.
   break returns to the TV after about 30 seconds of it. The root cause is still unknown: the
   capture heard program for about a minute after the handoff, then only zeros, which
   points to the Mac's relay playback stalling rather than the tap. The relay keeps no log.
+- v0.2.53, in daily use from 12:38 PM on November 15, stopped on its own four times by the
+  next morning: twice on an incomplete Gemini answer (retried since v0.2.55), once on wake
+  after the Mac was put to sleep with a session running, and once at 3:29 PM during an
+  AirPlay break handoff, when Safari no longer showed Commercial Breaker's AirPlay button. A
+  restart failed the same way, and Nick switched to Mac playback. Why the button was missing
+  is unknown.
 - Cost is not the current constraint: Nick reports Gemini usage costs only a few
   dollars. Prioritize accuracy/speed; retain one in-flight request for freshness.
 - Paramount/UFC relay workflow is preserved but not newly validated this session.
