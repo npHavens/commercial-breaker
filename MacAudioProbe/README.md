@@ -1,3 +1,37 @@
+# One incomplete Gemini answer no longer stops detection — v0.2.55
+
+On November 15 two Mac playback sessions (v0.2.53) stopped detection mid-break, at 4:06 PM
+and 4:57 PM, each on the first incomplete answer: Gemini replied, but with a finish reason
+other than `STOP`. Nick restarted them 15 and 19 minutes later. Since v0.2.51 timeouts and
+temporary failures retry, but an incomplete answer still stopped at once. The capture logs
+since September hold four of them, two on November 1 and two on November 15, and each was
+its session's first and last.
+
+An incomplete answer now retries with fresh audio after 5, 10, then every 15 seconds, but
+it counts like a failure the worker couldn't classify: its cause, such as `MAX_TOKENS` on
+every request, may repeat, so the third in a streak stops detection, within about 30
+seconds, rather than after the five minutes timeouts get. Each logged case was a single
+answer. Malformed answers and HTTP 4xx other than 408 and 429 still stop at once. The logs
+can't say why those four answers were incomplete, so the worker now reports Gemini's
+reason, a fixed name such as `MAX_TOKENS` or `SAFETY`: `finishReason` for an incomplete
+answer, or `blockReason` from the prompt feedback when Gemini blocked the prompt, and
+`request-failed` records both. Both sides drop any other value. The stop messages now say
+"failed requests in a row" and "request failures that may be permanent", since an
+incomplete answer is neither an outage nor unexplained.
+
+A session that stops on its own now names the cause. Two AirPlay sessions left running
+when the Mac was put to sleep, on November 14 and 15, stopped when it woke the next
+morning. The capture had stopped, which also switches Gemini off, and the automatic log
+recorded only "Gemini is off", losing the capture's reason. It now records that reason,
+such as a microphone configuration change.
+
+Prompts, sample length, the one-request limit and the confirmation thresholds are
+unchanged, so every prompt hash is unchanged. Cadence changes only while requests fail,
+as before. The worker loads from the checkout, so a running older build picks up the
+finish reason at its next session start, but only v0.2.55 retries incomplete answers.
+
+Live verification pending.
+
 # A silent Mac capture returns the break to the TV — v0.2.54
 
 On November 14 (UFC on Paramount+ through the HLS relay, TV via AirPlay) one break stayed

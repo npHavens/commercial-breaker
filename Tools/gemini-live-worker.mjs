@@ -86,7 +86,12 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = REQUES
         if (closed) return;
         if (timedOut) { emit({ id: request.id, error: 'timeout' }); return; }
         if (response.candidates?.[0]?.finishReason !== 'STOP') {
-          emit({ id: request.id, error: 'incomplete-response' }); return;
+          // A blocked prompt has no candidates; its reason is in the prompt feedback. Gemini's reasons
+          // are fixed names such as MAX_TOKENS or SAFETY; any other value stays here.
+          const reasons = { finishReason: response.candidates?.[0]?.finishReason, blockReason: response.promptFeedback?.blockReason };
+          emit({ id: request.id, error: 'incomplete-response', ...Object.fromEntries(Object.entries(reasons)
+            .filter(([, reason]) => typeof reason === 'string' && /^[A-Z_]{1,40}$/.test(reason))) });
+          return;
         }
         let result;
         try {

@@ -31,9 +31,11 @@ import IOKit
         events.list.append("capture \(source == .system ? "system" : "microphone")\(initiallyMuted ? " muted" : "")")
     }
 
+    /// Mirrors `AudioRecorderModel`: the status keeps the reason, and Gemini is only switched off.
     func stop(reason: String) {
         gemini.stop()
         running = false; ready = false
+        status = reason
         events.list.append("stop capture")
     }
 
@@ -164,6 +166,21 @@ import IOKit
         assert(localEvents.list == ["capture system"] && local.phase == .watchingMac, "Silence must not move Mac playback")
         local.stopAndRecover()
         try await waitUntil("stop") { !local.busy }
+
+        // A session that stops on its own names the cause: a stopped capture's reason, such as a
+        // microphone configuration change, rather than Gemini's "off", or else Gemini's own status.
+        func stoppedOnItsOwn(_ cause: @MainActor (FakeCapture) -> Void) async throws -> String {
+            let (model, capture, _, _) = makeModel(.airPlay)
+            model.start()
+            try await waitUntil("watching TV") { model.phase == .watchingTV }
+            cause(capture)
+            try await waitUntil("the stop") { !model.busy }
+            return model.history
+        }
+        let woke = try await stoppedOnItsOwn { $0.stop(reason: "Microphone configuration changed") }
+        assert(woke.contains("Detection stopped: Microphone configuration changed"), woke)
+        let failed = try await stoppedOnItsOwn { $0.gemini.stop(message: "Gemini request failed") }
+        assert(failed.contains("Detection stopped: Gemini request failed"), failed)
         print("Automatic model checks passed · fake capture and routing; no audio is captured and no AirPlay route changes")
     }
 }

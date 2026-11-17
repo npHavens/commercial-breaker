@@ -91,11 +91,11 @@ import Foundation
         for i,line in enumerate(sys.stdin):
             request=json.loads(line)
             if i==0:
-                print(json.dumps({'id':request['id'],'error':'request-failed'}), flush=True)
+                print(json.dumps({'id':request['id'],'error':'request-failed','finishReason':'A'*41,'blockReason':'secret text'}), flush=True)
             elif i==1:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'unusable'},'elapsedMs':0,'usage':{},'source':'local-digital-silence'}), flush=True)
             elif i==2:
-                print(json.dumps({'id':request['id'],'error':'timeout'}), flush=True)
+                print(json.dumps({'id':request['id'],'error':'incomplete-response','finishReason':'MAX_TOKENS','blockReason':'SAFETY'}), flush=True)
             else:
                 print(json.dumps({'id':request['id'],'result':{'state_at_end':'program'},'elapsedMs':1,'usage':{}}), flush=True)
         """.write(to: script, atomically: true, encoding: .utf8)
@@ -104,6 +104,8 @@ import Foundation
         assert(events("worker-ready").last?["model"] as? String == "unreported", "A ready line without a model must say so")
         try await waitUntil("recovery from the failed request") { events("request-recovery").count > recoveries }
         assert(observer.enabled && observer.status.contains("checking fresh audio"), "Isolated unclassified failure should recover without disabling")
+        let unlogged = events("request-failed").last
+        assert(unlogged?["finishReason"] == nil && unlogged?["blockReason"] == nil, "Malformed or overlong reasons must not be logged")
         assert(observer.prediction.isEmpty, "Failure must clear old prediction")
         assert(observer.confirmation == "Waiting for two matching predictions")
         assert(events("request-recovery").last?["failingSeconds"] is NSNumber, "Recovery must log how long the streak has been failing")
@@ -124,7 +126,10 @@ import Foundation
         feed()
         try await waitUntil("the second failure") { events("request-recovery").count > recoveries + 1 }
         assert(events("request-recovery").last?["consecutiveFailures"] as? Int == 2, "A local silence answer must not reset the failure streak")
-        assert(observer.enabled && observer.status.contains("checking fresh audio"), "A timeout after an unclassified failure keeps recovering")
+        assert(observer.enabled && observer.status.contains("checking fresh audio"), "An incomplete answer keeps recovering")
+        let incomplete = events("request-failed").last
+        assert(incomplete?["finishReason"] as? String == "MAX_TOKENS" && incomplete?["blockReason"] as? String == "SAFETY",
+               "The log must say why the answer was incomplete")
         try await awaitRecoveryDelay()
         let recovered = events("prediction").count
         feed()
@@ -155,7 +160,7 @@ import Foundation
         try await waitUntil("the fake worker to start") { events("worker-ready").count > limitedReady }
         feed()
         try await waitUntil("the stop at the failure limit") { !observer.enabled }
-        assert(observer.status.contains("1 failed request with no answer"), "The limit must stop Gemini and say why")
+        assert(observer.status.contains("1 failed request in a row"), "The limit must stop Gemini and say why")
         var run = SilenceRun(limit: 3)
         assert(!run.silent() && !run.silent())
         assert(run.silent(), "The third silent answer in a row reaches the limit")

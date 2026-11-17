@@ -18,11 +18,13 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.54 and Safari extension source v0.2.21. v0.2.51 (Gemini outage retries) ran a
+Native v0.2.55 and Safari extension source v0.2.21. v0.2.51 (Gemini outage retries) ran a
 live UFC night on November 14. v0.2.52 retries startup and Stop's return to TV once when
-focus bounces back to Commercial Breaker, v0.2.53 stops promos alone from confirming a
-break, and v0.2.54 returns a break to the TV when the Mac's capture stays silent for about
-30 seconds; none of them has run live yet. v0.2.50 adds the app icon. AirPlay has been working well
+focus bounces back to Commercial Breaker, and v0.2.53 stops promos alone from confirming a
+break; v0.2.53 has been in daily use since November 15 in both modes, but its logs haven't
+been checked against either change. v0.2.54 returns a break to the TV when the Mac's
+capture stays silent for about 30 seconds, and v0.2.55 retries an incomplete Gemini answer
+instead of stopping detection; neither has run live yet. v0.2.50 adds the app icon. AirPlay has been working well
 in personal use; Nick also confirmed Mac playback and the v0.2.44 startup fix
 working on October 18, and a live v0.2.45 start with the standalone setup
 (see below). v0.2.46 removes unused features: the app now has Automatic and
