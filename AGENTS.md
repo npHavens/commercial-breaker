@@ -7,14 +7,14 @@ public: keep secrets, recordings and stream URLs out of it.
 
 Before asking a maintainer to merge, follow the [shared merge gate](https://github.com/npHavens/.github/blob/main/review/merge-gate.md). A maintainer merges; agents do not. CB's exceptions:
 
-- Re-review triggers for the shared gate's Claude review item: a later push that changes anything a Code Review Rule below covers, which means classifier prompts, sample length, cadence or thresholds; break and return order or the mute timeout; automation while another app is frontmost, or AirPlay retries; bundle identifiers, signing or entitlements; or any added non-source file, such as audio, logs or recordings.
+- Re-review triggers for the shared gate's Claude review item: a later push that changes anything a Code Review Rule below covers, such as classifier prompts, sample length, cadence or thresholds; break and return order or the mute timeout; automation while another app is frontmost, or AirPlay retries; bundle identifiers, signing or entitlements; or any added non-source file, such as audio, logs or recordings.
 - Extra checks: a routing or capture PR has run the live checks in CONTRIBUTING, or says plainly which are still needed.
-- Branch protection requires only the CI checks, `JavaScript and Python` and `Native build and tests`. The Claude review check isn't required, so read the review's summary comment rather than the check.
+- Branch protection doesn't require the Claude review check (`docs/handoff.md` lists the checks it does require), so read the review's summary comment rather than the check.
 - If reviews stop completing after a change to the caller or the shared workflow merges, revert that change first.
 
 `.github/workflows/claude-review.yml` is an unchanged copy of the shared [caller](https://github.com/npHavens/.github/blob/main/review/claude-review.yml). It runs npHavens/.github's `claude-review-reusable.yml` at `main`, which reviews with the [shared review standard](https://github.com/npHavens/.github/blob/main/review/review-standard.md) and the Code Review Rules below. That repo doesn't review its own PRs: its CI and a maintainer's merge are the last checks before a change there reaches CB's review, so a break first shows as a "did not complete" review on CB's next PR. Make review-job changes in that repo.
 
-The Review caller workflow (`review-caller.yml`) checks that the caller still matches the shared copy, on PRs that edit it and daily on main. It isn't part of CI and isn't required. When it fails on main, copy the shared caller here again in its own PR, under the shared gate's caller item.
+The Review caller workflow (`review-caller.yml`) checks that the caller still matches the shared copy, on PRs that edit it and daily on main. It isn't part of CI and isn't required. When it fails on main, copy the shared caller here again in its own PR, under the shared gate's item for PRs that edit the caller.
 
 ## Code Review Rules
 

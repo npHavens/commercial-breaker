@@ -66,8 +66,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   from a8247a9 on November 15 at `build/v0.2.53/Build/Products/Debug/Commercial Breaker.app`,
   with the same designated requirement as v0.2.48; 172 JavaScript, 70 Python and 13 native
   tests pass there. It was built just before the rewrite, from 7f86b57, whose tree a8247a9 keeps.
-  v0.2.53 has been in daily use since November 15, but its logs haven't been checked
-  against the promo rule yet.
+  v0.2.53 ran every session from November 15 to November 21, all of them started on November 15;
+  its logs haven't been checked against the promo rule yet.
 - v0.2.54 returns an AirPlay break to the TV after six silent answers in a row (about 30
   seconds) from the Mac's capture, through the same path as a confirmed program, and keeps
   the rest of that break on the TV until program is confirmed there (see its changelog). It
@@ -80,13 +80,15 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   streak still stops), logs Gemini's finish or block reason, and records a stopped capture's own reason when a session
   stops on its own (see its changelog). Built signed from 0453dc5 on November 16 at
   `build/v0.2.55/Build/Products/Debug/Commercial Breaker.app`, with the same designated
-  requirement as v0.2.54; 173 JavaScript, 47 Python and 14 native tests pass there. Running
-  since November 21; not yet run through a live session.
+  requirement as v0.2.54; 173 JavaScript, 47 Python and 14 native tests pass there. Launched
+  on November 21; no session has run on it yet.
 - Only the current and previous builds stay in `build/` (v0.2.55 and v0.2.54). Every build
   shares one bundle identifier, so opening the app by name can launch any copy macOS knows
   about: on November 21 that opened v0.2.48. Older builds were moved to the Trash and
   unregistered from Launch Services that day. A new build retires the one two versions back
-  the same way. v0.2.53 is the last build run live.
+  the same way. Until a newer build has run a live session, the fallback is v0.2.53, the
+  last one that has: it is in the Trash as `cb-build-v0.2.53`. Move it back to `build/`
+  and open it by its path.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
   verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
@@ -96,18 +98,18 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex is requested
-  again and its priorities map to the gate's severities; a run that is missing, stuck or
-  stopped at its usage limit doesn't block a merge. Every PR gets the offline suites plus an unsigned
+- PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex findings count
+  in the shared merge gate, with P0 and P1 as High, P2 as Medium and P3 as Low; a run that is
+  missing, stuck or stopped at its usage limit doesn't block a merge. Every PR gets the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` when they open or are marked ready; fork PRs never do.
   Since November 15, `claude-review.yml` calls the shared `claude-review-reusable.yml` in the
   public npHavens/.github repo at `@main`, which also gives the reviewer that repo's
   `review/review-standard.md`. That repo doesn't review its own PRs. All four repos call it,
-  so CB's own copy and its tests were removed; the "Review caller matches the shared copy"
-  CI job checks that CB's caller is still an unchanged copy. A run that never reaches the model now reads "did not
+  so CB's own copy and its tests were removed; the separate Review caller workflow, which
+  isn't part of CI or required, checks that CB's caller is still an unchanged copy. A run that never reaches the model now reads "did not
   complete", not "finished" (npHavens/.github#3). When later pushes need a re-review is in
-  `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
+  the shared merge gate, plus CB's own triggers in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
   not the PR's head, and uses main's caller. Review comments come from `github-actions[bot]`.
   `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
   `claude-review / review` stopped being required on November 14), blocks force pushes and deletion,
@@ -229,7 +231,7 @@ Do not combine all of this into one rewrite.
   break returns to the TV after about 30 seconds of it. The root cause is still unknown: the
   capture heard program for about a minute after the handoff, then only zeros, which
   points to the Mac's relay playback stalling rather than the tap. The relay keeps no log.
-- v0.2.53, in daily use from 12:38 PM on November 15, stopped on its own four times by the
+- v0.2.53, running from 12:38 PM on November 15, stopped on its own four times by the
   next morning: twice on an incomplete Gemini answer (retried since v0.2.55), once on wake
   after the Mac was put to sleep with a session running, and once at 3:29 PM during an
   AirPlay break handoff, when Safari no longer showed Commercial Breaker's AirPlay button. A
@@ -320,9 +322,9 @@ different certificate loses the grants even with every one of these settings int
    prompt for microphone, system audio or Accessibility.
 3. System Settings may keep listing the grant as SkyboxAudioProbe while old builds remain on
    disk, because every build shares the bundle ID. That row is this app; do not add a
-   second one. Keep the v0.2.47 build as the fallback until v0.2.48 is verified live;
-   after that, Nick may delete the old `SkyboxAudioProbe.app` builds under `build/`
-   (build output, not experiment data) so macOS only knows the new name.
+   second one. Keep the last build run live as the fallback until the new build has run a live
+   session. Older builds go to the Trash and are unregistered from Launch Services, so
+   opening the app by name finds only current copies.
 
 Local Xcode is `/Users/nickhavens/Downloads/Xcode.app`. Use scheme
 `CommercialBreaker` and a NEW derivedDataPath to avoid altering the running bundle.
