@@ -5,24 +5,16 @@ public: keep secrets, recordings and stream URLs out of it.
 
 ## Merge gate
 
-Before asking a maintainer to merge a pull request:
+Before asking a maintainer to merge, follow the [shared merge gate](https://github.com/npHavens/.github/blob/main/review/merge-gate.md). A maintainer merges; agents do not. CB's exceptions:
 
-1. CI passes.
-2. Codex reviews count. If Codex does not start on its own, comment `@codex review` once. Keep that phrase out of PR descriptions, where it starts a Codex cloud task instead of a review. Handle its findings like the Claude review's under item 3, reading each priority as a severity: P0 and P1 are High, P2 is Medium and P3 is Low. A Codex run that never starts or never finishes doesn't block a merge. A run that fails with a usage-limit or "limit reached" error doesn't count: nothing to fix or answer, no re-trigger, and the merge isn't blocked.
-3. The GitHub Claude review has run once, its summary starts "Claude review finished" or "Claude review posted", and its High and Medium findings are fixed or answered. Answer Low findings in one batched reply or move them to a follow-up issue; don't reply to each one or push only to answer them. The review runs automatically only when a PR is opened or marked ready, and other pushes are not re-reviewed automatically. A re-review is an owner, member or collaborator comment whose first words are exactly `@claude review`; its findings follow the same rules. Request one when:
-   - the run did not complete, or its summary says it is stale;
-   - a later push changes anything a Code Review Rule below covers: classifier prompts, sample length, cadence or thresholds; break and return order or the mute timeout; automation while another app is frontmost, or AirPlay retries; bundle identifiers, signing or entitlements; or any added non-source file, such as audio, logs or recordings;
-   - a later push is otherwise substantial, after asking a maintainer.
-4. A PR that edits `.github/workflows/claude-review.yml` must show a successful automatic run on the final head commit before merge, since only that run uses the PR's copy of that file: after a later push, mark the PR draft, then ready, but not with `GITHUB_TOKEN`, whose events don't start workflows. This is the one case that still needs the flip, and the findings from that run follow item 3's rules. A comment-started run uses main's caller, so it says nothing about the change and isn't required.
-5. A routing or capture PR has run the live checks in CONTRIBUTING, or says plainly which are still needed.
+- Re-review triggers for the shared gate's Claude review item: a later push that changes anything a Code Review Rule below covers, which means classifier prompts, sample length, cadence or thresholds; break and return order or the mute timeout; automation while another app is frontmost, or AirPlay retries; bundle identifiers, signing or entitlements; or any added non-source file, such as audio, logs or recordings.
+- Extra checks: a routing or capture PR has run the live checks in CONTRIBUTING, or says plainly which are still needed.
+- Branch protection requires only the CI checks, `JavaScript and Python` and `Native build and tests`. The Claude review check isn't required, so read the review's summary comment rather than the check.
+- If reviews stop completing after a change to the caller or the shared workflow merges, revert that change first.
 
-A merged change to the caller or the shared review workflow gets no separate check. The next PR's automatic review shows whether that path works, and item 3 holds the PR until a review completes. The comment path is first tested by the next `@claude review` comment. If reviews stop completing after such a merge, revert that change first. Don't comment `@claude review` on a closed or merged PR: the shared workflow refuses it.
+`.github/workflows/claude-review.yml` is an unchanged copy of the shared [caller](https://github.com/npHavens/.github/blob/main/review/claude-review.yml). It runs npHavens/.github's `claude-review-reusable.yml` at `main`, which reviews with the [shared review standard](https://github.com/npHavens/.github/blob/main/review/review-standard.md) and the Code Review Rules below. That repo doesn't review its own PRs: its CI and a maintainer's merge are the last checks before a change there reaches CB's review, so a break first shows as a "did not complete" review on CB's next PR. Make review-job changes in that repo.
 
-CB's review runs the shared `claude-review-reusable.yml` in the public npHavens/.github repo at `@main`. That repo doesn't review its own PRs: its CI and a maintainer's merge are the last checks before a change reaches CB's review and every other caller at once, without passing this gate. Its CI can't run the review job itself, so a break there first shows as a "did not complete" review on the next PR in any calling repo. Changes to the shared workflow, and the steps that keep every caller working, belong to that repo's `AGENTS.md`.
-
-CB's caller is an unchanged copy of that repo's `review/claude-review.yml`. The Review caller workflow (`review-caller.yml`) checks the copy on PRs that edit it and daily on main; it isn't part of item 1's CI and isn't required. When it fails on main, copy the shared file again in its own PR under item 4.
-
-When asking for the merge, report the CI, Claude and Codex results, including when Codex didn't run or hit its usage limit, and how each finding was handled. A maintainer merges; agents do not. A local `/code-review high` is optional. Fork PRs don't get the Claude review, so a maintainer decides how to review them.
+The Review caller workflow (`review-caller.yml`) checks that the caller still matches the shared copy, on PRs that edit it and daily on main. It isn't part of CI and isn't required. When it fails on main, copy the shared caller here again in its own PR, under the shared gate's caller item.
 
 ## Code Review Rules
 

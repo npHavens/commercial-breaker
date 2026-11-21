@@ -78,9 +78,15 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   run live.
 - v0.2.55 retries an incomplete Gemini answer instead of stopping detection (the third in a
   streak still stops), logs Gemini's finish or block reason, and records a stopped capture's own reason when a session
-  stops on its own (see its changelog). Not yet built or run live.
-- v0.2.51 (`build/v0.2.51/…/Commercial Breaker.app`), which completed 28 automatic
-  break/return cycles on November 14, is the fallback build.
+  stops on its own (see its changelog). Built signed from 0453dc5 on November 16 at
+  `build/v0.2.55/Build/Products/Debug/Commercial Breaker.app`, with the same designated
+  requirement as v0.2.54; 173 JavaScript, 47 Python and 14 native tests pass there. Running
+  since November 21; not yet run through a live session.
+- Only the current and previous builds stay in `build/` (v0.2.55 and v0.2.54). Every build
+  shares one bundle identifier, so opening the app by name can launch any copy macOS knows
+  about: on November 21 that opened v0.2.48. Older builds were moved to the Trash and
+  unregistered from Launch Services that day. A new build retires the one two versions back
+  the same way. v0.2.53 is the last build run live.
 - The previous v0.2.46 build (from b1fa0aa, `build/mac-audio-oct26-rename/`) was
   verified on October 26: Nick ran it on a recorded DIRECTV game. The support folder
   migrated, macOS did not re-prompt for microphone, system audio or
@@ -90,9 +96,9 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
 - Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
-- PRs get a Codex review (Smart detect) when it runs. Since November 21 its findings count
-  in the merge gate again; a run that is missing, stuck or stopped at its usage limit
-  doesn't block a merge. Every PR gets the offline suites plus an unsigned
+- PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex is requested
+  again and its priorities map to the gate's severities; a run that is missing, stuck or
+  stopped at its usage limit doesn't block a merge. Every PR gets the offline suites plus an unsigned
   app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` when they open or are marked ready; fork PRs never do.
   Since November 15, `claude-review.yml` calls the shared `claude-review-reusable.yml` in the
@@ -100,14 +106,14 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   `review/review-standard.md`. That repo doesn't review its own PRs. All four repos call it,
   so CB's own copy and its tests were removed; the "Review caller matches the shared copy"
   CI job checks that CB's caller is still an unchanged copy. A run that never reaches the model now reads "did not
-  complete", not "finished" (npHavens/.github#3). When later pushes need a re-review is in the
-  merge gate in `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
+  complete", not "finished" (npHavens/.github#3). When later pushes need a re-review is in
+  `AGENTS.md`. A comment starting `@claude review` starts one; that run reports on the default branch's commit,
   not the PR's head, and uses main's caller. Review comments come from `github-actions[bot]`.
   `main` requires a PR and passing CI (`JavaScript and Python`, `Native build and tests`;
   `claude-review / review` stopped being required on November 14), blocks force pushes and deletion,
   and applies those rules to admins. For the November 15 rewrite, force pushes were allowed and
-  admin enforcement was off for one push; both were restored right after it. The merge gate is
-  in `AGENTS.md`.
+  admin enforcement was off for one push; both were restored right after it. The merge gate is the shared
+  `review/merge-gate.md` in npHavens/.github; `AGENTS.md` links it and lists CB's exceptions.
 - Offline suites on 2125a21 (November 8): 172 JavaScript tests, 37 Python tests and
   all 12 native tests (`Tests/run-native-tests.sh`) passed. The identity test added
   after it brought the Python suite to 41, the review workflow tests to 64, and PR #24's
