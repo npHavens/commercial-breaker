@@ -11,6 +11,7 @@ function video(overrides = {}) {
     ...overrides
   };
 }
+
 function player(videos, hostname = 'www.paramountplus.com') {
   const context = vm.createContext({
     document: { querySelectorAll: () => videos },
@@ -18,9 +19,11 @@ function player(videos, hostname = 'www.paramountplus.com') {
     innerWidth: 1280, innerHeight: 720,
     getComputedStyle: (element) => ({ visibility: 'visible', display: 'block', opacity: '1', ...element.style })
   });
+
   for (const file of ['select-video.js', 'player.js']) {
     vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
   }
+
   return context.commercialBreakerPlayer;
 }
 
@@ -64,16 +67,19 @@ for (const paused of [false, true]) {
 
 test('missing and offscreen videos report no player', () => {
   const offscreen = video({ getBoundingClientRect: () => ({ width: 640, height: 360, top: 800, left: 0, right: 640, bottom: 1160 }) });
+
   for (const videos of [[], [offscreen]]) {
     const result = player(videos)(true);
     assert.equal(result.ok, false);
     assert.match(result.error, /No visible video/);
   }
+
   assert.equal(offscreen.muted, false);
 });
 
 test('navigation to a different site cannot mute its player', () => {
   const stream = video();
+
   for (const hostname of ['example.com', 'paramountplus.com.example.com', 'directv.com.example.com']) {
     assert.equal(player([stream], hostname)(true).ok, false);
     assert.equal(stream.muted, false);
@@ -94,9 +100,11 @@ const legacy = (name) => `skybox${name}`;
 
 test('player control is exposed as commercialBreakerPlayer only', () => {
   const context = vm.createContext({ document: { querySelectorAll: () => [] }, location: { protocol: 'https:', hostname: 'www.paramountplus.com' } });
+
   for (const file of ['select-video.js', 'player.js']) {
     vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
   }
+
   assert.equal(typeof context.commercialBreakerPlayer, 'function');
   assert.equal(context[legacy('Player')], undefined);
 });

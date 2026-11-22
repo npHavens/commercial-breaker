@@ -3,14 +3,19 @@ import assert from 'node:assert/strict';
 import { currentRecordingPath, recordingsRoot, tailOffsetFrames } from '../../Tools/evaluate-gemini-audio.mjs';
 import { makeContents } from '../../Tools/gemini-request.mjs';
 import { parseResult } from '../../Tools/standard-classifier.mjs';
+
 const valid = { state_at_end:'unclear', tv_audibility:'faint', room_speech_overlap:'uncertain', transition_heard:false, evidence:'TV is obscured', confidence:0.2 };
+
 test('unknown response is allowed; malformed or overconfident output rejected', () => {
  assert.deepEqual(parseResult(JSON.stringify(valid)), valid);
+
  for (const change of [{confidence:2},{state_at_end:'mute'},{transition_heard:'yes'},{evidence:null}]) {
   assert.throws(() => parseResult(JSON.stringify({...valid,...change})));
  }
+
  assert.throws(() => parseResult('not json'));
 });
+
 test('request contains only blind sample, fixed prompt, and audio', () => {
  const contents=makeContents('0123456789ab','Classify audio',Buffer.from('test-audio'));
  assert.equal(contents[0].parts[0].text,'Classify audio\nBlind sample ID: 0123456789ab');
@@ -31,6 +36,7 @@ test('shared sports program is accepted; obsolete live football state is rejecte
  for (const state of ['program','commercial','promo','unclear']) {
   assert.equal(parseResult(JSON.stringify({...valid,state_at_end:state})).state_at_end,state);
  }
+
  assert.throws(() => parseResult(JSON.stringify({...valid,state_at_end:'football'})));
 });
 
@@ -41,8 +47,10 @@ test('recordings root is the CommercialBreaker recordings directory', () => {
 
 test('manifest clips saved before the rename resolve under the migrated recordings root', () => {
   const support = '/Users/tester/Library/Application Support';
+
   assert.equal(currentRecordingPath(`${support}/SkyboxAudioProbe/recordings/A1/clip.wav`, '/Users/tester'),
     `${support}/CommercialBreaker/recordings/A1/clip.wav`);
+
   for (const unchanged of [`${support}/CommercialBreaker/recordings/A1/clip.wav`, '/tmp/clip.wav',
     `${support}/SkyboxAudioProbe/recordings-old/clip.wav`]) {
     assert.equal(currentRecordingPath(unchanged, '/Users/tester'), unchanged);

@@ -4,30 +4,41 @@ const vm = require('node:vm');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const source = readFileSync(resolve(__dirname, '../../SafariExtension/screen-test.js'), 'utf8');
+
 function setup(mode) {
   const nodes = new Map(['choose', 'capture', 'stop', 'message', 'preview', 'still', 'download'].map((id) => [id, {
     disabled: false, hidden: true, readyState: 4, videoWidth: 1920, videoHeight: 1080,
     addEventListener(event, fn) { this[event] = fn; }, play: async () => {}
   }]));
+
   let stopped = 0, request, timeout, finish;
   const track = { stop() { stopped++; }, addEventListener() {} };
   const stream = { getTracks: () => [track] };
   const window = { addEventListener(event, fn) { this[event] = fn; } };
+
   vm.runInNewContext(source, {
     navigator: { mediaDevices: { getDisplayMedia(options) {
       request = options;
       if (mode === 'denied') return Promise.reject(Object.assign(new Error('Denied'), { name: 'NotAllowedError' }));
       if (mode === 'pending') return new Promise((resolve) => { finish = () => resolve(stream); });
+
       return Promise.resolve(stream);
     } } }, window,
-    setTimeout(fn) { timeout = fn; return 1; }, clearTimeout() { timeout = null; },
+    setTimeout(fn) {
+      timeout = fn;
+
+      return 1;
+    },
+    clearTimeout() { timeout = null; },
     document: { querySelector: (selector) => nodes.get(selector.slice(1)), createElement: () => ({
       getContext: () => ({ drawImage() {}, getImageData() {
         if (mode === 'tainted') throw new Error('Tainted');
+
         return { data: [0, 0, 0, 255] };
       } }), toDataURL: () => 'data:image/png;base64,dGVzdA=='
     }) }
   });
+
   return { nodes, window, start: () => nodes.get('choose').click(), capture: () => nodes.get('capture').click(),
     stopped: () => stopped, request: () => request, expire: () => timeout(), resolve: () => finish() };
 }

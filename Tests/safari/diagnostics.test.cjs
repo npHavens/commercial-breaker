@@ -8,21 +8,29 @@ const source = readFileSync(resolve(__dirname, '../../SafariExtension/diagnostic
 function harness() {
   let now = 1000;
   const timers = new Set();
+
   const ad = {
     classList: ['player', 'ad-break'], id: '', tagName: 'DIV',
     getAttribute: () => 'Advertisement',
     getBoundingClientRect: () => ({ width: 100, height: 20, top: 0, left: 0, right: 100, bottom: 20 })
   };
+
   const context = vm.createContext({
     Date: class extends Date { static now() { return now; } },
     location: { protocol: 'https:', hostname: 'www.paramountplus.com' },
     document: { querySelectorAll: (selector) => selector === 'video' ? [] : [ad] },
     innerHeight: 720, innerWidth: 1280,
     getComputedStyle: () => ({ visibility: 'visible', display: 'block', opacity: '1' }),
-    setInterval: (callback) => { timers.add(callback); return callback; },
+    setInterval: (callback) => {
+      timers.add(callback);
+
+      return callback;
+    },
     clearInterval: (id) => timers.delete(id)
   });
+
   vm.runInContext(source, context);
+
   return {
     context, timers, command: context.commercialBreakerDiagnostics,
     advance(ms) { now += ms; for (const callback of [...timers]) callback(); },
@@ -70,6 +78,7 @@ test('diagnostics refuses other sites', () => {
 
 test('non-finite media and cue times become null without discarding finite cues', () => {
   const h = harness();
+
   const video = {
     classList: [], paused: false, ended: false, muted: false,
     volume: NaN, readyState: 4, currentTime: NaN, duration: Infinity,
@@ -79,6 +88,7 @@ test('non-finite media and cue times become null without discarding finite cues'
       { startTime: 20, endTime: 25 }
     ] }]
   };
+
   h.context.document.querySelectorAll = (selector) => selector === 'video' ? [video] : [];
   h.command('start');
   const sample = h.command('export').report.entries.find((entry) => entry.kind === 'sample').videos[0];

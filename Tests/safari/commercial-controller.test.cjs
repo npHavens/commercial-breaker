@@ -15,27 +15,42 @@ function setup(initialMuted = false) {
   const intervals = new Map(), timeouts = new Map();
   let nextId = 0;
   const listeners = new Map();
+
   const video = {
     muted: initialMuted, volume: 0.7, currentTime: 10, paused: false, readyState: 4,
     getStartDate: () => new Date(0),
     addEventListener(name, handler) { listeners.set(name, handler); },
     removeEventListener(name) { listeners.delete(name); }
   };
+
   const context = vm.createContext({
     AbortController, Date: class extends Date { static now() { return clock; } },
-    setTimeout: (fn) => { const id = ++nextId; timeouts.set(id, fn); return id; },
+    setTimeout: (fn) => {
+      const id = ++nextId;
+      timeouts.set(id, fn);
+
+      return id;
+    },
     clearTimeout: (id) => timeouts.delete(id),
-    setInterval: (fn) => { const id = ++nextId; intervals.set(id, fn); return id; },
+    setInterval: (fn) => {
+      const id = ++nextId;
+      intervals.set(id, fn);
+
+      return id;
+    },
     clearInterval: (id) => intervals.delete(id),
     fetch: async (...args) => {
       requests++;
       if (customFetch) return customFetch(...args);
+
       return { ok: true, json: async () => ({ state: classification, startMs: 0, endMs: 60000,
         sampledAtMs: clock, hasTimeline: true }) };
     }
   });
+
   vm.runInContext(source, context);
   const controller = context.commercialBreakerCreateCommercialController(video, (value) => { result = value; });
+
   return { controller, video, listeners, intervals, timeouts,
     state: () => result, requests: () => requests, advance: (ms = 1000) => { clock += ms; },
     classify: (value) => { classification = value; }, fetch: (fn) => { customFetch = fn; } };
@@ -108,8 +123,10 @@ test('late ad response cannot re-mute after seeking or disabling automation', as
     h.controller.toggle();
     if (action === 'seek') h.listeners.get('seeking')();
     else h.controller.stop();
+
     deliver({ ok: true, json: async () => ({ state: 'ad', startMs: 0, endMs: 60000,
       sampledAtMs: 100000, hasTimeline: true }) });
+
     await flush();
     assert.equal(h.video.muted, false, action);
   }
@@ -124,8 +141,10 @@ test('leaving a break releases mute even while the next request is pending', asy
   h.video.currentTime = 60;
   h.advance(); await h.controller.tick();
   assert.equal(h.video.muted, false);
+
   deliver({ ok: true, json: async () => ({ state: 'ad', startMs: 0, endMs: 60000,
     sampledAtMs: 102000, hasTimeline: true }) });
+
   await pending;
   assert.equal(h.video.muted, false);
 });

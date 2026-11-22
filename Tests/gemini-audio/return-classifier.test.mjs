@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseReturnResult, returnPrompt } from '../../Tools/return-classifier.mjs';
+
 test('return decisions distinguish content absence from unusable capture', () => {
   const result = (sport_coverage, audio_usable) => parseReturnResult(JSON.stringify({ sport_coverage, audio_usable, evidence: 'heard cues' }));
   assert.equal(result(true, true).state_at_end, 'program');

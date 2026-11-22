@@ -11,9 +11,11 @@ function setup(storage = new Map()) {
     listeners: {}, textContent: '', value: '',
     addEventListener(name, fn) { this.listeners[name] = fn; }
   }]));
+
   const video = nodes.get('video');
   let loads = 0, plays = 0, pickers = 0;
   let progress;
+
   Object.assign(video, {
     src: '', error: null, readyState: 0, paused: true, muted: false, currentTime: 25, volume: 0.8,
     getAttribute(name) { return name === 'src' ? this.src : null; },
@@ -23,9 +25,12 @@ function setup(storage = new Map()) {
     pause() { this.paused = true; },
     webkitShowPlaybackTargetPicker() { pickers++; }
   });
+
   const pageEvents = {};
+
   const document = { visibilityState: 'visible', querySelector: (selector) => nodes.get(selector.slice(1)),
     addEventListener: (name, callback) => { pageEvents[name] = callback; } };
+
   vm.runInNewContext(source, {
     document, window: { addEventListener: (name, callback) => { pageEvents[name] = callback; } },
     sessionStorage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
@@ -33,6 +38,7 @@ function setup(storage = new Map()) {
     fetch: async () => ({ ok: true, json: async () => ['Playlist check passed.'] }),
     setTimeout: () => {}, setInterval: (callback) => { progress = callback; }
   });
+
   return { nodes, video, document, storage, pageEvents, counts: () => ({ loads, plays, pickers }),
     progress: () => progress(), click: (id) => nodes.get(id).listeners.click() };
 }
@@ -78,12 +84,14 @@ test('mute preserves playback and Stop releases the stream', async () => {
 
 test('progress reports actual timeline/frame counts and missing audio without changing playback', async () => {
   const h = setup();
+
   Object.assign(h.video, {
     videoWidth: 1920, videoHeight: 1080, webkitDecodedFrameCount: 20, audioTracks: [],
     buffered: { length: 1, start: () => 20, end: () => 50 },
     seekable: { length: 1, start: () => 0, end: () => 55 },
     getVideoPlaybackQuality: () => ({ totalVideoFrames: 21, droppedVideoFrames: 1 })
   });
+
   await h.click('play');
   h.progress();
   assert.match(h.nodes.get('history').value, /time=25.00, buffered=20.00-50.00, seekable=0.00-55.00/);

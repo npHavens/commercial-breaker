@@ -10,6 +10,7 @@ test('relay URL recognition excludes public hosts, arbitrary LAN pages and crede
   const context = vm.createContext({ URL });
   vm.runInContext(read('relay-target.js'), context);
   assert.equal(context.commercialBreakerIsRelayUrl(relayUrl), true);
+
   for (const url of [relayUrl.replace('192.168.1.10', 'example.com'),
     relayUrl.replace('192.168.1.10', '127.0.0.1'), relayUrl.replace('/session/', '/other/'),
     relayUrl.replace('http://', 'http://user:password@'), relayUrl + '?url=elsewhere']) {
@@ -20,6 +21,7 @@ test('relay URL recognition excludes public hosts, arbitrary LAN pages and crede
 test('extension controls the existing page controller without constructing a second one', () => {
   let state = { enabled: false, state: 'unknown', message: 'off', muted: false };
   const video = { muted: false, paused: false };
+
   const nodes = {
     'meta[name="commercial-breaker-relay"]': { content: '1' },
     '#commercial-breaker-commercial-state': { get textContent() { return JSON.stringify(state); } },
@@ -27,8 +29,10 @@ test('extension controls the existing page controller without constructing a sec
     '#commercial-breaker-auto-toggle': { click() { state.enabled = !state.enabled; } },
     '#mute': { click() { state.enabled = false; video.muted = !video.muted; } }
   };
+
   const context = vm.createContext({ URL, location: { href: relayUrl },
     document: { querySelector: (selector) => nodes[selector] } });
+
   vm.runInContext(read('relay-target.js'), context);
   vm.runInContext(read('relay-controls.js'), context);
   assert.equal(context.commercialBreakerRelayControl('toggle-auto').enabled, true);
