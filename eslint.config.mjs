@@ -1,12 +1,14 @@
 // Blank-line rules only: no correctness or layout checks. `npm run lint -- --fix` adds the blank lines.
-// The `lint` script in package.json chooses which directories are checked.
 import stylistic from '@stylistic/eslint-plugin';
 
 export default [
+  // Only these directories are linted, however ESLint is started (`npm run lint`, `npx eslint .`
+  // or an editor), so build output and cloned experiments are never checked or rewritten.
+  { ignores: ['*', '!SafariExtension/', '!Tools/', '!Tests/'] },
   {
-    // The .js files are classic scripts: Safari loads them as extension and page scripts, and
-    // the tests run them with `vm`. Parsing them as modules would reject valid sloppy-mode code.
-    files: ['**/*.js'],
+    // Classic scripts: Safari loads the extension's .js files as background, content and page
+    // scripts, and the tests run them and the controller with `vm`. Node ESM files use .mjs.
+    files: ['SafariExtension/**/*.js', 'Tools/commercial-controller.js'],
     languageOptions: { sourceType: 'script' }
   },
   {
