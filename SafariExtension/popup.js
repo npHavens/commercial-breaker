@@ -104,7 +104,7 @@ async function initialize() {
 
     // The relay player has its own AirPlay button, and its page isn't a DIRECTV or Paramount+ player.
     if (globalThis.commercialBreakerIsRelayUrl(tab?.url || '')) {
-      document.querySelector('#paramount-controls').hidden = true;
+      document.querySelector('#page-status').hidden = true;
       document.querySelector('#airplay-controls').hidden = true;
       document.querySelector('#airplay-history').parentElement.hidden = true;
 
@@ -115,7 +115,7 @@ async function initialize() {
   try {
     await activeTarget();
     document.querySelector("#airplay-controls").hidden = false;
-    document.querySelector("#paramount-controls").hidden = false;
+    document.querySelector("#page-status").hidden = false;
   } catch {
     document.querySelector("#airplay-controls").hidden = true;
   }

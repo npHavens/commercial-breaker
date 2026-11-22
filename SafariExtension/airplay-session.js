@@ -84,7 +84,7 @@
   }
 
   // DIRECTV can restore captions on each AirPlay connection despite its UI
-  // showing Off. Reset only presentation tracks; metadata drives diagnostics.
+  // showing Off. Reset only caption and subtitle tracks; leave metadata and other tracks alone.
   const captionOriginals = new Map();
 
   function disableCaptions(video, reason) {

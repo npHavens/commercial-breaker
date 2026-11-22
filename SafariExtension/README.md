@@ -7,12 +7,17 @@ listening and muting; nothing here detects commercials.
   to every `https://stream.directv.com` page when it finishes loading. After an AirPlay handoff
   it corrects the player's timeline with a guarded seek, the short rewind, and changes nothing
   else. `Experiments/airplay-return-oct4.md` has the investigation. In the page's console,
+  `commercialBreakerDirectvRecovery.export()` returns its state and recent events as JSON, and
   `commercialBreakerDirectvRecovery.stop()` stops it until the page reloads.
 - **On-page AirPlay button.** On a DIRECTV or Paramount+ tab, the popup's **Show AirPlay test
   on page** adds a panel to the top right of the page; exit video fullscreen to see it.
   - **Try AirPlay** opens Safari's native picker for the one visible player.
   - **Test return route (15 seconds)** tries a TV → Mac → TV round trip without opening a picker.
-  - **Restore settings and close** puts back the player attributes it changed and removes the panel.
+    Its last result is also kept as JSON in `commercialBreakerAirPlayRouteResult`, a global in
+    the extension's script world on that page, until the page reloads.
+  - **Restore settings and close** puts back the player attributes it changed and removes the
+    panel. On DIRECTV it also stops the handoff correction until the page reloads or the
+    panel is shown again, so leave the panel open while Commercial Breaker hands off to the TV.
   The popup keeps the steps of the last attempt under **Last AirPlay attempt**.
 - **Paramount+ relay capture.** See below.
 
@@ -24,8 +29,8 @@ It only reads the player and never changes it.
 1. In Safari Settings, turn on developer features under Advanced.
 2. In the Developer tab, load a temporary extension and choose this `SafariExtension` folder.
 3. Grant the DIRECTV, Paramount+, Google DAI, Irdeto and loopback access Safari asks for.
-4. Refresh any open DIRECTV, Paramount+ and relay tabs. An older DIRECTV correction keeps
-   running beside the new one until its page is refreshed.
+4. Refresh any open DIRECTV, Paramount+ and relay tabs. An already-open DIRECTV tab keeps
+   the older correction, and the new one doesn't attach, until the page is refreshed.
 
 Temporary extensions expire after 24 hours or when Safari quits. See Apple's guide:
 https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension

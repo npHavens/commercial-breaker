@@ -3,7 +3,7 @@
 Archived November 22, 2026, when phase 3 of the [app plan](../commercial-breaker-plan.md)
 removed the extension's audio, frame, metadata and player-event probes, signal recording
 and export, screen capture test, popup mute controls and AirPlay source trace. This is the
-v0.2.21 extension README, unchanged below this note. Version and status claims are historical,
+v0.2.21 extension README, unchanged below this note except for one relative link rebased to this folder. Version and status claims are historical,
 and the files it describes may no longer exist.
 
 # AirPlay playback diagnostics (v0.2.18; panel v0.1.10)
@@ -204,7 +204,7 @@ Verification: 47 JavaScript behavior tests passed, including DIRECTV popup routi
 
 The extension now controls the local HLS relay player: manual mute/unmute and an opt-in automatic commercial-mute toggle. On the relay tab, Commercial Breaker checks its private-LAN session URL and page marker, then operates the existing page controller. No additional host permissions or credential capture are used. DIRECTV/Paramount page controls remain separate; automatic commercial mute is currently supported only on the relay player.
 
-Restart the updated relay, open its new session URL in Safari, reload this temporary extension, and confirm **v0.2.0** in the popup. Enable automatic mode after confirming manual mute reaches the TV. See [the relay guide](../Experiments/hls-relay.md#extension-and-automatic-commercial-mute-v020) for the full real-break test. Automated behavior is implemented; its alignment and TV audio effects still need live verification.
+Restart the updated relay, open its new session URL in Safari, reload this temporary extension, and confirm **v0.2.0** in the popup. Enable automatic mode after confirming manual mute reaches the TV. See [the relay guide](../../Experiments/hls-relay.md#extension-and-automatic-commercial-mute-v020) for the full real-break test. Automated behavior is implemented; its alignment and TV audio effects still need live verification.
 
 Automatic mode follows HLS cue markers at the video's playback timestamp. It restores only mutes it applied. Unknown/stale timing releases its mute; manual audio changes turn automatic mode off. Monitoring remains in the player when the popup closes, and is off after a page refresh. Safari background suspension can delay transitions.
 

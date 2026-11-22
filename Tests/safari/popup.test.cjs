@@ -81,7 +81,7 @@ test('AirPlay injection errors are shown and the button can be retried', async (
 
 test('DIRECTV page status reads the player without passing it anything that could change it', async () => {
   const { nodes, playerArgs } = await setup(undefined, new Map(), 'https://stream.directv.com/watch');
-  assert.equal(nodes.get('paramount-controls').hidden, false);
+  assert.equal(nodes.get('page-status').hidden, false);
   assert.equal(nodes.get('airplay-controls').hidden, false);
   assert.equal(nodes.get('status').textContent, 'Player is muted. Video is paused.');
   await nodes.get('refresh').listeners.click[0]();
@@ -100,7 +100,7 @@ test('AirPlay failure history survives closing and reopening the popup', async (
 test('the relay tab shows only Paramount setup and injects nothing into the relay page', async () => {
   const url = `http://192.168.1.10:8765/session/${'a'.repeat(43)}/`;
   const { nodes, calls } = await setup(undefined, new Map(), url);
-  assert.equal(nodes.get('paramount-controls').hidden, true);
+  assert.equal(nodes.get('page-status').hidden, true);
   assert.equal(nodes.get('airplay-controls').hidden, true);
   assert.equal(nodes.get('paramount-setup-status').textContent, 'Capture idle.');
   assert.deepEqual(calls, []);
