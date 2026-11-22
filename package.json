@@ -7,9 +7,14 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "test": "node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs"
+    "test": "node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs",
+    "lint": "eslint SafariExtension Tools Tests"
   },
   "dependencies": {
     "@google/genai": "1.52.0"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "6.0.1",
+    "eslint": "10.15.0"
   }
 }

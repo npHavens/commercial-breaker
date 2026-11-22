@@ -100,8 +100,8 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   accepted earlier; it was not separately confirmed in the October 26 test.
 - PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex findings count
   in the shared merge gate, with P0 and P1 as High, P2 as Medium and P3 as Low; a run that is
-  missing, stuck or stopped at its usage limit doesn't block a merge. Every PR gets the offline suites plus an unsigned
-  app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
+  missing, stuck or stopped at its usage limit doesn't block a merge. Every PR gets the offline suites, the JavaScript
+  blank-line lint (see CONTRIBUTING) and an unsigned app build in CI (`.github/workflows/tests.yml`). Same-repo PRs also get one Claude
   review running `/code-review high` when they open or are marked ready; fork PRs never do.
   Since November 15, `claude-review.yml` calls the shared `claude-review-reusable.yml` in the
   public npHavens/.github repo at `@main`, which also gives the reviewer that repo's
