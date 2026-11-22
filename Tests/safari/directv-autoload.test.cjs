@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-const source = fs.readFileSync('SafariExtension/directv-autoload.js', 'utf8');
+const source = fs.readFileSync('SafariExtension/dist/directv-autoload.js', 'utf8');
 
 test('loads existing DIRECTV tabs and reattaches after refresh, excluding other origins', async () => {
   const calls=[];let update;
@@ -18,7 +18,7 @@ test('loads existing DIRECTV tabs and reattaches after refresh, excluding other 
   update(1,{status:'complete'},{url:'https://stream.directv.com/watch'});
   assert.equal(calls.length,2);
   assert.equal(calls[1].world,'MAIN');
-  assert.equal(calls[1].files.join(','),'directv-airplay-recovery.js');
+  assert.equal(calls[1].files.join(','),'dist/directv-airplay-recovery.js');
 });
 
 test('injection failure is handled without retries or playback operations', async () => {

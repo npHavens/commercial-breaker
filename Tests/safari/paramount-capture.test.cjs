@@ -23,7 +23,7 @@ function harness() {
       return {ok:true,json:async()=>({url:'http://192.168.1.2:8888/session/'+'a'.repeat(43)+'/'})};
     }});
 
-  for (const file of ['paramount-capture.js','relay-target.js','background.js']) vm.runInContext(fs.readFileSync('SafariExtension/'+file,'utf8'),ctx);
+  for (const file of ['paramount-capture.js','relay-target.js','background.js']) vm.runInContext(fs.readFileSync('SafariExtension/dist/'+file,'utf8'),ctx);
 
   return {listeners,calls,opened,api:ctx.commercialBreakerParamountCapture};
 }
@@ -76,7 +76,7 @@ test('capture API is exposed as commercialBreakerParamountCapture only', () => {
   const ctx = vm.createContext({ URL, browser: { runtime: { onMessage: { addListener() {} } }, tabs: { onRemoved: { addListener() {} }, onUpdated: { addListener() {} } },
     webRequest: { onSendHeaders: { addListener() {} }, onCompleted: { addListener() {} }, onErrorOccurred: { addListener() {} } } }, Map, Date });
 
-  vm.runInContext(fs.readFileSync('SafariExtension/paramount-capture.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('SafariExtension/dist/paramount-capture.js', 'utf8'), ctx);
   assert.equal(typeof ctx.commercialBreakerParamountCapture.playlist, 'function');
   assert.equal(ctx[legacy('ParamountCapture')], undefined);
 });

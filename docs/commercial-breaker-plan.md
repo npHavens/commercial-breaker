@@ -133,7 +133,13 @@ Planned November 22, 2026, to run after phase 3 and before phase 4, so Nick work
 typed extension. It moves the extension's background and page scripts to TypeScript,
 keeping the DIRECTV handoff correction and its regression tests. No React: Nick decided
 on November 22 that a three-section popup doesn't need it. Its implementation plan was
-approved the same day.
+approved the same day: TypeScript 6.0.3 (typescript-eslint doesn't support 7 yet), each
+`src/*.ts` compiled one-to-one into an ignored `dist/`, and a token-by-token comparison
+showing the compiled scripts match the JavaScript they replace. Strict mode stays off in the
+migration and turns on in a follow-up PR with its own DIRECTV live check; that has to land
+before any move to TypeScript 7, which removes the opt-out. The same follow-up renames the
+panel-close event, keeps the panel version in one constant, and decides whether the DIRECTV
+correction should keep running after the panel closes.
 **Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay cycle,
 including the short handoff rewind.
 
@@ -166,7 +172,9 @@ a second macOS user account reaches Ready by following only the checklist.
 
 Package the extension as a Safari Web Extension target inside Commercial Breaker, so it is
 turned on once in Safari Settings and survives Safari restarts. Temporary
-extensions do not. Rename it Commercial Breaker.
+extensions do not. Rename it Commercial Breaker. The built scripts aren't committed, so the
+target needs a Run Script phase that runs `npm run build:extension` before it copies
+`SafariExtension/dist`.
 **Done when:** after quitting and reopening Safari, a DIRECTV page attaches
 automatically and the handoff correction works. This closes the outstanding
 packaged autoload/reload check.

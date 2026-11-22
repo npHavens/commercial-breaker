@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-const source = fs.readFileSync(require('node:path').join(__dirname, '../../SafariExtension/directv-airplay-recovery.js'), 'utf8');
+const source = fs.readFileSync(require('node:path').join(__dirname, '../../SafariExtension/dist/directv-airplay-recovery.js'), 'utf8');
 
 function fixture({ wireless = true, timeout = 10 } = {}) {
   let id = 0, now = 0, errors = 0, buffered = false, poll;

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Commercial Breaker",
-  "version": "0.2.22",
+  "version": "0.2.23",
   "description": "DIRECTV AirPlay handoff correction, an on-page AirPlay button and the Paramount+ relay.",
   "permissions": [
     "activeTab",
@@ -22,10 +22,10 @@
   ],
   "background": {
     "scripts": [
-      "paramount-capture.js",
-      "relay-target.js",
-      "background.js",
-      "directv-autoload.js"
+      "dist/paramount-capture.js",
+      "dist/relay-target.js",
+      "dist/background.js",
+      "dist/directv-autoload.js"
     ],
     "persistent": false
   }

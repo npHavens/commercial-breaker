@@ -1,7 +1,13 @@
 # Commercial Breaker Safari extension
 
-Version 0.2.22: a temporary Manifest V3 extension with three jobs. The native app does the
+Version 0.2.23: a temporary Manifest V3 extension with three jobs. The native app does the
 listening and muting; nothing here detects commercials.
+
+The scripts are TypeScript in `src/`. `npm run build:extension`, run from the repository root,
+compiles each one to a plain script in `dist/`, with no bundler; `npm test` runs it first.
+`dist/` isn't committed, so build before loading the extension. `manifest.json`, `popup.html`
+and `popup.css` stay in this folder and name the `dist/` scripts. Strict mode (`"use strict"`)
+is off for now; `tsconfig.json` says why.
 
 - **DIRECTV handoff correction.** `directv-autoload.js` attaches `directv-airplay-recovery.js`
   to every `https://stream.directv.com` page when it finishes loading. After an AirPlay handoff
@@ -26,10 +32,11 @@ It only reads the player and never changes it.
 
 ## Load in Safari
 
-1. In Safari Settings, turn on developer features under Advanced.
-2. In the Developer tab, load a temporary extension and choose this `SafariExtension` folder.
-3. Grant the DIRECTV, Paramount+, Google DAI, Irdeto and loopback access Safari asks for.
-4. Refresh any open DIRECTV, Paramount+ and relay tabs. An already-open DIRECTV tab keeps
+1. Run `npm ci && npm run build:extension` from the repository root.
+2. In Safari Settings, turn on developer features under Advanced.
+3. In the Developer tab, load a temporary extension and choose this `SafariExtension` folder.
+4. Grant the DIRECTV, Paramount+, Google DAI, Irdeto and loopback access Safari asks for.
+5. Refresh any open DIRECTV, Paramount+ and relay tabs. An already-open DIRECTV tab keeps
    the older correction, and the new one doesn't attach, until the page is refreshed.
 
 Temporary extensions expire after 24 hours or when Safari quits. See Apple's guide:
@@ -75,11 +82,11 @@ an error and nothing is touched. A hidden playing preview doesn't displace a vis
 ## Local checks
 
 ```sh
-npm test
+npm test                 # type-checks and builds dist/, then runs the tests against it
 npm run lint
 ```
 
-The Safari tests run the real scripts against a simulated DOM. They don't simulate Safari's
+The Safari tests run the built scripts against a simulated DOM. They don't simulate Safari's
 permission prompts or the services' players, so a live DIRECTV AirPlay cycle, including the
 short rewind, is still the check for the handoff correction.
 

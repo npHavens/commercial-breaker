@@ -18,7 +18,7 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.55 and Safari extension source v0.2.22. v0.2.51 (Gemini outage retries) ran a
+Native v0.2.55 and Safari extension source v0.2.23. v0.2.51 (Gemini outage retries) ran a
 live UFC night on November 14. v0.2.52 retries startup and Stop's return to TV once when
 focus bounces back to Commercial Breaker, and v0.2.53 stops promos alone from confirming a
 break; v0.2.53 ran every session from November 15 to November 21, all of them started on November 15
@@ -41,7 +41,7 @@ Use a full Xcode installation and configure your own signing team.
 xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
   -derivedDataPath build/ci CODE_SIGNING_ALLOWED=NO build
-node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
+npm test                               # builds the extension first
 python3 -m unittest discover -s Tests -p 'test_*.py'
 npm run lint
 Tests/run-native-tests.sh
@@ -59,16 +59,18 @@ Application Default Credentials. Commercial Breaker does not use Gemini API keys
 
 ```sh
 nvm install                            # Node 24, from .nvmrc
-npm ci                                 # --omit=dev if this checkout only runs the app
+npm ci
+npm run build:extension                # the Safari extension, into SafariExtension/dist
 cp .env.example .env                   # then set GOOGLE_CLOUD_PROJECT
 gcloud auth application-default login
 ```
 
 If starting detection reports a setup failure right after a pull, rebuild the app from this checkout.
 
-Don't run `npm ci`, `npm install` or anything else that changes `node_modules` during a
-live session: the worker loads its packages from there. `--omit=dev` leaves out the lint
-tooling, which only development needs.
+Don't run `npm ci`, `npm install`, `npm run build:extension` or anything else that changes
+`node_modules` or `SafariExtension/dist` during a live session: the worker loads its packages
+from `node_modules`, and Safari injects the extension's scripts from `dist/` on the next page
+load. Every checkout needs the dev dependencies, because the extension is built with them.
 
 The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
 `node_modules` from the checkout it was built from. If setup is incomplete,

@@ -2,14 +2,27 @@
 (() => {
   if (location.origin !== 'https://stream.directv.com') return;
   if (globalThis.commercialBreakerDirectvRecovery?.running) return;
-  const events = [];
-  let binding, running = true, dropped = 0, lastCorrection = -Infinity;
-  const own = (object, key) => object && Object.getOwnPropertyDescriptor(object, key)?.value;
 
-  function record(event, controller, error) {
+  // The parts of DIRECTV's private QuickPlay player this script uses. Each is checked before use.
+  type PlayerError = { code?: number; rootError?: { code?: number } };
+
+  type Subscribable = {
+    subscribe(name: string, handler: (error: PlayerError) => void): void;
+    unsubscribe(name: string, handler: (error: PlayerError) => void): void;
+  };
+
+  type Controller = Subscribable & { videoElement_?: HTMLVideoElement; destroyed_?: boolean; bufferTimer_?: Subscribable };
+  type Binding = { controller: Controller; sample(): void; detach(): void };
+
+  const events: Record<string, unknown>[] = [];
+  let binding: Binding | undefined, running = true, dropped = 0, lastCorrection = -Infinity;
+  // Walks the player's own properties only. An undefined key finds nothing.
+  const own = (object: unknown, key: string | undefined): any => object && Object.getOwnPropertyDescriptor(object, key as PropertyKey)?.value;
+
+  function record(event: string, controller?: Controller, error?: PlayerError) {
     const video = controller?.videoElement_;
-    const ranges = [], seekable = [];
-    let startDate = null;
+    const ranges: number[][] = [], seekable: number[][] = [];
+    let startDate: string | null = null;
 
     try {
       for (let i = 0; video && i < Math.min(video.buffered.length, 8); i++) {
@@ -26,17 +39,17 @@
 
     events.push({ at: new Date().toISOString(), event,
       wireless: video?.webkitCurrentPlaybackTargetIsWireless === true,
-      time: Number.isFinite(video?.currentTime) ? video.currentTime : null,
+      time: Number.isFinite(video?.currentTime) ? video!.currentTime : null,
       buffered: ranges, seekable, startDate,
       paused: video?.paused, seeking: video?.seeking, ready: video?.readyState,
-      duration: Number.isFinite(video?.duration) ? video.duration : null,
-      code: Number.isFinite(error?.code) ? error.code : null,
-      rootCode: Number.isFinite(error?.rootError?.code) ? error.rootError.code : null });
+      duration: Number.isFinite(video?.duration) ? video!.duration : null,
+      code: Number.isFinite(error?.code) ? error!.code : null,
+      rootCode: Number.isFinite(error?.rootError?.code) ? error!.rootError!.code : null });
 
     if (events.length > 600) { events.shift(); dropped++; }
   }
 
-  function note(...args) { try { record(...args); } catch { /* Diagnostics are best effort. */ } }
+  function note(...args: Parameters<typeof record>) { try { record(...args); } catch { /* Diagnostics are best effort. */ } }
 
   function locate() {
     // Observed DIRECTV React hook -> bridge -> QuickPlayPlayer. No graph-wide search.
@@ -55,17 +68,19 @@
     }
   }
 
-  function supported(controller) {
+  function supported(controller: Controller | undefined) {
     return typeof controller?.subscribe === 'function' && typeof controller.unsubscribe === 'function'
       && typeof controller.bufferTimer_?.subscribe === 'function'
       && typeof controller.bufferTimer_.unsubscribe === 'function';
   }
 
-  function attach(controller) {
-    const timer = controller.bufferTimer_, video = controller.videoElement_;
+  function attach(controller: Controller): Binding {
+    const timer = controller.bufferTimer_!, video = controller.videoElement_!;
     let sampleUntil = Date.now() + 45000;
     let connectedAt = video.webkitCurrentPlaybackTargetIsWireless ? Date.now() : null;
-    let attempted = false, previousMismatch, result;
+
+    let attempted = false, previousMismatch: { at: number; time: number } | undefined,
+      result: { at: number; target: number } | undefined;
 
     function correctHandoff() {
       const now = Date.now();
@@ -85,9 +100,9 @@
         return;
       }
 
-      const buffered = [], seekable = [];
+      const buffered: number[][] = [], seekable: number[][] = [];
 
-      for (const [ranges, output] of [[video.buffered, buffered], [video.seekable, seekable]]) {
+      for (const [ranges, output] of [[video.buffered, buffered], [video.seekable, seekable]] as [TimeRanges, number[][]][]) {
         for (let i = 0; ranges && i < ranges.length; i++) {
           const start = ranges.start(i), end = ranges.end(i);
           if (Number.isFinite(start) && Number.isFinite(end) && end > start) output.push([start, end]);
@@ -104,7 +119,7 @@
         return;
       }
 
-      let target;
+      let target: number | undefined;
 
       for (const b of buffered) for (const r of seekable) {
         const start = Math.max(b[0], r[0]), end = Math.min(b[1], r[1]);
@@ -127,9 +142,9 @@
       catch { note('guarded seek failed; native recovery remains enabled', controller); }
     }
 
-    const onError = error => note('controller error or retune', controller, error);
-    const onBufferError = error => note('native buffer timer error', controller, error);
-    const handlers = new Map();
+    const onError: (error: PlayerError) => void = error => note('controller error or retune', controller, error);
+    const onBufferError: (error: PlayerError) => void = error => note('native buffer timer error', controller, error);
+    const handlers = new Map<string, () => void>();
 
     for (const name of ['webkitcurrentplaybacktargetiswirelesschanged', 'loadedmetadata', 'emptied', 'seeking', 'seeked']) {
       const handler = () => {
@@ -162,7 +177,7 @@
     } };
   }
 
-  let lastStatus;
+  let lastStatus: string | undefined;
 
   function check() {
     try {

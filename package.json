@@ -7,6 +7,8 @@
     "node": ">=24 <25"
   },
   "scripts": {
+    "build:extension": "tsc -p SafariExtension",
+    "pretest": "npm run build:extension",
     "test": "node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs",
     "lint": "eslint ."
   },
@@ -15,6 +17,9 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "6.0.1",
-    "eslint": "10.15.0"
+    "@types/firefox-webext-browser": "143.0.1",
+    "eslint": "10.15.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1"
   }
 }

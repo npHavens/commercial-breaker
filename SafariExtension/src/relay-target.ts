@@ -1,4 +1,4 @@
-globalThis.commercialBreakerIsRelayUrl = function isRelayUrl(value) {
+globalThis.commercialBreakerIsRelayUrl = function isRelayUrl(value: string) {
   try {
     const url = new URL(value);
     const octets = url.hostname.split('.').map(Number);

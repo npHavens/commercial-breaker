@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
-const source = readFileSync(resolve(__dirname, '../../SafariExtension/airplay-session.js'), 'utf8');
+const source = readFileSync(resolve(__dirname, '../../SafariExtension/dist/airplay-session.js'), 'utf8');
 
 function setup(hostname = 'stream.directv.com', supported = true) {
   const created = [];

@@ -95,7 +95,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   Accessibility, and an AirPlay break moved to the Mac and returned to TV.
 - The return to TV fails when another app, usually VS Code, is frontmost: see
   Remaining issues. Keep Safari in front during AirPlay tests.
-- Source Safari extension v0.2.22. Packaged automatic attachment/reload lifecycle
+- Source Safari extension v0.2.23, in TypeScript. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
 - PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex findings count
@@ -283,6 +283,15 @@ queue label keep `skybox` permanently: macOS ties Nick's microphone, system-audi
 Accessibility grants to the bundle ID, so they must never be renamed. The app's System
 Settings instructions name Commercial Breaker, the name System Settings lists since v0.2.48.
 
+### After any pull
+
+Only when no detection session is running:
+
+1. Run `npm ci && npm run build:extension`. The extension's scripts are built from
+   `SafariExtension/src` into the ignored `SafariExtension/dist`, which Safari loads.
+2. Rebuild the app if Swift changed (see below).
+3. Reload the temporary Safari extension and refresh any open DIRECTV, Paramount+ and relay tabs.
+
 ### After pulling the rename
 
 Nick runs the app from this checkout. Pulling changes `Tools/` immediately but Swift only
@@ -303,7 +312,7 @@ show it as "see Gemini setup in the README").
    re-prompt for microphone, system audio or Accessibility.
 
 ```sh
-node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
+npm test                               # builds the extension first
 python3 -m unittest discover -s Tests -p 'test_*.py'
 Tests/run-native-tests.sh
 ```

@@ -10,7 +10,7 @@ const legacy = (name) => `skybox${name}`;
 const contracts = [
   ['relay playback history key', 'commercial-breaker.relay.playback-history', ['Tools/hls_player.html']],
   ['AirPlay panel close event', 'commercial-breaker-airplay-trace-stop',
-    ['SafariExtension/airplay-session.js', 'SafariExtension/directv-airplay-recovery.js']],
+    ['SafariExtension/src/airplay-session.ts', 'SafariExtension/src/directv-airplay-recovery.ts']],
   ['popup AirPlay attempt log key', 'commercial-breaker.airplay-attempt', ['SafariExtension/popup.js']]
 ];
 
@@ -31,7 +31,7 @@ test('no source file under SafariExtension or Tools keeps a legacy kebab or dott
   const { execFileSync } = require('node:child_process');
 
   const files = execFileSync('git', ['ls-files', 'SafariExtension', 'Tools'], { cwd: resolve(__dirname, '../..'), encoding: 'utf8' })
-    .split('\n').filter((file) => /\.(js|html|md|json)$/.test(file));
+    .split('\n').filter((file) => /\.(js|ts|html|md|json)$/.test(file));
 
   const pattern = new RegExp(`${legacy('')}[-.][a-z]`);
   for (const file of files) assert.doesNotMatch(read(file), pattern, `${file} still has a legacy name`);

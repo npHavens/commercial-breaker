@@ -20,3 +20,6 @@ Experiments/**/results/
 !.env.example
 node_modules/
 buildServer.json
+
+# Built by `npm run build:extension` from SafariExtension/src.
+SafariExtension/dist/

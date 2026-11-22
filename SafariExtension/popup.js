@@ -19,7 +19,7 @@ async function update() {
 
   try {
     const target = await activeTarget();
-    await browser.scripting.executeScript({ target, files: ["select-video.js", "player.js"] });
+    await browser.scripting.executeScript({ target, files: ["dist/select-video.js", "dist/player.js"] });
 
     const results = await browser.scripting.executeScript({
       target,
@@ -77,9 +77,9 @@ airplayButton.addEventListener("click", async () => {
   try {
     const target = await activeTarget(["directv.com", "paramountplus.com"]);
     recordAirplayStep("Supported tab found; loading player selection.");
-    await browser.scripting.executeScript({ target, files: ["select-video.js"] });
+    await browser.scripting.executeScript({ target, files: ["dist/select-video.js"] });
     recordAirplayStep("Player selection loaded; adding page panel.");
-    await browser.scripting.executeScript({ target, files: ["airplay-session.js"] });
+    await browser.scripting.executeScript({ target, files: ["dist/airplay-session.js"] });
 
     const results = await browser.scripting.executeScript({ target, func: () => ({
       ok: globalThis.commercialBreakerAirPlayPanel?.isConnected && globalThis.commercialBreakerAirPlayPanel.commercialBreakerVersion === '0.1.12',
@@ -87,7 +87,7 @@ airplayButton.addEventListener("click", async () => {
     }) });
 
     if (!results[0]?.result?.ok) throw new Error(results[0]?.result?.error || "The page did not respond.");
-    await browser.scripting.executeScript({ target, world: 'MAIN', files: ['directv-airplay-recovery.js'] });
+    await browser.scripting.executeScript({ target, world: 'MAIN', files: ['dist/directv-airplay-recovery.js'] });
     recordAirplayStep("Page panel added. Close the popup and look at the top-right of the webpage.");
     airplayMessage.textContent = "Close this popup, exit video fullscreen if necessary, and click Try AirPlay in the Commercial Breaker panel on the page.";
   } catch (error) {
@@ -123,7 +123,7 @@ async function initialize() {
   update();
 }
 
-document.querySelector("#build-status").textContent = "v0.2.22 · Controls ready";
+document.querySelector("#build-status").textContent = "v0.2.23 · Controls ready";
 initialize();
 
 async function paramountSetup(start = false) {

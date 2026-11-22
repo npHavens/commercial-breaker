@@ -1,0 +1,22 @@
+{
+  // Compiles each src/*.ts to a classic script in dist/, one file each, with no bundler. The files
+  // have no imports or exports, so they stay global scripts and share the page globals declared in
+  // src/globals.d.ts.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["firefox-webext-browser"],
+    "rootDir": "src",
+    "outDir": "dist",
+    "strict": true,
+    // Emitting "use strict" would switch every script, including the DIRECTV correction that runs
+    // in the page's own world, to strict mode. The follow-up behavior PR in
+    // docs/commercial-breaker-plan.md turns it on with its own live check, and it must land before
+    // any move to TypeScript 7, which removes this option.
+    "alwaysStrict": false,
+    "ignoreDeprecations": "6.0",
+    "noEmitOnError": true,
+    "newLine": "lf"
+  },
+  "include": ["src"]
+}

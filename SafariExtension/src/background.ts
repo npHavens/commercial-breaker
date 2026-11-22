@@ -1,15 +1,22 @@
 // Credentials are scoped to one explicitly armed tab and live only in memory.
 const capture = globalThis.commercialBreakerParamountCapture;
-let session = null;
+
+// One armed capture. Its pairing code and captured playlist and token are cleared once it's used.
+type CaptureSession = {
+  tabId: number; code: string | null; expires: number; keys: Map<string, string>;
+  sending?: boolean; playlist?: string | null; token?: string | null;
+};
+
+let session: CaptureSession | null = null;
 let message = 'Start the extension helper, then capture the playing Paramount tab.';
-let expiryTimer;
+let expiryTimer: number | undefined;
 
 function clearSession() {
   clearTimeout(expiryTimer);
   session = null;
 }
 
-function active(details) {
+function active(details: { tabId: number }) {
   return session && !session.sending && details.tabId === session.tabId && Date.now() < session.expires;
 }
 
@@ -52,23 +59,24 @@ async function sendIfReady() {
   }
 }
 
+// Each listener below returns early unless active() found the armed session, so it's set from there on.
 browser.webRequest.onSendHeaders.addListener(details => {
   if (!active(details) || !capture.key(details.url)) return;
   const token = capture.token(details.requestHeaders);
-  if (token && session.keys.size < 20) session.keys.set(details.requestId, token);
+  if (token && session!.keys.size < 20) session!.keys.set(details.requestId, token);
 }, { urls: ['https://cbsi.live.ott.irdeto.com/*'] }, ['requestHeaders']);
 
 browser.webRequest.onCompleted.addListener(details => {
   if (!active(details)) return;
-  if (details.statusCode === 200 && capture.playlist(details.url)) session.playlist = details.url;
+  if (details.statusCode === 200 && capture.playlist(details.url)) session!.playlist = details.url;
 
   if (capture.key(details.url)) {
-    const token = session.keys.get(details.requestId);
-    session.keys.delete(details.requestId);
-    if (details.statusCode === 200 && token) session.token = token;
+    const token = session!.keys.get(details.requestId);
+    session!.keys.delete(details.requestId);
+    if (details.statusCode === 200 && token) session!.token = token;
   }
 
-  message = session.playlist ? 'Playlist captured; waiting for an authorized key request. Reload Paramount if needed.' :
+  message = session!.playlist ? 'Playlist captured; waiting for an authorized key request. Reload Paramount if needed.' :
     'Waiting for Paramount playback requests. Reload the Paramount tab and resume playback.';
 
   void sendIfReady();
@@ -98,7 +106,7 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
   if (!capture.paramount(tab.url)) return { message: 'Open the playing Paramount tab first.' };
   if (!/^[A-Za-z0-9_-]{32}$/.test(request.code || '')) return { message: 'Paste the pairing code from the extension helper window.' };
   clearSession();
-  session = { tabId: tab.id, code: request.code, expires: Date.now() + 120000, keys: new Map() };
+  session = { tabId: tab.id!, code: request.code, expires: Date.now() + 120000, keys: new Map() };
   message = 'Capture armed for two minutes. Reload this Paramount tab and resume playback; the relay will open automatically.';
 
   expiryTimer = setTimeout(() => {

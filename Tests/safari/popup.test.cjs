@@ -6,7 +6,7 @@ const { resolve } = require('node:path');
 const read = (file) => readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8');
 const source = read('popup.js');
 const html = read('popup.html');
-const panelVersion = read('airplay-session.js').match(/host\.commercialBreakerVersion = '([^']+)'/)[1];
+const panelVersion = read('dist/airplay-session.js').match(/host\.commercialBreakerVersion = '([^']+)'/)[1];
 
 async function setup(failure, storage = new Map(), url = 'https://www.paramountplus.com/live-tv/', pageOverrides = {}) {
   const nodes = new Map([...html.matchAll(/id="([^"]+)"/g)].map((match) => [match[1], {
@@ -36,7 +36,7 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
       runtime: { sendMessage: async () => ({ message: 'Capture idle.' }) },
       scripting: { executeScript: async (options) => {
         calls.push(options);
-        if (failure && options.files?.includes('airplay-session.js')) throw new Error(failure);
+        if (failure && options.files?.includes('dist/airplay-session.js')) throw new Error(failure);
         if (!options.func) return [{ result: undefined }];
 
         return [{ result: vm.runInNewContext(`(${options.func.toString()})(...args)`, { ...page, args: options.args ?? [] }) }];
@@ -44,7 +44,7 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
     }
   });
 
-  vm.runInContext(read('relay-target.js'), context);
+  vm.runInContext(read('dist/relay-target.js'), context);
   vm.runInContext(source, context);
   await new Promise(setImmediate);
 
@@ -54,11 +54,11 @@ async function setup(failure, storage = new Map(), url = 'https://www.paramountp
 test('Paramount+ popup exposes AirPlay and wires the click to page injection', async () => {
   const { nodes, calls } = await setup();
   assert.equal(nodes.get('airplay-controls').hidden, false);
-  assert.equal(nodes.get('build-status').textContent, 'v0.2.22 · Controls ready');
+  assert.equal(nodes.get('build-status').textContent, 'v0.2.23 · Controls ready');
   await nodes.get('airplay').listeners.click[0]();
-  assert.ok(calls.some((call) => call.files?.includes('airplay-session.js') && call.target.tabId === 7));
-  const recovery = calls.find((call) => call.files?.includes('directv-airplay-recovery.js'));
-  assert.deepEqual(Array.from(recovery.files), ['directv-airplay-recovery.js']);
+  assert.ok(calls.some((call) => call.files?.includes('dist/airplay-session.js') && call.target.tabId === 7));
+  const recovery = calls.find((call) => call.files?.includes('dist/directv-airplay-recovery.js'));
+  assert.deepEqual(Array.from(recovery.files), ['dist/directv-airplay-recovery.js']);
   assert.equal(recovery.world, 'MAIN');
   assert.match(nodes.get('airplay-status').textContent, /Close this popup/);
   assert.equal(nodes.get('airplay').disabled, false);
@@ -69,7 +69,7 @@ test('a panel from another version is reported instead of injecting the recovery
   const { nodes, calls } = await setup(undefined, new Map(), undefined, oldPanel);
   await nodes.get('airplay').listeners.click[0]();
   assert.match(nodes.get('airplay-status').textContent, /close the old AirPlay panel/);
-  assert.ok(!calls.some((call) => call.files?.includes('directv-airplay-recovery.js')));
+  assert.ok(!calls.some((call) => call.files?.includes('dist/directv-airplay-recovery.js')));
 });
 
 test('AirPlay injection errors are shown and the button can be retried', async () => {

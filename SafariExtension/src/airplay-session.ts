@@ -13,7 +13,7 @@
       { ok: false, error: 'Close the old page panel with Restore settings and close, then try again.' };
   }
 
-  const host = document.createElement('div');
+  const host = document.createElement('div') as HTMLDivElement & { commercialBreakerVersion?: string };
   globalThis.commercialBreakerAirPlayPanel = host;
   host.commercialBreakerVersion = '0.1.12';
   host.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;';
@@ -41,9 +41,9 @@
   history.rows = 8;
   history.setAttribute('aria-label', 'AirPlay connection history');
   history.style.cssText = 'width:100%;box-sizing:border-box;margin-top:10px;font:12px/1.4 monospace;';
-  const entries = [];
+  const entries: string[] = [];
 
-  function report(message) {
+  function report(message: string) {
     status.textContent = message;
     entries.push(`${new Date().toLocaleTimeString()} · ${message}`);
     if (entries.length > 40) entries.shift();
@@ -51,7 +51,7 @@
     history.scrollTop = history.scrollHeight;
   }
 
-  function sourceKind(value) {
+  function sourceKind(value: string) {
     if (!value) return 'none';
     if (value.startsWith('blob:')) return 'blob';
     if (/^https?:/i.test(value)) return 'network';
@@ -59,7 +59,7 @@
     return 'other';
   }
 
-  function describe(video) {
+  function describe(video: HTMLVideoElement) {
     const alternatives = Array.from(video.querySelectorAll('source'))
       .filter((source) => sourceKind(source.src) === 'network').length;
 
@@ -68,7 +68,7 @@
       `paused=${video.paused}, ready=${video.readyState}, error=${video.error?.code || 0}`;
   }
 
-  function enable(video) {
+  function enable(video: HTMLVideoElement) {
     // Write only changed attributes so our observer cannot trigger itself indefinitely.
     let changed = false;
 
@@ -85,10 +85,10 @@
 
   // DIRECTV can restore captions on each AirPlay connection despite its UI
   // showing Off. Reset only caption and subtitle tracks; leave metadata and other tracks alone.
-  const captionOriginals = new Map();
+  const captionOriginals = new Map<HTMLVideoElement, { tracks: Map<TextTrack, TextTrackMode>; visible: boolean | undefined }>();
 
-  function disableCaptions(video, reason) {
-    if (service.name !== 'DIRECTV') return;
+  function disableCaptions(video: HTMLVideoElement, reason: string) {
+    if (service!.name !== 'DIRECTV') return;
     let saved = captionOriginals.get(video);
 
     if (!saved) {
@@ -119,18 +119,22 @@
     report(`Captions off requested (${reason}; ${count} text tracks${failed ? '; some controls unavailable' : ''}). Verify on TV.`);
   }
 
-  const originals = new Map();
+  const originals = new Map<HTMLVideoElement, [string, string | null][]>();
   const attributes = ['disableremoteplayback', 'x-webkit-wirelessvideoplaybackdisabled', 'x-webkit-airplay'];
-  const listeners = new Map();
-  let selectedVideo;
-  let route;
+  const listeners = new Map<HTMLVideoElement, { handlers: Map<string, EventListener>; observer: MutationObserver; removalObserver: MutationObserver }>();
+  let selectedVideo: HTMLVideoElement | undefined;
 
-  function endRoute(message) {
+  type RouteTest = { video: HTMLVideoElement; original: string | null; timers: number[]; phase: string;
+    sawLocal: boolean; sawReturn: boolean; handler?: () => void };
+
+  let route: RouteTest | undefined;
+
+  function endRoute(message: string) {
     if (!route) return;
     const current = route;
     route = undefined;
     for (const timer of current.timers) clearTimeout(timer);
-    current.video.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', current.handler);
+    current.video.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', current.handler!);
     if (current.original === null) current.video.removeAttribute('disableremoteplayback');
     else current.video.setAttribute('disableremoteplayback', current.original);
     routeButton.disabled = false;
@@ -155,7 +159,7 @@
       return;
     }
 
-    const current = {
+    const current: RouteTest = {
       video, original: video.getAttribute('disableremoteplayback'),
       timers: [], phase: 'disable', sawLocal: false, sawReturn: false
     };
@@ -171,7 +175,7 @@
     route = current;
     routeButton.disabled = true;
     button.disabled = true;
-    video.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', current.handler);
+    video.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', current.handler!);
 
     try {
       // Diagnostic only: allowing remote playback again is not a device-selection API.
@@ -208,7 +212,7 @@
               'No local playback transition observed. Disabling remote playback did not establish a round trip.');
         }, 10000));
       }, 5000));
-    } catch (error) { endRoute(`Route test failed: ${error.message}`); }
+    } catch (error) { endRoute(`Route test failed: ${(error as Error).message}`); }
   });
 
   button.addEventListener('click', () => {
@@ -237,7 +241,7 @@
         for (const name of ['webkitcurrentplaybacktargetiswirelesschanged',
           'webkitplaybacktargetavailabilitychanged', 'emptied', 'loadedmetadata', 'error',
           'loadstart', 'waiting', 'stalled', 'playing', 'pause', 'seeking', 'seeked', 'ended', 'canplay']) {
-          const handler = (event) => {
+          const handler = (event: Event & { availability?: string }) => {
             if ((name === 'webkitcurrentplaybacktargetiswirelesschanged' || name === 'loadedmetadata') &&
                 video.webkitCurrentPlaybackTargetIsWireless === true) {
               disableCaptions(video, 'AirPlay connected');
@@ -255,7 +259,7 @@
         const observer = new MutationObserver((records) => {
           if (route?.video === video) return; // Do not undo the routing experiment.
 
-          if (records.some((record) => attributes.includes(record.attributeName))) {
+          if (records.some((record) => (attributes as (string | null)[]).includes(record.attributeName))) {
             const disabled = video.hasAttribute('disableremoteplayback') ||
               video.hasAttribute('x-webkit-wirelessvideoplaybackdisabled') ||
               video.getAttribute('x-webkit-airplay') !== 'allow';
@@ -308,7 +312,7 @@
       // Synchronous call from a real page click preserves Safari's user gesture.
       video.webkitShowPlaybackTargetPicker();
     } catch (error) {
-      report(error.message || 'Could not request AirPlay.');
+      report((error as Error).message || 'Could not request AirPlay.');
     }
   });
 
@@ -320,7 +324,7 @@
     globalThis.removeEventListener('pagehide', onPageHide);
 
     for (const [video, values] of originals) {
-      const { handlers, observer, removalObserver } = listeners.get(video);
+      const { handlers, observer, removalObserver } = listeners.get(video)!;
       observer.disconnect();
       removalObserver.disconnect();
       for (const [name, handler] of handlers) video.removeEventListener(name, handler);

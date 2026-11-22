@@ -24,6 +24,6 @@ globalThis.commercialBreakerPlayer = function commercialBreakerPlayer() {
 
     return { ok: true, muted: video.muted, volume: video.volume, paused: video.paused };
   } catch (error) {
-    return { ok: false, error: error.message || "Could not read the player." };
+    return { ok: false, error: (error as Error).message || "Could not read the player." };
   }
 };

@@ -21,7 +21,7 @@ function player(videos, hostname = 'www.paramountplus.com') {
   });
 
   for (const file of ['select-video.js', 'player.js']) {
-    vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
+    vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension/dist', file), 'utf8'), context);
   }
 
   return context.commercialBreakerPlayer;
@@ -103,7 +103,7 @@ test('player control is exposed as commercialBreakerPlayer only', () => {
   const context = vm.createContext({ document: { querySelectorAll: () => [] }, location: { protocol: 'https:', hostname: 'www.paramountplus.com' } });
 
   for (const file of ['select-video.js', 'player.js']) {
-    vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension', file), 'utf8'), context);
+    vm.runInContext(readFileSync(resolve(__dirname, '../../SafariExtension/dist', file), 'utf8'), context);
   }
 
   assert.equal(typeof context.commercialBreakerPlayer, 'function');
