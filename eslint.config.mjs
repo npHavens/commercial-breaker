@@ -2,8 +2,17 @@
 import stylistic from '@stylistic/eslint-plugin';
 
 export default [
+  // Only these directories are linted, however ESLint is started (`npm run lint`, `npx eslint .`
+  // or an editor), so build output and cloned experiments are never checked or rewritten.
+  { ignores: ['*', '!SafariExtension/', '!Tools/', '!Tests/'] },
   {
-    files: ['SafariExtension/**/*.js', 'Tools/**/*.{js,mjs}', 'Tests/**/*.{js,mjs,cjs}'],
+    // Classic scripts: Safari loads the extension's .js files as background, content and page
+    // scripts, and the tests run them and the controller with `vm`. Node ESM files use .mjs.
+    files: ['SafariExtension/**/*.js', 'Tools/commercial-controller.js'],
+    languageOptions: { sourceType: 'script' }
+  },
+  {
+    files: ['**/*.{js,mjs,cjs}'],
     plugins: { '@stylistic': stylistic },
     rules: {
       // The No Hands Stack reference block, unchanged.

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs",
-    "lint": "eslint SafariExtension Tools Tests"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@google/genai": "1.52.0"

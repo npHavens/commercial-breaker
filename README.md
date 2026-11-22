@@ -41,9 +41,9 @@ Use a full Xcode installation and configure your own signing team.
 xcodebuild -project CommercialBreaker.xcodeproj -scheme CommercialBreaker \
   -configuration Debug -destination 'platform=macOS' \
   -derivedDataPath build/ci CODE_SIGNING_ALLOWED=NO build
-npm run lint
 node --test Tests/gemini-audio/*.test.mjs Tests/safari/*.test.cjs
 python3 -m unittest discover -s Tests -p 'test_*.py'
+npm run lint
 Tests/run-native-tests.sh
 ```
 
@@ -59,12 +59,16 @@ Application Default Credentials. Commercial Breaker does not use Gemini API keys
 
 ```sh
 nvm install                            # Node 24, from .nvmrc
-npm ci
+npm ci                                 # --omit=dev if this checkout only runs the app
 cp .env.example .env                   # then set GOOGLE_CLOUD_PROJECT
 gcloud auth application-default login
 ```
 
 If starting detection reports a setup failure right after a pull, rebuild the app from this checkout.
+
+Don't run `npm ci`, `npm install` or anything else that changes `node_modules` during a
+live session: the worker loads its packages from there. `--omit=dev` leaves out the lint
+tooling, which only development needs.
 
 The app finds Node 24 under `~/.nvm/versions/node` and reads `.env` and
 `node_modules` from the checkout it was built from. If setup is incomplete,
