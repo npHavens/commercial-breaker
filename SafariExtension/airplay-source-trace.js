@@ -60,9 +60,7 @@
   function stop() {
     running = false;
     clearTimeout(expiry);
-
     for (const restore of restores.reverse()) { try { restore(); } catch {} }
-
     document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
   }

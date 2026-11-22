@@ -80,7 +80,6 @@ async function main() {
 
     for (const sample of samples) {
       if (sample.synthetic) { audio.push(silence()); continue; }
-
       const source = await realpath(currentRecordingPath(sample.local_audio));
       if (!source.startsWith(allowed + sep) || !source.endsWith('.wav') || (await stat(source)).size > 8_000_000) throw new Error('Invalid source');
       const metadata = JSON.parse(await readFile(source.replace(/\.wav$/, '.json'), 'utf8'));

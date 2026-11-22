@@ -46,7 +46,6 @@
 
   function append(kind, fields = {}) {
     if (entries.length >= 600) { entries.shift(); dropped++; }
-
     entries.push({ at: new Date().toISOString(), kind, ...fields });
   }
 
@@ -77,9 +76,7 @@
     try {
       for (const video of Array.from(document.querySelectorAll('video')).slice(0, 8)) {
         if (attached.has(video)) continue;
-
         if (attached.size >= 64) { coverage.sourceLimitReached = true; break; }
-
         attached.add(video);
         coverage.videoElements++;
         observe(video, 'video', mediaNames, video.addEventListener, video.removeEventListener);
@@ -92,9 +89,7 @@
 
       for (const player of Object.values(videojs.getPlayers() || {}).slice(0, 8)) {
         if (!player || attached.has(player) || typeof player.on !== 'function' || typeof player.off !== 'function') continue;
-
         if (attached.size >= 64) { coverage.sourceLimitReached = true; break; }
-
         attached.add(player);
         const count = observe(player, 'videojs', names, player.on, player.off);
         if (count) coverage.videojsPlayers++;

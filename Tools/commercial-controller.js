@@ -107,7 +107,6 @@ globalThis.commercialBreakerCreateCommercialController = function createCommerci
 
       if (state === 'ad') {
         if (!video.muted) { ownsMute = true; setMuted(true); }
-
         message = ownsMute ? 'Commercial detected · muted automatically.' : 'Commercial detected · already muted.';
       } else {
         release();
@@ -158,9 +157,7 @@ globalThis.commercialBreakerCreateCommercialController = function createCommerci
   }
 
   const interval = setInterval(() => { void tick(); }, 1000);
-
   const onTime = () => { void tick(); };
-
   video.addEventListener('timeupdate', onTime);
   video.addEventListener('volumechange', volumeChanged);
   for (const event of ['seeking', 'pause', 'emptied', 'error']) video.addEventListener(event, resetTiming);

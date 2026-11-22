@@ -89,11 +89,8 @@
     } finally {
       clearInterval(interval); clearTimeout(deadline);
       if (onExit) window.removeEventListener('pagehide', onExit);
-
       for (const node of [source, analyser, sink]) { try { node?.disconnect(); } catch {} }
-
       for (const track of stream?.getTracks() || []) { try { track.stop(); } catch {} }
-
       if (context) { try { context.close().catch(() => {}); } catch {} }
     }
   };

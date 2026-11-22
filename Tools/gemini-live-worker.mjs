@@ -193,9 +193,7 @@ async function main() {
   const emit = record => process.stdout.write(JSON.stringify(record) + '\n');
   const worker = createWorker({ generateContent: args => ai.models.generateContent(args), prompt, emit, returnDetection, crowdDetection });
   process.stdin.on('data', createLineReader(line => { void worker.accept(line); }, () => emit({ id: null, error: 'invalid-request' })));
-
   const close = () => { worker.close(); process.exit(0); };
-
   process.stdin.on('end', close);
   process.stdin.on('error', close);
   process.on('SIGTERM', close);
