@@ -16,12 +16,21 @@ complete live break/return cycle. Never interrupt someone else's active playback
 for automated verification. Gemini evaluations upload audio: use authorized
 fixtures, not incidental room recordings.
 
-In JavaScript, leave a blank line after the imports, before `return`, and before and
-after every multi-line declaration, expression statement or braced block. Runs of
-one-line statements stay together. `npm run lint` checks this in CI, and
-`npm run lint -- --fix` adds the missing blank lines. Don't let a `return` or a
-multi-line statement share a line with another statement, as in `{ a(); return; }`:
-`--fix` splits those lines without re-indenting them, and lint passes the result.
+`npm run lint` checks blank lines between JavaScript statements, and CI runs it. This is
+the rule's one description; `eslint.config.mjs` points here. A blank line goes:
+
+- after the imports;
+- before a `return` that follows another statement in its block, even a one-line one;
+- before and after a multi-line `const` or `let` declaration, expression statement or `export`;
+- before and after a multi-line statement that ends with the closing `}` of a block: a
+  function, `if`, loop, `switch` or `try`, an immediately invoked function, or a brace-less
+  `if` whose body ends in a multi-line arrow function.
+
+Nothing else needs one: runs of one-line statements stay together, and so do a multi-line
+`class` and a brace-less `if` or `throw` that spans lines without ending in a block.
+`npm run lint -- --fix` adds missing blank lines but never re-indents. Don't put a `return`
+or a multi-line statement on the same line as another, as in `{ a(); return; }`: `--fix`
+splits that line without re-indenting it, and lint passes the result.
 
 Do not commit recordings, stream-session URLs, bearer tokens, keys, `.env` files,
 or build output. Preserve useful synthetic regression fixtures and findings.
