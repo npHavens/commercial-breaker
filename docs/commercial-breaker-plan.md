@@ -119,6 +119,11 @@ separates cleanly from playback, and keep whatever the relay still needs.
 **Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay
 cycle with the trimmed extension, including the short handoff rewind.
 
+Split in two on November 22, 2026. 3a trims the extension: the popup keeps page status,
+the AirPlay button and Paramount+ relay setup; the probes, recording export, screen
+test, mute toggles and the AirPlay source trace are gone, and so is the `downloads`
+permission. 3b removes the relay player's legacy automatic mute.
+
 ### 4. Commercial Breaker app shell and branding
 
 Build the main window, Settings and Diagnostics described above, and add an app

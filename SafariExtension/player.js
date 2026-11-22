@@ -1,5 +1,6 @@
 // Called only by Commercial Breaker's popup in the active tab's isolated extension world.
-globalThis.commercialBreakerPlayer = function commercialBreakerPlayer(toggle) {
+// Reports the player's state and never changes it.
+globalThis.commercialBreakerPlayer = function commercialBreakerPlayer() {
   try {
     if (location.protocol !== "https:" ||
         !["paramountplus.com", "directv.com"].some((domain) => location.hostname === domain || location.hostname.endsWith(`.${domain}`))) {
@@ -20,10 +21,9 @@ globalThis.commercialBreakerPlayer = function commercialBreakerPlayer(toggle) {
     });
 
     const video = globalThis.commercialBreakerSelectVideo(candidates);
-    if (toggle) video.muted = !video.muted;
 
     return { ok: true, muted: video.muted, volume: video.volume, paused: video.paused };
   } catch (error) {
-    return { ok: false, error: error.message || "Could not control the player." };
+    return { ok: false, error: error.message || "Could not read the player." };
   }
 };

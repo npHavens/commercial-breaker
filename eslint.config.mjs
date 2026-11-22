@@ -15,11 +15,8 @@ export default [
     files: ['**/*.{js,mjs,cjs}'],
     plugins: { '@stylistic': stylistic },
     rules: {
-      // The No Hands Stack reference block, unchanged. It requires a blank line after the imports,
-      // before a return, and around multi-line declarations, expression statements, exports and
-      // braced blocks. Runs of one-line statements stay together. A brace-less `if` or a `throw`
-      // that spans several lines isn't matched. `multiline-type` and `interface` are TypeScript
-      // types, which never match here.
+      // The No Hands Stack reference block, unchanged. CONTRIBUTING describes what it requires.
+      // `multiline-type` and `interface` are TypeScript types, which never match here.
       '@stylistic/padding-line-between-statements': [
         'error',
         { blankLine: 'always', prev: 'import', next: '*' },

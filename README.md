@@ -18,7 +18,7 @@ Audio samples go to Google Vertex Gemini. TV mode can include nearby voices.
 
 ## Current state
 
-Native v0.2.55 and Safari extension source v0.2.21. v0.2.51 (Gemini outage retries) ran a
+Native v0.2.55 and Safari extension source v0.2.22. v0.2.51 (Gemini outage retries) ran a
 live UFC night on November 14. v0.2.52 retries startup and Stop's return to TV once when
 focus bounces back to Commercial Breaker, and v0.2.53 stops promos alone from confirming a
 break; v0.2.53 ran every session from November 15 to November 21, all of them started on November 15
@@ -83,7 +83,7 @@ to `.env` (see `.env.example`) so Commercial Breaker is metered against its own 
 | Directory | Responsibility |
 | --- | --- |
 | `MacAudioProbe/` | Active Swift app, capture, routing and automatic policy |
-| `SafariExtension/` | Safari controls and DIRECTV AirPlay correction |
+| `SafariExtension/` | DIRECTV AirPlay correction, on-page AirPlay button and Paramount+ relay capture |
 | `Tools/` | Runtime classifiers, prompts and relay helpers; evaluation tools; app icon rendering |
 | `Tests/` | Offline behavior and regression tests |
 | `docs/` | Contributor workflow and cleanup plan |

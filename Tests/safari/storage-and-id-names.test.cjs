@@ -8,20 +8,14 @@ const legacy = (name) => `skybox${name}`;
 // Each contract is a name shared by files that never import each other, so a
 // half-rename fails silently at runtime. These checks pin both sides.
 const contracts = [
-  ['relay page marker meta', 'commercial-breaker-relay', ['Tools/hls_player.html', 'SafariExtension/relay-controls.js']],
-  ['auto toggle id', 'commercial-breaker-auto-toggle', ['Tools/hls_player.html', 'Tools/commercial-controller.js', 'SafariExtension/relay-controls.js']],
-  ['commercial state id', 'commercial-breaker-commercial-state', ['Tools/hls_player.html', 'Tools/commercial-controller.js', 'SafariExtension/relay-controls.js']],
+  ['auto toggle id', 'commercial-breaker-auto-toggle', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
+  ['commercial state id', 'commercial-breaker-commercial-state', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
   ['auto history id', 'commercial-breaker-auto-history', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
   ['auto status id', 'commercial-breaker-auto-status', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
   ['relay playback history key', 'commercial-breaker.relay.playback-history', ['Tools/hls_player.html']],
-  ['direct audio panel id', 'commercial-breaker-direct-audio', ['SafariExtension/direct-audio.js']],
-  ['AirPlay trace stop event', 'commercial-breaker-airplay-trace-stop',
-    ['SafariExtension/airplay-session.js', 'SafariExtension/airplay-source-trace.js', 'SafariExtension/directv-airplay-recovery.js']],
-  ['recording export handoff key', 'commercial-breaker.recording-export', ['SafariExtension/export.js', 'SafariExtension/save-recording.js']],
-  ['popup AirPlay attempt log key', 'commercial-breaker.airplay-attempt', ['SafariExtension/popup.js']],
-  ['popup audio test status key', 'commercial-breaker.audio-test-status', ['SafariExtension/popup.js']],
-  ['signals download filename prefix', 'commercial-breaker-signals-', ['SafariExtension/export.js']],
-  ['screen test download filename prefix', 'commercial-breaker-screen-', ['SafariExtension/screen-test.js']]
+  ['AirPlay panel close event', 'commercial-breaker-airplay-trace-stop',
+    ['SafariExtension/airplay-session.js', 'SafariExtension/directv-airplay-recovery.js']],
+  ['popup AirPlay attempt log key', 'commercial-breaker.airplay-attempt', ['SafariExtension/popup.js']]
 ];
 
 for (const [label, name, files] of contracts) {

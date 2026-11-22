@@ -280,28 +280,16 @@ test('caption control failures do not prevent picker and Paramount tracks remain
   assert.equal(p.video.textTracks[0].mode, 'showing');
 });
 
-test('playback export correlates stalls and wireless changes without URLs, cues or invalid numbers', () => {
+test('the panel keeps no playback log, and closing it removes every listener it added', () => {
   const h = setup();
-  h.video.currentSrc = 'https://private.example/stream?token=secret';
-  h.video.currentTime = Infinity;
-  h.video.textTracks = [{ kind: 'captions', mode: 'disabled', label: 'private label', cues: ['private words'] }];
+  const trackListeners = [];
+  h.video.textTracks = Object.assign([{ kind: 'captions', mode: 'disabled' }], { addEventListener: (name) => trackListeners.push(name) });
   start(h);
-  h.video.listeners.waiting({});
-  h.video.webkitCurrentPlaybackTargetIsWireless = true;
-  h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
-  h.video.listeners.timeupdate({});
-  const json = h.context.commercialBreakerExportAirPlayPlayback();
-  const report = JSON.parse(json);
-  assert.ok(report.events.some(e => e.event.startsWith('waiting')));
-  assert.ok(report.events.some(e => e.video?.wireless));
-  assert.ok(report.events.some(e => e.event === 'progress'));
-  assert.equal(report.events.at(-1).video.time, null);
-  assert.doesNotMatch(json, /private|secret|Infinity/);
-  for (let i = 0; i < 1300; i++) h.video.listeners.stalled({});
-  assert.equal(JSON.parse(h.context.commercialBreakerExportAirPlayPlayback()).events.length, 1200);
+  assert.equal(h.video.listeners.timeupdate, undefined);
+  assert.deepEqual(trackListeners, []);
+  assert.equal(h.context.commercialBreakerExportAirPlayPlayback, undefined);
   h.created.find(e => e.textContent === 'Restore settings and close').listeners.click();
   assert.deepEqual(Object.keys(h.video.listeners), []);
-  assert.equal(typeof h.context.commercialBreakerExportAirPlayPlayback(), 'string');
 });
 
 const legacy = (name) => `skybox${name}`;
@@ -309,9 +297,8 @@ const legacy = (name) => `skybox${name}`;
 test('page bridge globals use the commercialBreaker names and leave no legacy skybox names', () => {
   const h = setup(); routing(h);
   assert.equal(typeof h.context.commercialBreakerAirPlayPanel, 'object');
-  assert.equal(h.context.commercialBreakerAirPlayPanel.commercialBreakerVersion, '0.1.11');
+  assert.equal(h.context.commercialBreakerAirPlayPanel.commercialBreakerVersion, '0.1.12');
   assert.equal(h.context.commercialBreakerAirPlayPanel[legacy('Version')], undefined);
-  assert.equal(typeof h.context.commercialBreakerExportAirPlayPlayback, 'function');
   h.video.webkitCurrentPlaybackTargetIsWireless = false;
   h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
   h.fire(5000);
@@ -320,7 +307,7 @@ test('page bridge globals use the commercialBreaker names and leave no legacy sk
   h.fire(10000);
   assert.equal(typeof h.context.commercialBreakerAirPlayRouteResult, 'string');
 
-  for (const name of ['AirPlayPanel', 'ExportAirPlayPlayback', 'AirPlayRouteResult']) {
+  for (const name of ['AirPlayPanel', 'AirPlayRouteResult']) {
     assert.equal(h.context[legacy(name)], undefined);
   }
 });
