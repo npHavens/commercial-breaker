@@ -4,6 +4,7 @@ const vm = require('node:vm');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const source = readFileSync(resolve(__dirname, '../../SafariExtension/airplay-session.js'), 'utf8');
+
 function setup(hostname = 'stream.directv.com', supported = true) {
   const created = [];
   const observers = [];
@@ -16,30 +17,48 @@ function setup(hostname = 'stream.directv.com', supported = true) {
     disconnect() { this.active = false; }
     deliver(records) { if (this.active) this.callback(records); }
   }
+
   function element(tag) {
     const e = { tag, style: {}, listeners: {}, children: [], attrs: new Map(), isConnected: false,
       append(...items) { this.children.push(...items); items.forEach((x) => { x.isConnected = true; }); },
-      attachShadow() { this.shadow = element('shadow'); return this.shadow; },
+      attachShadow() {
+        this.shadow = element('shadow');
+
+        return this.shadow;
+      },
       setAttribute(k, v) { this.attrs.set(k, v); }, getAttribute(k) { return this.attrs.get(k) ?? null; },
       hasAttribute(k) { return this.attrs.has(k); }, removeAttribute(k) { this.attrs.delete(k); },
       addEventListener(k, fn) { this.listeners[k] = fn; }, removeEventListener(k) { delete this.listeners[k]; },
       remove() { this.isConnected = false; },
       querySelectorAll() { return this.children.filter((child) => child.tag === 'source'); },
       getBoundingClientRect: () => ({ width: 640, height: 360, left: 0, top: 0, right: 640, bottom: 360 }) };
-    created.push(e); return e;
+
+    created.push(e);
+
+    return e;
   }
+
   const video = element('video'); video.currentSrc = 'blob:test'; video.paused = false; video.isConnected = true; video.readyState = 4;
   video.setAttribute('disableremoteplayback', ''); video.setAttribute('x-webkit-airplay', 'deny');
   let requests = 0;
+
   if (supported) video.webkitShowPlaybackTargetPicker = () => { requests++; };
+
   const context = vm.createContext({ addEventListener(name, fn) { pageListeners[name] = fn; },
     removeEventListener(name) { delete pageListeners[name]; },
-    setTimeout(fn, ms) { const id = ++timerID; timers.set(id, { fn, ms }); return id; },
+    setTimeout(fn, ms) {
+      const id = ++timerID;
+      timers.set(id, { fn, ms });
+
+      return id;
+    },
     clearTimeout(id) { timers.delete(id); }, MutationObserver, location: { protocol: 'https:', hostname },
     document: { createElement: element, documentElement: element('html'), querySelectorAll: () => [video] },
     innerHeight: 720, innerWidth: 1280, getComputedStyle: () => ({ display: 'block', visibility: 'visible', opacity: '1' }),
     commercialBreakerSelectVideo: (candidates) => candidates[0].element });
+
   const run = () => vm.runInContext(source, context);
+
   return { run, video, created, context, observers, element, timers, pageListeners, fire(ms) {
     for (const [id, timer] of [...timers]) if (timer.ms === ms) { timers.delete(id); timer.fn(); }
   }, requests: () => requests };
@@ -81,6 +100,7 @@ test('other websites are rejected before adding a panel', () => {
 function start(h) {
   h.run();
   h.created.find((e) => e.tag === 'button').listeners.click();
+
   return h.created.find((e) => e.tag === 'textarea');
 }
 
@@ -88,6 +108,7 @@ test('site attribute resets are corrected, bounded, and stopped on close', () =>
   const h = setup('www.paramountplus.com');
   const log = start(h);
   const observer = h.observers[0];
+
   for (let n = 0; n < 10; n++) {
     h.video.setAttribute('disableremoteplayback', '');
     observer.deliver([{ type: 'attributes', attributeName: 'disableremoteplayback' }]);
@@ -96,6 +117,7 @@ test('site attribute resets are corrected, bounded, and stopped on close', () =>
     observer.deliver([{ type: 'attributes', attributeName: 'disableremoteplayback' }]);
     assert.equal(log.value, history, 'our own writes must not be counted as site resets');
   }
+
   h.video.setAttribute('x-webkit-airplay', 'deny');
   observer.deliver([{ type: 'attributes', attributeName: 'x-webkit-airplay' }]);
   assert.equal(observer.active, false);
@@ -139,7 +161,9 @@ test('removed video is reported and observers stop; retry can select its replace
   assert.ok(h.observers.every((item) => !item.active));
   const replacement = h.element('video');
   replacement.currentSrc = 'https://example.com/live.m3u8';
+
   replacement.webkitShowPlaybackTargetPicker = () => {};
+
   h.context.document.querySelectorAll = () => [replacement];
   h.created.find((e) => e.tag === 'button').listeners.click();
   assert.equal(replacement.getAttribute('x-webkit-airplay'), 'allow');
@@ -223,13 +247,16 @@ test('DIRECTV resets presentation tracks before picker and on every TV return, t
   const metadata = { kind: 'metadata', mode: 'hidden' };
   h.video.textTracks = [captions, subtitles, metadata];
   h.video.webkitClosedCaptionsVisible = true;
+
   h.video.webkitShowPlaybackTargetPicker = () => {
     assert.equal(captions.mode, 'disabled');
     assert.equal(h.video.webkitClosedCaptionsVisible, false);
   };
+
   start(h);
   assert.equal(subtitles.mode, 'disabled');
   assert.equal(metadata.mode, 'hidden');
+
   for (let i = 0; i < 2; i++) {
     captions.mode = 'showing';
     h.video.webkitClosedCaptionsVisible = true;
@@ -238,6 +265,7 @@ test('DIRECTV resets presentation tracks before picker and on every TV return, t
     assert.equal(captions.mode, 'disabled');
     assert.equal(h.video.webkitClosedCaptionsVisible, false);
   }
+
   h.created.find(e => e.textContent === 'Restore settings and close').listeners.click();
   assert.equal(captions.mode, 'showing');
   assert.equal(subtitles.mode, 'hidden');
@@ -294,6 +322,7 @@ test('page bridge globals use the commercialBreaker names and leave no legacy sk
   h.video.listeners.webkitcurrentplaybacktargetiswirelesschanged({});
   h.fire(10000);
   assert.equal(typeof h.context.commercialBreakerAirPlayRouteResult, 'string');
+
   for (const name of ['AirPlayPanel', 'ExportAirPlayPlayback', 'AirPlayRouteResult']) {
     assert.equal(h.context[legacy(name)], undefined);
   }

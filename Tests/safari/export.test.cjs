@@ -5,7 +5,13 @@ require('../../SafariExtension/export.js');
 test('export round-trips JSON through a persistent data URL with a save dialog', async () => {
   const json = JSON.stringify({ entries: [{ label: 'Ad — 50% & return' }] });
   let options;
-  await globalThis.commercialBreakerSaveRecording({ downloads: { download: async (value) => { options = value; return 1; } } }, json);
+
+  await globalThis.commercialBreakerSaveRecording({ downloads: { download: async (value) => {
+    options = value;
+
+    return 1;
+  } } }, json);
+
   assert.equal(decodeURIComponent(options.url.split(',')[1]), json);
   assert.equal(options.saveAs, true);
   assert.match(options.filename, /^commercial-breaker-signals-.*\.json$/);
@@ -19,14 +25,17 @@ test('export reports unavailable save mechanisms and empty recordings', async ()
 test('absent or rejected downloads API opens a persistent tab with an exact recovery copy', async () => {
   const storage = new Map();
   globalThis.localStorage = { setItem: (key, value) => storage.set(key, value) };
+
   try {
     for (const downloads of [undefined, { download: async () => { throw new Error('Denied'); } }]) {
       let tab;
+
       const browser = {
         downloads,
         tabs: { create: async (options) => { tab = options; } },
         runtime: { getURL: (path) => `safari-web-extension://test/${path}` }
       };
+
       const json = JSON.stringify({ entries: [{ label: 'Ad — 50% & return' }] });
       assert.equal((await globalThis.commercialBreakerSaveRecording(browser, json)).method, 'page');
       assert.equal(tab.url, 'safari-web-extension://test/save-recording.html');
@@ -41,17 +50,25 @@ test('save page creates a downloadable JSON blob and clearing does not erase a n
   const { resolve } = require('node:path');
   const json = JSON.stringify({ schemaVersion: 1, kind: 'airplay-playback', events: [{ event: 'playing' }], sourceTrace: { events: [{ operation: 'load' }] } });
   const storage = new Map([['commercial-breaker.recording-export', JSON.stringify({ filename: 'recording.json', json })]]);
+
   const nodes = new Map(['message', 'download', 'open', 'clear'].map((id) => [id, {
     hidden: true, addEventListener(event, handler) { this[event] = handler; }
   }]));
+
   let blob;
+
   vm.runInNewContext(readFileSync(resolve(__dirname, '../../SafariExtension/save-recording.js'), 'utf8'), {
     Blob,
     commercialBreakerValidateExport: globalThis.commercialBreakerValidateExport,
-    URL: { createObjectURL(value) { blob = value; return 'blob:test'; } },
+    URL: { createObjectURL(value) {
+      blob = value;
+
+      return 'blob:test';
+    } },
     localStorage: { getItem: (key) => storage.get(key), removeItem: (key) => storage.delete(key) },
     document: { querySelector: (selector) => nodes.get(selector.slice(1)) }
   });
+
   assert.equal(await blob.text(), json);
   assert.equal(nodes.get('download').download, 'recording.json');
   assert.equal(nodes.get('download').hidden, false);
@@ -76,6 +93,7 @@ test('AirPlay events and audio snapshots save without an entries array', async (
 
 test('invalid JSON and empty exports never start a download', async () => {
   const browser = { downloads: { download: async () => assert.fail('must not download') } };
+
   for (const json of ['null', '{}', '[]', '{"events":[]}', '{"entries":[]}', '{"events":"playing"}', 'broken']) {
     await assert.rejects(globalThis.commercialBreakerSaveRecording(browser, json));
   }

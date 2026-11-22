@@ -13,5 +13,6 @@ commentary because UFC was selected.`
 
 export function sportPrompt(shared, sport) {
   if (!Object.hasOwn(coverage, sport)) throw new Error('Invalid sport selection');
+
   return `${coverage[sport]}\n\n${shared}`;
 }

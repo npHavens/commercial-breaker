@@ -15,6 +15,7 @@ test('rejects missing, coerced, extra and malformed fields', () => {
     { program: true, decision_usable: true, instruction: 'mute' }]) {
     assert.throws(() => parseMinimalResult(JSON.stringify(value)));
   }
+
   assert.throws(() => parseMinimalResult('not json'));
   assert.throws(() => minimalPrompt('__proto__'));
 });

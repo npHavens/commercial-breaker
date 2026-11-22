@@ -4,20 +4,30 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const playlist = 'https://dai.google.com/linear/hls/pa/event/event/stream/session/variant/variant/bandwidth/123.m3u8';
 const key = 'https://cbsi.live.ott.irdeto.com/key?id=example';
+
 function harness() {
   const listeners = {};
   const event = name => ({ addListener(fn) { listeners[name] = fn; } });
   const calls = [], opened = [];
+
   const browser = {
     runtime: { id:'skybox', onMessage:event('message') },
     tabs: { get:async id => ({id, url:'https://www.paramountplus.com/live-tv/'}), create:async data => opened.push(data), onRemoved:event('removed'), onUpdated:event('updated') },
     webRequest: { onSendHeaders:event('headers'), onCompleted:event('complete'), onErrorOccurred:event('error') }
   };
+
   const ctx = vm.createContext({URL, browser, AbortController, Date, Map, setTimeout:()=>1, clearTimeout:()=>{},
-    fetch:async (url, options) => { calls.push({url,options}); return {ok:true,json:async()=>({url:'http://192.168.1.2:8888/session/'+'a'.repeat(43)+'/'})}; }});
+    fetch:async (url, options) => {
+      calls.push({url,options});
+
+      return {ok:true,json:async()=>({url:'http://192.168.1.2:8888/session/'+'a'.repeat(43)+'/'})};
+    }});
+
   for (const file of ['paramount-capture.js','relay-target.js','background.js']) vm.runInContext(fs.readFileSync('SafariExtension/'+file,'utf8'),ctx);
+
   return {listeners,calls,opened,api:ctx.commercialBreakerParamountCapture};
 }
+
 test('capture URL and header validation', () => {
   const {api} = harness();
   assert.equal(api.playlist(playlist),true);
@@ -28,6 +38,7 @@ test('capture URL and header validation', () => {
   assert.equal(api.token([{name:'AUTHORIZATION',value:'Bearer synthetic.token'}]),'synthetic.token');
   assert.equal(api.token([{name:'Authorization',value:'Basic password'}]),null);
 });
+
 test('only paired active tab and successful key send credentials; status omits secrets', async () => {
   const {listeners:l,calls,opened} = harness();
   const sender={id:'skybox'};
@@ -48,6 +59,7 @@ test('only paired active tab and successful key send credentials; status omits s
   assert.equal(status.capturing,false);
   assert.equal(JSON.stringify(status).includes('synthetic.token'),false);
 });
+
 test('navigation away clears a partially captured session', async () => {
   const {listeners:l,calls}=harness();
   await l.message({type:'paramount-capture',tabId:4,code:'p'.repeat(32)},{id:'skybox'});
@@ -63,6 +75,7 @@ const legacy = (name) => `skybox${name}`;
 test('capture API is exposed as commercialBreakerParamountCapture only', () => {
   const ctx = vm.createContext({ URL, browser: { runtime: { onMessage: { addListener() {} } }, tabs: { onRemoved: { addListener() {} }, onUpdated: { addListener() {} } },
     webRequest: { onSendHeaders: { addListener() {} }, onCompleted: { addListener() {} }, onErrorOccurred: { addListener() {} } } }, Map, Date });
+
   vm.runInContext(fs.readFileSync('SafariExtension/paramount-capture.js', 'utf8'), ctx);
   assert.equal(typeof ctx.commercialBreakerParamountCapture.playlist, 'function');
   assert.equal(ctx[legacy('ParamountCapture')], undefined);

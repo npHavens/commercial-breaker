@@ -4,8 +4,10 @@ const vm = require('node:vm');
 const { readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
 const source = readFileSync(resolve(__dirname, '../../SafariExtension/player-events.js'), 'utf8');
+
 function emitter() {
   const listeners = new Map();
+
   return {
     listeners,
     addEventListener(name, fn) { if (!listeners.has(name)) listeners.set(name, new Set()); listeners.get(name).add(fn); },
@@ -14,18 +16,32 @@ function emitter() {
     count() { return [...listeners.values()].reduce((sum, group) => sum + group.size, 0); }
   };
 }
+
 function setup(exposed = true) {
   const video = emitter(), player = emitter(), document = emitter(), window = emitter();
   player.on = player.addEventListener; player.off = player.removeEventListener;
   document.querySelectorAll = () => [video];
   let expire, poll;
+
   const context = vm.createContext({ document, window,
     location: { protocol: 'https:', hostname: 'stream.directv.com' },
     videojs: exposed ? { getPlayers: () => ({ active: player }) } : undefined,
-    setTimeout(fn) { expire = fn; return 1; }, clearTimeout() {},
-    setInterval(fn) { poll = fn; return 2; }, clearInterval() {}
+    setTimeout(fn) {
+      expire = fn;
+
+      return 1;
+    },
+    clearTimeout() {},
+    setInterval(fn) {
+      poll = fn;
+
+      return 2;
+    },
+    clearInterval() {}
   });
+
   vm.runInContext(source, context);
+
   return { video, player, document, window, context,
     command: (action) => JSON.parse(context.commercialBreakerPlayerEvents(action)),
     reinject: () => vm.runInContext(source, context), expire: () => expire(), poll: () => poll() };
@@ -75,6 +91,7 @@ test('lookalike domains cannot start subscriptions', () => {
 
 test('global discovery reports only names/types without invoking getters or inspecting values', () => {
   const h = setup(false);
+
   vm.runInContext(`
     Object.defineProperty(globalThis, 'QuickplayAccessor', { get() { throw new Error('getter invoked'); } });
     globalThis.freewheelManager = { token: 'private-token', get nested() { throw new Error('nested getter'); } };
@@ -82,23 +99,28 @@ test('global discovery reports only names/types without invoking getters or insp
     globalThis.freewheelNull = null;
     globalThis.unrelated = 'private-value';
   `, h.context);
+
   const report = h.command('start').coverage.globals;
   assert.equal(report.failed, false);
+
   assert.deepEqual(report.properties, [
     { name: 'QuickplayAccessor', type: 'accessor' },
     { name: 'freewheelManager', type: 'object' },
     { name: 'QUICKPLAYFactory', type: 'function' },
     { name: 'freewheelNull', type: 'null' }
   ]);
+
   assert.doesNotMatch(JSON.stringify(h.command('export')), /private-token|private-value/);
 });
 
 test('global discovery bounds scan size, output count and name length', () => {
   const h = setup(false);
+
   vm.runInContext(`
     globalThis['quickplay' + 'x'.repeat(200)] = {};
     for (let i = 0; i < 5100; i++) globalThis['freewheel' + i] = {};
   `, h.context);
+
   const report = h.command('start').coverage.globals;
   assert.equal(report.inspected, 5000);
   assert.equal(report.properties.length, 30);
@@ -116,10 +138,12 @@ test('global discovery reports no matches and rescans on a new recording', () =>
 
 test('failed descriptor inspection is reported as incomplete discovery', () => {
   const h = setup(false);
+
   vm.runInContext(`
     globalThis.quickplayManager = {};
     Object.getOwnPropertyDescriptor = () => { throw new Error('unavailable'); };
   `, h.context);
+
   const result = h.command('start');
   assert.equal(result.coverage.globals.failed, true);
   assert.equal(result.running, true);

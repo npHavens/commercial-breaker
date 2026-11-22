@@ -16,6 +16,11 @@ complete live break/return cycle. Never interrupt someone else's active playback
 for automated verification. Gemini evaluations upload audio: use authorized
 fixtures, not incidental room recordings.
 
+In JavaScript, leave a blank line after the imports, before and after every
+multi-line statement or block, and before `return`. `npm run lint` checks this in
+CI, and `npm run lint -- --fix` adds the missing blank lines. Put each statement on
+its own line: the fix can't lay out a one-line block such as `{ a(); return; }`.
+
 Do not commit recordings, stream-session URLs, bearer tokens, keys, `.env` files,
 or build output. Preserve useful synthetic regression fixtures and findings.
 Historical experiment notes are evidence, not current setup instructions.

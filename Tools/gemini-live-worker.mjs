@@ -24,6 +24,7 @@ export function parseRequest(line) {
       || request.audio.length !== Math.ceil(WAV_BYTES / 3) * 4
       || !/^[A-Za-z0-9+/]+={0,2}$/.test(request.audio)) throw new Error('invalid-request');
   const audio = Buffer.from(request.audio, 'base64');
+
   if (audio.length !== WAV_BYTES || audio.toString('base64') !== request.audio
       || audio.toString('ascii', 0, 4) !== 'RIFF' || audio.readUInt32LE(4) !== WAV_BYTES - 8
       || audio.toString('ascii', 8, 16) !== 'WAVEfmt ' || audio.readUInt32LE(16) !== 16
@@ -33,6 +34,7 @@ export function parseRequest(line) {
       || audio.toString('ascii', 36, 40) !== 'data' || audio.readUInt32LE(40) !== WAV_BYTES - 44) {
     throw new Error('invalid-request');
   }
+
   return { id: request.id, audio };
 }
 
@@ -46,10 +48,12 @@ function safeUsage(metadata) {
 export function classifyFailure(error) {
   const status = Number.isInteger(error?.status) && error.status >= 100 && error.status <= 599 ? error.status : null;
   const code = error?.code ?? error?.cause?.code;
+
   const transient = status === 408 || status === 429 || (status !== null && status >= 500)
     // Including the codes a dropped network gives (ENOTFOUND while DNS is unreachable, ENETDOWN, …).
     || ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ENETUNREACH', 'ENETDOWN', 'EHOSTUNREACH', 'ECONNREFUSED', 'ENOTFOUND',
         'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_SOCKET'].includes(code);
+
   return { error: transient ? 'temporary-failure' : 'request-failed', ...(status === null ? {} : { httpStatus: status }) };
 }
 
@@ -57,51 +61,83 @@ export function classifyFailure(error) {
 export function createWorker({ generateContent, prompt, emit, timeoutMs = REQUEST.timeoutMs, returnDetection = false, crowdDetection = false }) {
   let active = null;
   let closed = false;
+
   return {
     async accept(line) {
       if (closed) return;
       let request;
+
       try { request = parseRequest(line); }
-      catch { emit({ id: null, error: 'invalid-request' }); return; }
-      if (active) { emit({ id: request.id, error: 'busy' }); return; }
+      catch {
+        emit({ id: null, error: 'invalid-request' });
+
+        return;
+      }
+
+      if (active) {
+        emit({ id: request.id, error: 'busy' });
+
+        return;
+      }
+
       // The validated PCM16 payload's decision region is exactly five seconds.
       // Gemini can hallucinate commentary on zero samples; do not upload silence.
       // No amplitude threshold: quiet but nonzero audio still reaches the model.
       if (!request.audio.subarray(request.audio.length - 5 * 16_000 * 2).some(byte => byte !== 0)) {
         emit({ id: request.id, result: { state_at_end: 'unusable', audio_usable: false },
           elapsedMs: 0, usage: {}, source: 'local-digital-silence' });
+
         return;
       }
+
       const controller = new AbortController();
       active = controller;
       const started = performance.now();
       let timedOut = false;
       const timer = setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+
       try {
         const response = await generateContent({ model: MODEL,
           contents: makeContents(request.id, prompt, request.audio), config: {
             responseMimeType: 'application/json', responseSchema: crowdDetection ? minimalSchema : returnDetection ? returnSchema : responseSchema, maxOutputTokens: REQUEST.maxOutputTokens,
             thinkingConfig: { thinkingLevel: REQUEST.thinkingLevel }, abortSignal: controller.signal,
           } });
+
         if (closed) return;
-        if (timedOut) { emit({ id: request.id, error: 'timeout' }); return; }
+
+        if (timedOut) {
+          emit({ id: request.id, error: 'timeout' });
+
+          return;
+        }
+
         if (response.candidates?.[0]?.finishReason !== 'STOP') {
           // A blocked prompt has no candidates; its reason is in the prompt feedback. Gemini's reasons
           // are fixed names such as MAX_TOKENS or SAFETY; any other value stays here.
           const reasons = { finishReason: response.candidates?.[0]?.finishReason, blockReason: response.promptFeedback?.blockReason };
+
           emit({ id: request.id, error: 'incomplete-response', ...Object.fromEntries(Object.entries(reasons)
             .filter(([, reason]) => typeof reason === 'string' && /^[A-Z_]{1,40}$/.test(reason))) });
+
           return;
         }
+
         let result;
+
         try {
           result = (crowdDetection ? parseMinimalResult : returnDetection ? parseReturnResult : parseResult)(response.text ?? '');
+
           // The AirPlay system-audio leg only supplies return evidence, never a new break.
           if (crowdDetection && returnDetection) {
             result.state_at_end = !result.decision_usable ? 'unusable' : result.program ? 'program' : 'not_program';
           }
         }
-        catch { emit({ id: request.id, error: 'invalid-response' }); return; }
+        catch {
+          emit({ id: request.id, error: 'invalid-response' });
+
+          return;
+        }
+
         emit({ id: request.id, result, elapsedMs: Math.round(performance.now() - started), usage: safeUsage(response.usageMetadata) });
       } catch (error) {
         // Provider errors can contain credentials or audio. Only fixed codes cross stdout.
@@ -116,18 +152,23 @@ export function createWorker({ generateContent, prompt, emit, timeoutMs = REQUES
 export function createLineReader(onLine, onInvalid) {
   let pending = Buffer.alloc(0);
   let discarding = false;
+
   return chunk => {
     for (let start = 0; start < chunk.length;) {
       const newline = chunk.indexOf(10, start);
       const end = newline < 0 ? chunk.length : newline;
+
       if (!discarding && pending.length + end - start > MAX_LINE_BYTES) {
         pending = Buffer.alloc(0); discarding = true; onInvalid();
       }
+
       if (!discarding) pending = Buffer.concat([pending, chunk.subarray(start, end)]);
+
       if (newline >= 0) {
         if (!discarding) onLine(pending.toString('utf8'));
         pending = Buffer.alloc(0); discarding = false;
       }
+
       start = newline < 0 ? chunk.length : newline + 1;
     }
   };
@@ -137,6 +178,7 @@ export function createLineReader(onLine, onInvalid) {
  *  Fail loudly until then rather than silently drop UFC or return detection; delete in phase 4. */
 export function workerSettings(env) {
   if ('SKYBOX_SPORT' in env || 'SKYBOX_RETURN_DETECTION' in env) throw new Error('app-rebuild-required');
+
   return { sport: env.COMMERCIAL_BREAKER_SPORT || 'football', returnDetection: env.COMMERCIAL_BREAKER_RETURN_DETECTION === '1' };
 }
 
@@ -144,17 +186,22 @@ async function main() {
   const { sport, returnDetection } = workerSettings(process.env);
   const ai = await createVertexClient();
   const crowdDetection = sport === 'football';
+
   const prompt = crowdDetection ? minimalPrompt(sport, { crowdCues: true })
     : returnDetection ? returnPrompt(sport) : sportPrompt(await readFile(new URL('./prompt-common.txt', import.meta.url), 'utf8'), sport);
+
   const emit = record => process.stdout.write(JSON.stringify(record) + '\n');
   const worker = createWorker({ generateContent: args => ai.models.generateContent(args), prompt, emit, returnDetection, crowdDetection });
   process.stdin.on('data', createLineReader(line => { void worker.accept(line); }, () => emit({ id: null, error: 'invalid-request' })));
+
   const close = () => { worker.close(); process.exit(0); };
+
   process.stdin.on('end', close);
   process.stdin.on('error', close);
   process.on('SIGTERM', close);
   process.on('SIGINT', close);
   process.stdout.on('error', close);
+
   emit({ ready: true, model: MODEL, sport, returnDetection,
     classifier: crowdDetection ? 'crowd-minimal-v2' : returnDetection ? 'sport-return' : 'sport-standard',
     promptSHA256: createHash('sha256').update(prompt).digest('hex') });

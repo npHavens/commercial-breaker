@@ -1,13 +1,16 @@
 (() => {
   const key = 'commercial-breaker.recording-export';
   const message = document.querySelector('#message');
+
   try {
     const raw = localStorage.getItem(key);
     if (!raw) throw new Error('No recording is stored. Export a recording from Commercial Breaker first.');
     const saved = JSON.parse(raw);
+
     if (typeof saved.json !== 'string') {
       throw new Error('The stored recording is invalid.');
     }
+
     globalThis.commercialBreakerValidateExport(saved.json);
     const blob = new Blob([saved.json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -21,6 +24,7 @@
     message.textContent = `${saved.filename} · ${blob.size.toLocaleString()} bytes ready to save.`;
     const clear = document.querySelector('#clear');
     clear.disabled = false;
+
     clear.addEventListener('click', () => {
       // Do not erase a newer export opened in another tab.
       if (localStorage.getItem(key) === raw) localStorage.removeItem(key);

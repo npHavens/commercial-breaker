@@ -11,6 +11,7 @@ test('sport selection changes editorial criteria but preserves shared rules', ()
   assert.match(ufc, /Selected sport: UFC\/MMA/);
   assert.match(ufc, /between-fight editorial coverage/);
   assert.ok(football.endsWith(shared) && ufc.endsWith(shared));
+
   for (const invalid of ['basketball', '', 'constructor', '__proto__']) {
     assert.throws(() => sportPrompt(shared, invalid), /Invalid sport/);
   }

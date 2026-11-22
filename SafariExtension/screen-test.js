@@ -11,6 +11,7 @@
   let pending = false;
   let disposed = false;
   let generation = 0;
+
   function stop() {
     generation++;
     if (timer !== null) clearTimeout(timer);
@@ -22,24 +23,32 @@
     capture.disabled = stopButton.disabled = true;
     choose.disabled = pending || disposed;
   }
+
   choose.addEventListener('click', async () => {
     if (pending || stream || disposed) return;
+
     if (!navigator.mediaDevices?.getDisplayMedia) {
       message.textContent = 'Screen capture is unavailable on this page in Safari.';
+
       return;
     }
+
     pending = true;
     choose.disabled = true;
     still.hidden = download.hidden = true;
     message.textContent = 'Choose the DIRECTV window in Safari’s sharing picker.';
     const attempt = ++generation;
+
     try {
       // Must run directly from this button's gesture, before any other await.
       const acquired = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+
       if (disposed || attempt !== generation) {
         acquired.getTracks().forEach((track) => track.stop());
+
         return;
       }
+
       stream = acquired;
       for (const track of stream.getTracks()) track.addEventListener('ended', () => {
         if (stream !== acquired) return;
@@ -47,10 +56,12 @@
         message.textContent = 'Sharing ended.';
       });
       stopButton.disabled = false;
+
       timer = setTimeout(() => {
         stop();
         message.textContent = 'Sharing stopped after the 30-second test limit.';
       }, 30000);
+
       preview.srcObject = stream;
       await preview.play();
       if (stream === acquired) message.textContent = 'Check the live preview, then click Capture frame and stop.';
@@ -62,14 +73,18 @@
       choose.disabled = !!stream || disposed;
     }
   });
+
   preview.addEventListener('loadeddata', () => {
     capture.disabled = !stream || preview.readyState < 2;
   });
+
   capture.addEventListener('click', () => {
     if (!stream || preview.readyState < 2 || !preview.videoWidth || !preview.videoHeight) {
       message.textContent = 'No captured frame is ready yet.';
+
       return;
     }
+
     try {
       const canvas = document.createElement('canvas');
       const scale = Math.min(1, 960 / preview.videoWidth, 960 / preview.videoHeight);
@@ -88,6 +103,7 @@
       message.textContent = `Frame read failed: ${error.name || 'Error'} — ${error.message}`;
     } finally { stop(); }
   });
+
   stopButton.addEventListener('click', () => { stop(); message.textContent = 'Sharing stopped.'; });
   window.addEventListener('pagehide', () => { disposed = true; stop(); });
 })();
