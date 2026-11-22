@@ -102,27 +102,6 @@ class PlaylistTests(unittest.TestCase):
             self.relay.key('https://attacker.example/')
         self.assertEqual(self.upstream.calls, [])
 
-    def test_commercial_state_uses_playhead_not_current_broadcast_time_and_reuses_snapshot(self):
-        self.upstream.playlist = b'''#EXTM3U
-#EXT-X-PROGRAM-DATE-TIME:2026-09-19T21:00:00Z
-#EXT-X-CUE-OUT:6
-#EXTINF:6,
-https://cdn.example.com/ad.ts
-#EXT-X-CUE-IN
-#EXTINF:6,
-https://cdn.example.com/program.ts
-'''
-        from datetime import datetime, timezone
-        start = datetime(2026, 9, 19, 21, tzinfo=timezone.utc).timestamp() * 1000
-        self.assertEqual(self.relay.commercial_state(start + 1000)['state'], 'ad')
-        self.assertEqual(self.relay.commercial_state(start + 6000)['state'], 'program')
-        self.assertEqual(self.relay.commercial_state(start + 13000)['state'], 'unknown')
-        self.assertEqual(self.upstream.calls, [(PLAYLIST_URL, 'playlist')])
-        self.relay.refreshed_at = module.time.monotonic() - 4
-        self.upstream.failure = 'Playlist returned HTTP 403.'
-        with self.assertRaises(module.RelayError):
-            self.relay.commercial_state(start + 1000)
-
 
 class UpstreamTests(unittest.TestCase):
     def response(self, data):
@@ -240,17 +219,17 @@ class HTTPTests(unittest.TestCase):
             self.assertNotIn(KEY_URL.encode(), body)
             self.assertNotIn(self.relay.prefix.encode(), body)
 
-    def test_commercial_endpoint_is_bounded_and_contains_no_upstream_urls(self):
-        with self.request(self.relay.prefix + 'commercial-state?playhead_ms=1234') as response:
-            data = response.read()
-            self.assertIn(b'"state": "unknown"', data)
-            self.assertNotIn(KEY_URL.encode(), data)
-            self.assertNotIn(PLAYLIST_URL.encode(), data)
-        for query in ('playhead_ms=nan', 'playhead_ms=1&playhead_ms=2', 'url=https://example.com'):
+    def test_legacy_automatic_mute_routes_are_gone_and_the_page_loads_no_controller(self):
+        for route in ('commercial-controller.js', 'commercial-state?playhead_ms=1234'):
             with self.assertRaises(urllib.error.HTTPError) as caught:
-                self.request(self.relay.prefix + 'commercial-state?' + query)
-            self.assertEqual(caught.exception.code, 502)
+                self.request(self.relay.prefix + route)
+            self.assertEqual(caught.exception.code, 404)
             caught.exception.close()
+        self.assertEqual(self.upstream.calls, [])
+        with self.request(self.relay.prefix) as response:
+            page = response.read()
+        self.assertNotIn(b'commercial-controller.js', page)
+        self.assertNotIn(b'automatic mute', page.lower())
 
 
 if __name__ == '__main__':

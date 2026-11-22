@@ -112,9 +112,9 @@ suites pass, and Nick completes one Mac-mode and one AirPlay break/return cycle.
 Reduce the popup to page status, Show AirPlay button, and the Paramount+ relay
 section. Remove the probe scripts, recording export, screen test and both popup
 mute toggles. Keep `directv-airplay-recovery.js`, `directv-autoload.js`,
-`airplay-session.js` and the relay files, with their regression tests. The relay
-player still loads `commercial-controller.js`, and `hls_relay.py` imports
-`commercial_timing.py`. Remove the relay's legacy automatic mute only where it
+`airplay-session.js` and the relay files, with their regression tests. When this was
+written, the relay player loaded `commercial-controller.js` and `hls_relay.py` imported
+`commercial_timing.py`; remove the relay's legacy automatic mute only where it
 separates cleanly from playback, and keep whatever the relay still needs.
 **Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay
 cycle with the trimmed extension, including the short handoff rewind.
@@ -122,7 +122,20 @@ cycle with the trimmed extension, including the short handoff rewind.
 Split in two on November 22, 2026. 3a trims the extension: the popup keeps page status,
 the AirPlay button and Paramount+ relay setup; the probes, recording export, screen
 test, mute toggles and the AirPlay source trace are gone, and so is the `downloads`
-permission. 3b removes the relay player's legacy automatic mute.
+permission. 3b removes the relay player's legacy automatic mute: the relay page's
+commercial-mute section, `Tools/commercial-controller.js`, `Tools/commercial_timing.py`
+and the `commercial-state` route. The relay page's Play, Choose AirPlay, Check playback
+and Stop playback buttons, which native routing looks for, are unchanged.
+
+### Extension migration to TypeScript
+
+Planned November 22, 2026, to run after phase 3 and before phase 4, so Nick works in a
+typed extension. It moves the extension's background and page scripts to TypeScript,
+keeping the DIRECTV handoff correction and its regression tests. No React: Nick decided
+on November 22 that a three-section popup doesn't need it. Its implementation plan was
+approved the same day.
+**Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay cycle,
+including the short handoff rewind.
 
 ### 4. Commercial Breaker app shell and branding
 
@@ -168,9 +181,10 @@ break/return cycle without opening Terminal.
 
 ## Later, not planned yet
 
-A menu bar status item for Mac mode while working in other apps; the
-TypeScript/React extension migration; Node from Homebrew; app-specific muting
-(audio isolation); and handling sports-betting ads, which cause false returns.
+A menu bar status item for Mac mode while working in other apps; Node from
+Homebrew; app-specific muting (audio isolation); and handling sports-betting ads,
+which cause false returns. Repeated-ad recognition is scoped separately and starts
+after phase 7.
 
 ## Calls I made (veto any)
 

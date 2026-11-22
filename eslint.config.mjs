@@ -7,8 +7,8 @@ export default [
   { ignores: ['*', '!SafariExtension/', '!Tools/', '!Tests/'] },
   {
     // Classic scripts: Safari loads the extension's .js files as background, content and page
-    // scripts, and the tests run them and the controller with `vm`. Node ESM files use .mjs.
-    files: ['SafariExtension/**/*.js', 'Tools/commercial-controller.js'],
+    // scripts, and the tests run them with `vm`. Node ESM files use .mjs.
+    files: ['SafariExtension/**/*.js'],
     languageOptions: { sourceType: 'script' }
   },
   {

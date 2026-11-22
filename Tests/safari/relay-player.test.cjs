@@ -149,3 +149,17 @@ test('history survives a reload with an explicit new page marker', () => {
   assert.equal(history.match(/Page initialized/g).length, 2);
   assert.deepEqual(second.counts(), { loads: 0, plays: 0, pickers: 0 });
 });
+
+test('the relay page has each button native AirPlay routing looks for, exactly once', () => {
+  // The page and SafariAccessibility.isPlayerPanel never import each other, so read the labels from the Swift side.
+  const swift = readFileSync(resolve(__dirname, '../../MacAudioProbe/SafariAccessibility.swift'), 'utf8');
+  const list = swift.match(/guard buttonName == "Choose AirPlay"[\s\S]*?return \[([^\]]+)\]\.allSatisfy/)[1];
+  const required = [...list.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(required.includes('Choose AirPlay') && required.length >= 4, `unexpected routing labels: ${required}`);
+  const text = (markup) => markup.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const buttons = [...html.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g)].map((match) => text(match[1]));
+
+  for (const label of required) {
+    assert.equal(buttons.filter((button) => button === label).length, 1, `the relay page needs exactly one "${label}" button`);
+  }
+});

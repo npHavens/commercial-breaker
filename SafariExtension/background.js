@@ -41,7 +41,7 @@ async function sendIfReady() {
 
     if (!globalThis.commercialBreakerIsRelayUrl(data.url)) throw new Error('Invalid relay response');
     await browser.tabs.create({ url: data.url });
-    message = 'Relay opened. Pause the original Paramount player, then Play → Choose AirPlay in the relay. Leave its automatic mute off when using the native app.';
+    message = 'Relay opened. Pause the original Paramount player, then Play → Choose AirPlay in the relay.';
   } catch {
     if (session === current) message = 'Could not open the relay. Check that the extension helper is running and Safari allows local access.';
   } finally {

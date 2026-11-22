@@ -45,7 +45,6 @@ https://developer.apple.com/documentation/safariservices/running-your-safari-web
    to two minutes it waits for this tab's successful variant playlist and authorized key
    request, then asks the helper to validate both.
 4. The relay opens in a new tab. Pause the original player, then click Play and Choose AirPlay.
-   Leave the relay page's own automatic mute off when the native app is listening.
 
 The background listener captures only while explicitly armed, and only from the armed tab.
 Authorization is accepted only from the exact Irdeto key endpoint with a successful response.

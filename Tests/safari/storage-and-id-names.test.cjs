@@ -8,10 +8,6 @@ const legacy = (name) => `skybox${name}`;
 // Each contract is a name shared by files that never import each other, so a
 // half-rename fails silently at runtime. These checks pin both sides.
 const contracts = [
-  ['auto toggle id', 'commercial-breaker-auto-toggle', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
-  ['commercial state id', 'commercial-breaker-commercial-state', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
-  ['auto history id', 'commercial-breaker-auto-history', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
-  ['auto status id', 'commercial-breaker-auto-status', ['Tools/hls_player.html', 'Tools/commercial-controller.js']],
   ['relay playback history key', 'commercial-breaker.relay.playback-history', ['Tools/hls_player.html']],
   ['AirPlay panel close event', 'commercial-breaker-airplay-trace-stop',
     ['SafariExtension/airplay-session.js', 'SafariExtension/directv-airplay-recovery.js']],

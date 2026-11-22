@@ -19,12 +19,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-if __package__:
-    from .commercial_timing import classify_playback, finite, parse_timeline
-else:
-    from commercial_timing import classify_playback, finite, parse_timeline
-
-
 ROOT = Path(__file__).resolve().parents[1]
 PLAYLIST_HOST = 'dai.google.com'
 KEY_HOST = 'cbsi.live.ott.irdeto.com'
@@ -118,9 +112,6 @@ class Relay:
         self.lock = threading.Lock()
         self.events = deque(maxlen=20)
         self.playlist_lock = threading.Lock()
-        self.timeline = []
-        self.sampled_at_ms = None
-        self.refreshed_at = 0
 
     def note(self, message):
         with self.lock:
@@ -172,31 +163,10 @@ class Relay:
         return ('\n'.join(result) + '\n').encode(), last_key
 
     def playlist(self):
+        # Playlist fetches have always run one at a time, and removing the commercial timeline
+        # doesn't change that: overlapping upstream fetches haven't been tried live.
         with self.playlist_lock:
-            return self.refresh_playlist()
-
-    def refresh_playlist(self):
-        # Caller holds playlist_lock, including when a native player refreshes.
-        data = self.upstream.fetch(self.playlist_url, 'playlist')
-        result = self.rewrite(data)
-        self.timeline = parse_timeline(data.decode('utf-8-sig'))
-        self.sampled_at_ms = time.time() * 1000
-        self.refreshed_at = time.monotonic()
-        return result
-
-    def commercial_state(self, playhead_ms):
-        if not finite(playhead_ms):
-            raise RelayError('A finite playback timestamp is required.')
-        with self.playlist_lock:
-            if self.sampled_at_ms is None or time.monotonic() - self.refreshed_at >= 3:
-                self.refresh_playlist()
-            state = classify_playback(playhead_ms, self.timeline, self.sampled_at_ms, time.time() * 1000)
-            covering = [segment for segment in self.timeline if segment['start_ms'] <= playhead_ms < segment['end_ms']]
-            span = covering[0] if len(covering) == 1 else None
-            return {'state': state, 'playheadMs': playhead_ms,
-                    'sampledAtMs': self.sampled_at_ms, 'hasTimeline': bool(self.timeline),
-                    'startMs': span['start_ms'] if span else None,
-                    'endMs': span['end_ms'] if span else None}
+            return self.rewrite(self.upstream.fetch(self.playlist_url, 'playlist'))
 
     def key(self, key_id):
         with self.lock:
@@ -247,19 +217,6 @@ class Handler(BaseHTTPRequestHandler):
                 elif route == 'status':
                     with relay.lock:
                         data = json.dumps(list(relay.events)).encode()
-                    status, content_type = 200, 'application/json'
-                elif route == 'commercial-controller.js':
-                    data = (ROOT / 'Tools' / 'commercial-controller.js').read_bytes()
-                    status, content_type = 200, 'text/javascript; charset=utf-8'
-                elif route == 'commercial-state':
-                    params = urllib.parse.parse_qs(request.query)
-                    try:
-                        if set(params) != {'playhead_ms'} or len(params['playhead_ms']) != 1:
-                            raise ValueError()
-                        playhead_ms = float(params['playhead_ms'][0])
-                    except (KeyError, ValueError):
-                        raise RelayError('A single playback timestamp is required.') from None
-                    data = json.dumps(relay.commercial_state(playhead_ms), allow_nan=False).encode()
                     status, content_type = 200, 'application/json'
             except RelayError as error:
                 relay.note(str(error))
