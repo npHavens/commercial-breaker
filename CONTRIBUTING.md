@@ -18,8 +18,10 @@ fixtures, not incidental room recordings.
 
 In JavaScript, leave a blank line after the imports, before and after every
 multi-line statement or block, and before `return`. `npm run lint` checks this in
-CI, and `npm run lint -- --fix` adds the missing blank lines. Put each statement on
-its own line: the fix can't lay out a one-line block such as `{ a(); return; }`.
+CI, and `npm run lint -- --fix` adds the missing blank lines. Don't let a `return`, a
+block or a multi-line statement share a line with another statement, as in
+`{ a(); return; }`: `--fix` splits those lines without re-indenting them, and lint
+passes the result.
 
 Do not commit recordings, stream-session URLs, bearer tokens, keys, `.env` files,
 or build output. Preserve useful synthetic regression fixtures and findings.
