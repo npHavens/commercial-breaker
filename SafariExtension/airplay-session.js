@@ -54,7 +54,6 @@
     if (!video) return null;
     const finite = value => Number.isFinite(value) ? value : null;
     let bufferedEnd = null;
-
     try { if (video.buffered?.length) bufferedEnd = finite(video.buffered.end(video.buffered.length - 1)); } catch {}
 
     return {

@@ -21,7 +21,6 @@
 
   function append(entry) {
     if (entries.length === limit) { entries.shift(); dropped++; }
-
     entries.push({ at: new Date().toISOString(), ...entry });
   }
 

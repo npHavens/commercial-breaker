@@ -41,7 +41,6 @@ function setup(hostname = 'stream.directv.com', supported = true) {
   const video = element('video'); video.currentSrc = 'blob:test'; video.paused = false; video.isConnected = true; video.readyState = 4;
   video.setAttribute('disableremoteplayback', ''); video.setAttribute('x-webkit-airplay', 'deny');
   let requests = 0;
-
   if (supported) video.webkitShowPlaybackTargetPicker = () => { requests++; };
 
   const context = vm.createContext({ addEventListener(name, fn) { pageListeners[name] = fn; },
@@ -161,9 +160,7 @@ test('removed video is reported and observers stop; retry can select its replace
   assert.ok(h.observers.every((item) => !item.active));
   const replacement = h.element('video');
   replacement.currentSrc = 'https://example.com/live.m3u8';
-
   replacement.webkitShowPlaybackTargetPicker = () => {};
-
   h.context.document.querySelectorAll = () => [replacement];
   h.created.find((e) => e.tag === 'button').listeners.click();
   assert.equal(replacement.getAttribute('x-webkit-airplay'), 'allow');
