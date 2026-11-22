@@ -149,3 +149,9 @@ test('history survives a reload with an explicit new page marker', () => {
   assert.equal(history.match(/Page initialized/g).length, 2);
   assert.deepEqual(second.counts(), { loads: 0, plays: 0, pickers: 0 });
 });
+
+test('the relay page keeps the adjacent buttons that native AirPlay routing looks for', () => {
+  // SafariAccessibility.isPlayerPanel finds Choose AirPlay by its Play, Check playback and Stop playback neighbors.
+  const buttons = [...html.matchAll(/<button id="[^"]+">([^<]+)<\/button>/g)].map((match) => match[1]);
+  assert.deepEqual(buttons, ['Play', 'Choose AirPlay', 'Mute', 'Check playback', 'Stop playback']);
+});

@@ -122,7 +122,19 @@ cycle with the trimmed extension, including the short handoff rewind.
 Split in two on November 22, 2026. 3a trims the extension: the popup keeps page status,
 the AirPlay button and Paramount+ relay setup; the probes, recording export, screen
 test, mute toggles and the AirPlay source trace are gone, and so is the `downloads`
-permission. 3b removes the relay player's legacy automatic mute.
+permission. 3b removes the relay player's legacy automatic mute: the relay page's
+commercial-mute section, `Tools/commercial-controller.js`, `Tools/commercial_timing.py`
+and the `commercial-state` route. The relay page's Play, Choose AirPlay, Check playback
+and Stop playback buttons, which native routing looks for, are unchanged.
+
+### Extension migration to TypeScript, and React if it earns its place
+
+Planned November 22, 2026, to run after phase 3 and before phase 4, so Nick works in a
+typed extension. It moves the extension's background and page scripts to TypeScript,
+keeping the DIRECTV handoff correction and its regression tests. Its implementation plan
+goes to Nick first and decides whether React is worth it for a three-section popup.
+**Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay cycle,
+including the short handoff rewind.
 
 ### 4. Commercial Breaker app shell and branding
 
@@ -168,9 +180,10 @@ break/return cycle without opening Terminal.
 
 ## Later, not planned yet
 
-A menu bar status item for Mac mode while working in other apps; the
-TypeScript/React extension migration; Node from Homebrew; app-specific muting
-(audio isolation); and handling sports-betting ads, which cause false returns.
+A menu bar status item for Mac mode while working in other apps; Node from
+Homebrew; app-specific muting (audio isolation); and handling sports-betting ads,
+which cause false returns. Repeated-ad recognition is scoped separately and starts
+after phase 7.
 
 ## Calls I made (veto any)
 

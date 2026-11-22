@@ -77,7 +77,7 @@ References: [WebKit's MSE/AirPlay source requirements](https://webkit.org/blog/1
 
 This update adds server routes, so it requires **one relay restart**, not just a page refresh. In its Terminal, press Ctrl+C and run `python3 Tools/hls_relay.py` again, entering the token at the hidden prompt. Open the newly printed session URL; the old URL expires when the server stops. Reload the temporary Safari extension from the same SafariExtension directory and confirm v0.2.0 in its popup.
 
-Extension v0.2.22 removed the popup's relay controls described below; the automatic-mute toggle now lives only on the relay page.
+Historical: extension v0.2.22 removed the popup's relay controls described below, and phase 3b (November 2026) removed the relay page's marker-based automatic mute, `commercial-controller.js`, `commercial_timing.py` and the `commercial-state` route. The native app does the detection.
 
 With the relay player active, the popup now offers manual mute and **Enable automatic mute**. The same toggle appears on the page. Closing the popup does not stop monitoring; refreshing the page turns it off. Use the page's Choose AirPlay control for the native picker.
 
