@@ -163,7 +163,8 @@ class Relay:
         return ('\n'.join(result) + '\n').encode(), last_key
 
     def playlist(self):
-        # One upstream fetch at a time, including when a native player refreshes.
+        # Playlist fetches have always run one at a time, and removing the commercial timeline
+        # doesn't change that: overlapping upstream fetches haven't been tried live.
         with self.playlist_lock:
             return self.rewrite(self.upstream.fetch(self.playlist_url, 'playlist'))
 

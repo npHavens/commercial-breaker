@@ -112,9 +112,9 @@ suites pass, and Nick completes one Mac-mode and one AirPlay break/return cycle.
 Reduce the popup to page status, Show AirPlay button, and the Paramount+ relay
 section. Remove the probe scripts, recording export, screen test and both popup
 mute toggles. Keep `directv-airplay-recovery.js`, `directv-autoload.js`,
-`airplay-session.js` and the relay files, with their regression tests. The relay
-player still loads `commercial-controller.js`, and `hls_relay.py` imports
-`commercial_timing.py`. Remove the relay's legacy automatic mute only where it
+`airplay-session.js` and the relay files, with their regression tests. When this was
+written, the relay player loaded `commercial-controller.js` and `hls_relay.py` imported
+`commercial_timing.py`; remove the relay's legacy automatic mute only where it
 separates cleanly from playback, and keep whatever the relay still needs.
 **Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay
 cycle with the trimmed extension, including the short handoff rewind.
@@ -127,12 +127,13 @@ commercial-mute section, `Tools/commercial-controller.js`, `Tools/commercial_tim
 and the `commercial-state` route. The relay page's Play, Choose AirPlay, Check playback
 and Stop playback buttons, which native routing looks for, are unchanged.
 
-### Extension migration to TypeScript, and React if it earns its place
+### Extension migration to TypeScript
 
 Planned November 22, 2026, to run after phase 3 and before phase 4, so Nick works in a
 typed extension. It moves the extension's background and page scripts to TypeScript,
-keeping the DIRECTV handoff correction and its regression tests. Its implementation plan
-goes to Nick first and decides whether React is worth it for a three-section popup.
+keeping the DIRECTV handoff correction and its regression tests. No React: Nick decided
+on November 22 that a three-section popup doesn't need it. Its implementation plan was
+approved the same day.
 **Done when:** the extension tests pass and Nick completes one DIRECTV AirPlay cycle,
 including the short handoff rewind.
 

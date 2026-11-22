@@ -11,8 +11,7 @@ it at the first hidden Terminal prompt. Copy only the Authorization bearer value
 from a successful cbsi.live.ott.irdeto.com key request and paste it at the second
 hidden prompt. Both values stay in process memory; do not paste them into chat.
 After checks pass, open the printed local player address in Safari. Pause the
-original Paramount tab, Play on the relay page, then Choose AirPlay. Leave the old
-playlist-based automatic mute off when using Gemini. Native app v0.2.30 supports
+original Paramount tab, Play on the relay page, then Choose AirPlay. Native app v0.2.30 supports
 this relay page's Choose AirPlay button for its TV via AirPlay automatic mode.
 Fresh-session TV playback was confirmed October 3; automatic relay handoffs still
 need live verification.

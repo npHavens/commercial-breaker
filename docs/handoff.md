@@ -190,8 +190,8 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    AirPlay cycle, including the short rewind. 3b removes the relay player's legacy
    automatic mute (`Tools/commercial-controller.js`, the `commercial-state` route and
    `Tools/commercial_timing.py`); its live check is a Paramount+ UFC cycle. Next comes
-   the extension's TypeScript/React migration, with its own plan for Nick first; the
-   order of work lives on the Commercial Breaker page in Notion. Phase 4
+   the extension's TypeScript migration, without React; `docs/commercial-breaker-plan.md`
+   lists the order. Phase 4
    builds the app shell and adds the rest of the icon set from the
    Scoreboard CB design in Figma: the static app icon is in v0.2.50, while the
    runtime Dock state, menu bar glyph and Safari toolbar icons are still to come.

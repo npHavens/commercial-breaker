@@ -1,5 +1,10 @@
 # Extension and commercial muting
 
+Historical: phase 3b (November 2026) removed this marker-based automatic mute, including
+`Tools/commercial_timing.py`, `Tools/commercial-controller.js`, the `commercial-state`
+endpoint and the extension's relay controls. The native app does the detection. The
+status below describes the code as it was.
+
 Requested scope: integrate the working native HLS relay with Skybox's Safari extension and automatically mute marked commercial breaks, restoring audio for programming.
 
 ## Evidence and timing design
