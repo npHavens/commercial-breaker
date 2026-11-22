@@ -43,7 +43,6 @@ function fixture({ wireless = true, timeout = 10 } = {}) {
 
   const state = { bridge: { vstbPlayer: { playbackController: controller } } };
   video.__reactFiberTest = { memoizedState: { memoizedState: state } };
-  const trace = { export: () => JSON.stringify({ events: [], marker: 'preserved' }) };
 
   const context = { Date: class extends Date { static now() { return now; } }, location: { origin: 'https://stream.directv.com' }, document: {
     querySelectorAll: () => [video], addEventListener() {}, removeEventListener() {} },
@@ -53,7 +52,7 @@ function fixture({ wireless = true, timeout = 10 } = {}) {
 
       return ++id;
     },
-    clearInterval() {}, commercialBreakerAirPlaySourceTrace: trace };
+    clearInterval() {} };
 
   const original = timer.onTimeout_;
   vm.runInNewContext(source, context);
@@ -69,7 +68,7 @@ function fixture({ wireless = true, timeout = 10 } = {}) {
     now = end;
   }
 
-  return { video, timer, context, trace, original, advance, controller,
+  return { video, timer, context, original, advance, controller,
     poll: () => poll(), removeController: () => { state.bridge.vstbPlayer.playbackController = undefined; },
     emitError: e => subscriptions.get('error')?.(e),
     get errors() { return errors; }, get subscriptions() { return subscriptions.size + timerSubscriptions.size; },
@@ -80,10 +79,10 @@ function fixture({ wireless = true, timeout = 10 } = {}) {
 test('observation preserves native timeout callback and 10s recovery', () => {
   const f = fixture(); assert.equal(f.timer.onTimeout_, f.original);
   f.timer.scheduleTimer_(0); f.advance(10000); assert.equal(f.errors, 1);
-  const report = JSON.parse(f.trace.export());
-  assert.equal(report.recoveryExperiment.mode, 'guarded-handoff-seek');
-  assert.equal(report.recoveryExperiment.graceSeconds, 0);
-  assert.equal(report.recoveryExperiment.events.at(-1).code, 1502);
+  const report = JSON.parse(f.context.commercialBreakerDirectvRecovery.export());
+  assert.equal(report.mode, 'guarded-handoff-seek');
+  assert.equal(report.graceSeconds, 0);
+  assert.equal(report.events.at(-1).code, 1502);
 });
 
 test('disconnect and stop never reschedule or cancel the native timer', () => {
@@ -91,7 +90,7 @@ test('disconnect and stop never reschedule or cancel the native timer', () => {
   const pending = f.timer.timeout_; f.disconnect(); f.context.commercialBreakerDirectvRecovery.stop();
   assert.equal(f.timer.timeout_, pending); assert.equal(f.subscriptions, 0);
   f.advance(5000); assert.equal(f.errors, 1);
-  assert.equal(JSON.parse(f.trace.export()).recoveryExperiment, undefined);
+  assert.equal(f.context.commercialBreakerDirectvRecovery.running, false);
 });
 
 test('controller replacement detaches observers; reinjection does not stack them', () => {

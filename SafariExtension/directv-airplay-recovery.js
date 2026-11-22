@@ -186,20 +186,9 @@
     } catch { note('controller inspection failed; experiment stopping'); stop(); }
   }
 
-  const trace = globalThis.commercialBreakerAirPlaySourceTrace;
-  const originalExport = trace?.export;
-
   const snapshot = () => ({ running, attached: !!binding, dropped,
     mode: 'guarded-handoff-seek', graceSeconds: 0, events: events.slice() });
 
-  const traceExport = function (...args) {
-    const report = JSON.parse(Reflect.apply(originalExport, this, args));
-    report.recoveryExperiment = snapshot();
-
-    return JSON.stringify(report);
-  };
-
-  if (typeof originalExport === 'function') trace.export = traceExport;
   const poll = setInterval(check, 1000);
 
   function stop() {
@@ -207,7 +196,6 @@
     running = false;
     clearInterval(poll);
     binding?.detach(); binding = undefined;
-    if (trace?.export === traceExport) trace.export = originalExport;
     document.removeEventListener('commercial-breaker-airplay-trace-stop', stop);
     globalThis.removeEventListener('pagehide', stop);
     note('experiment stopped');

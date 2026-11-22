@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Commercial Breaker",
-  "version": "0.2.21",
-  "description": "Native AirPlay experiments and relay commercial muting, plus Paramount+ manual controls and diagnostics.",
+  "version": "0.2.22",
+  "description": "DIRECTV AirPlay handoff correction, an on-page AirPlay button and the Paramount+ relay.",
   "permissions": [
     "activeTab",
     "scripting",
-    "downloads",
     "webRequest",
     "tabs"
   ],

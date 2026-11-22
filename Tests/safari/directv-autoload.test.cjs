@@ -18,7 +18,7 @@ test('loads existing DIRECTV tabs and reattaches after refresh, excluding other 
   update(1,{status:'complete'},{url:'https://stream.directv.com/watch'});
   assert.equal(calls.length,2);
   assert.equal(calls[1].world,'MAIN');
-  assert.equal(calls[1].files.join(','),'airplay-source-trace.js,directv-airplay-recovery.js');
+  assert.equal(calls[1].files.join(','),'directv-airplay-recovery.js');
 });
 
 test('injection failure is handled without retries or playback operations', async () => {

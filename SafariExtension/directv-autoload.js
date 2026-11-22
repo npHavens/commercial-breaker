@@ -9,8 +9,7 @@
     if (!Number.isInteger(tabId) || !supported(url)) return;
 
     try {
-      await browser.scripting.executeScript({ target: { tabId }, world: 'MAIN',
-        files: ['airplay-source-trace.js', 'directv-airplay-recovery.js'] });
+      await browser.scripting.executeScript({ target: { tabId }, world: 'MAIN', files: ['directv-airplay-recovery.js'] });
     } catch {
       // Permission may be withheld, or the tab may navigate/close before injection.
       console.warn('Commercial Breaker: DIRECTV recovery could not attach; retry using the AirPlay panel.');

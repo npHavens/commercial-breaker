@@ -95,7 +95,7 @@ Do not spawn agents unless requested. Keep changes focused and reviewable.
   Accessibility, and an AirPlay break moved to the Mac and returned to TV.
 - The return to TV fails when another app, usually VS Code, is frontmost: see
   Remaining issues. Keep Safari in front during AirPlay tests.
-- Source Safari extension v0.2.21. Packaged automatic attachment/reload lifecycle
+- Source Safari extension v0.2.22. Packaged automatic attachment/reload lifecycle
   still lacks explicit live verification. The short DIRECTV handoff rewind was
   accepted earlier; it was not separately confirmed in the October 26 test.
 - PRs get a Codex review (Smart detect) when it runs. Since November 21 Codex findings count
@@ -184,8 +184,12 @@ command `skyboxDirectvRecovery.stop()` is now `commercialBreakerDirectvRecovery.
    October 26. PRs #8–#10 added the code review rules and Claude review, #11 added
    CI, #12 switched detection to Gemini 3.7 Flash (v0.2.47), and #13 moved the
    Claude review to `/code-review high`.
-6. Next, phase 3 of `docs/commercial-breaker-plan.md`: trim the Safari extension
-   (keep DIRECTV recovery, the AirPlay button and the Paramount+ relay). Phase 4
+6. Phase 3 of `docs/commercial-breaker-plan.md`, in two PRs. 3a trims the Safari
+   extension (v0.2.22) to the DIRECTV recovery, the AirPlay button and the Paramount+
+   relay, and moves its old README to `docs/archive`; its live check is one DIRECTV
+   AirPlay cycle, including the short rewind. 3b removes the relay player's legacy
+   automatic mute (`Tools/commercial-controller.js`, the `commercial-state` route and
+   `Tools/commercial_timing.py`); its live check is a Paramount+ UFC cycle. Phase 4
    builds the app shell and adds the rest of the icon set from the
    Scoreboard CB design in Figma: the static app icon is in v0.2.50, while the
    runtime Dock state, menu bar glyph and Safari toolbar icons are still to come.

@@ -9,19 +9,19 @@
   }
 
   if (globalThis.commercialBreakerAirPlayPanel?.isConnected) {
-    return globalThis.commercialBreakerAirPlayPanel.commercialBreakerVersion === '0.1.11' ? { ok: true } :
+    return globalThis.commercialBreakerAirPlayPanel.commercialBreakerVersion === '0.1.12' ? { ok: true } :
       { ok: false, error: 'Close the old page panel with Restore settings and close, then try again.' };
   }
 
   const host = document.createElement('div');
   globalThis.commercialBreakerAirPlayPanel = host;
-  host.commercialBreakerVersion = '0.1.11';
+  host.commercialBreakerVersion = '0.1.12';
   host.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;';
   const root = host.attachShadow({ mode: 'closed' });
   const panel = document.createElement('section');
   panel.style.cssText = 'width:300px;padding:16px;background:#18202d;color:white;border:1px solid #8693a6;border-radius:12px;font:14px/1.5 system-ui;box-shadow:0 4px 20px #0008;';
   const title = document.createElement('strong');
-  title.textContent = `Commercial Breaker · ${service.name} AirPlay · v0.1.11`;
+  title.textContent = `Commercial Breaker · ${service.name} AirPlay · v0.1.12`;
   const status = document.createElement('p');
   status.setAttribute('role', 'status');
   status.textContent = 'Turn off Mac Screen Mirroring first. Then click Try AirPlay here.';
@@ -42,36 +42,8 @@
   history.setAttribute('aria-label', 'AirPlay connection history');
   history.style.cssText = 'width:100%;box-sizing:border-box;margin-top:10px;font:12px/1.4 monospace;';
   const entries = [];
-  const playbackEvents = [];
-
-  // Return a string so Safari never serializes nested media numbers natively.
-  globalThis.commercialBreakerExportAirPlayPlayback = () => JSON.stringify({
-    schemaVersion: 1, kind: 'airplay-playback', exportedAt: new Date().toISOString(),
-    service: service.name, events: playbackEvents
-  });
-
-  function snapshot(video) {
-    if (!video) return null;
-    const finite = value => Number.isFinite(value) ? value : null;
-    let bufferedEnd = null;
-    try { if (video.buffered?.length) bufferedEnd = finite(video.buffered.end(video.buffered.length - 1)); } catch {}
-
-    return {
-      sourceKind: sourceKind(video.currentSrc), wireless: Boolean(video.webkitCurrentPlaybackTargetIsWireless),
-      paused: Boolean(video.paused), ready: finite(video.readyState), network: finite(video.networkState),
-      time: finite(video.currentTime), bufferedEnd, error: video.error?.code || 0,
-      captionsVisible: typeof video.webkitClosedCaptionsVisible === 'boolean' ? video.webkitClosedCaptionsVisible : null,
-      tracks: Array.from(video.textTracks || []).slice(0, 16).map(t => ({ kind: t.kind, mode: t.mode }))
-    };
-  }
-
-  function recordPlayback(event, video) {
-    playbackEvents.push({ at: new Date().toISOString(), event, video: snapshot(video) });
-    if (playbackEvents.length > 1200) playbackEvents.shift();
-  }
 
   function report(message) {
-    recordPlayback(message.replace(/https?:\/\/\S+/gi, '[url]'), selectedVideo);
     status.textContent = message;
     entries.push(`${new Date().toLocaleTimeString()} · ${message}`);
     if (entries.length > 40) entries.shift();
@@ -278,24 +250,6 @@
           handlers.set(name, handler);
         }
 
-        let lastProgress = 0;
-
-        const progress = () => {
-          if (Date.now() - lastProgress < 5000) return;
-          lastProgress = Date.now();
-          recordPlayback('progress', video);
-        };
-
-        video.addEventListener('timeupdate', progress);
-        handlers.set('timeupdate', progress);
-        const trackHandlers = new Map();
-
-        for (const event of ['change', 'addtrack', 'removetrack']) {
-          const handler = () => recordPlayback(`textTracks:${event}`, video);
-          video.textTracks?.addEventListener?.(event, handler);
-          trackHandlers.set(event, handler);
-        }
-
         let resets = 0;
 
         const observer = new MutationObserver((records) => {
@@ -330,13 +284,12 @@
             observer.disconnect();
             removalObserver.disconnect();
             for (const [name, handler] of handlers) video.removeEventListener(name, handler);
-            for (const [name, handler] of trackHandlers) video.textTracks?.removeEventListener?.(name, handler);
             report('Selected video was removed by the site. Start playback, then click Try AirPlay again.');
           }
         });
 
         removalObserver.observe(document.documentElement, { childList: true, subtree: true });
-        listeners.set(video, { handlers, trackHandlers, observer, removalObserver });
+        listeners.set(video, { handlers, observer, removalObserver });
       }
 
       const wasDisabled = video.hasAttribute('disableremoteplayback') ||
@@ -367,11 +320,10 @@
     globalThis.removeEventListener('pagehide', onPageHide);
 
     for (const [video, values] of originals) {
-      const { handlers, trackHandlers, observer, removalObserver } = listeners.get(video);
+      const { handlers, observer, removalObserver } = listeners.get(video);
       observer.disconnect();
       removalObserver.disconnect();
       for (const [name, handler] of handlers) video.removeEventListener(name, handler);
-      for (const [name, handler] of trackHandlers) video.textTracks?.removeEventListener?.(name, handler);
 
       for (const [name, value] of values) {
         if (value === null) video.removeAttribute(name);
